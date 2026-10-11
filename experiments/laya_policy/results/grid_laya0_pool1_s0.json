@@ -1,0 +1,25 @@
+{
+ "args": {
+  "env": "grid",
+  "brain": "laya0",
+  "seed": 0,
+  "pool": 1,
+  "updates": 120,
+  "batch": 64,
+  "eval_every": 10,
+  "lr": null,
+  "tag": ""
+ },
+ "hist": [
+  {
+   "update": 0,
+   "secs": 0.0,
+   "hider_train": -0.6009615384615383,
+   "seeker_train": -0.908653846153846,
+   "hider_test": -0.3221153846153846,
+   "seeker_test": -0.9374999999999998,
+   "encoded_states": 432
+  }
+ ],
+ "secs": 90.13011288642883
+}

@@ -1,0 +1,79 @@
+{
+ "args": {
+  "env": "kuhn",
+  "brain": "laya",
+  "seed": 0,
+  "pool": 1,
+  "updates": 30,
+  "batch": 64,
+  "eval_every": 15,
+  "lr": 0.001,
+  "tag": "_lr1e-3"
+ },
+ "hist": [
+  {
+   "update": 0,
+   "secs": 0.0,
+   "exploitability": 0.3475092947174483,
+   "strategy": {
+    "J": 0.531,
+    "Jc": 0.418,
+    "Q": 0.557,
+    "Qc": 0.434,
+    "K": 0.537,
+    "Kc": 0.418,
+    "Jb": 0.652,
+    "Jcb": 0.682,
+    "Qb": 0.66,
+    "Qcb": 0.686,
+    "Kb": 0.639,
+    "Kcb": 0.668
+   },
+   "exploitability_4card": 0.32253649729832085,
+   "encoded_states": 28
+  },
+  {
+   "update": 15,
+   "secs": 66.9,
+   "exploitability": 0.26211564663280623,
+   "strategy": {
+    "J": 0.515,
+    "Jc": 0.281,
+    "Q": 0.592,
+    "Qc": 0.4,
+    "K": 0.706,
+    "Kc": 0.502,
+    "Jb": 0.773,
+    "Jcb": 0.906,
+    "Qb": 0.723,
+    "Qcb": 0.906,
+    "Kb": 1.0,
+    "Kcb": 1.0
+   },
+   "exploitability_4card": 0.2794252907736542,
+   "encoded_states": 28
+  },
+  {
+   "update": 30,
+   "secs": 130.9,
+   "exploitability": 0.33318283377415864,
+   "strategy": {
+    "J": 0.487,
+    "Jc": 0.168,
+    "Q": 0.82,
+    "Qc": 0.858,
+    "K": 1.0,
+    "Kc": 0.865,
+    "Jb": 0.999,
+    "Jcb": 1.0,
+    "Qb": 1.0,
+    "Qcb": 1.0,
+    "Kb": 1.0,
+    "Kcb": 1.0
+   },
+   "exploitability_4card": 0.29050396262917416,
+   "encoded_states": 28
+  }
+ ],
+ "secs": 131.17925333976746
+}

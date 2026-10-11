@@ -1,0 +1,55 @@
+{
+ "args": {
+  "env": "grid",
+  "brain": "laya",
+  "seed": 0,
+  "pool": 1,
+  "updates": 60,
+  "batch": 32,
+  "eval_every": 20,
+  "lr": 0.001,
+  "tag": "_v2_lr1e-3",
+  "script_frac": 0.5,
+  "dense_until": 0,
+  "stopped_early": "planned 100 updates; stopped at 60, flat"
+ },
+ "hist": [
+  {
+   "update": 0,
+   "secs": 0.0,
+   "hider_train": -0.601,
+   "seeker_train": -0.9087,
+   "hider_test": -0.3221,
+   "seeker_test": -0.9375,
+   "encoded_states": 432
+  },
+  {
+   "update": 20,
+   "secs": 1138.7,
+   "hider_train": -0.5288,
+   "seeker_train": -0.9038,
+   "hider_test": -0.2788,
+   "seeker_test": -0.9615,
+   "encoded_states": 1022
+  },
+  {
+   "update": 40,
+   "secs": 2146.6,
+   "hider_train": -0.5288,
+   "seeker_train": -0.8942,
+   "hider_test": -0.25,
+   "seeker_test": -0.9663,
+   "encoded_states": 1140
+  },
+  {
+   "update": 60,
+   "secs": 21945.9,
+   "hider_train": -0.5337,
+   "seeker_train": -0.8942,
+   "hider_test": -0.2596,
+   "seeker_test": -0.9663,
+   "encoded_states": 1196
+  }
+ ],
+ "secs": 21945.9
+}

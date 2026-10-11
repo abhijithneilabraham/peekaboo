@@ -1,0 +1,72 @@
+{
+ "args": {
+  "env": "grid",
+  "brain": "laya",
+  "seed": 0,
+  "pool": 1,
+  "updates": 100,
+  "batch": 32,
+  "eval_every": 20,
+  "lr": 0.0001,
+  "tag": "_v2",
+  "script_frac": 0.5,
+  "dense_until": 0
+ },
+ "hist": [
+  {
+   "update": 0,
+   "secs": 0.0,
+   "hider_train": -0.6009615384615383,
+   "seeker_train": -0.908653846153846,
+   "hider_test": -0.3221153846153846,
+   "seeker_test": -0.9374999999999998,
+   "encoded_states": 432
+  },
+  {
+   "update": 20,
+   "secs": 1140.3,
+   "hider_train": -0.5144230769230769,
+   "seeker_train": -0.9038461538461536,
+   "hider_test": -0.30769230769230765,
+   "seeker_test": -0.9615384615384615,
+   "encoded_states": 1015
+  },
+  {
+   "update": 40,
+   "secs": 2141.0,
+   "hider_train": -0.5240384615384615,
+   "seeker_train": -0.894230769230769,
+   "hider_test": -0.26923076923076916,
+   "seeker_test": -0.9615384615384615,
+   "encoded_states": 1140
+  },
+  {
+   "update": 60,
+   "secs": 3119.3,
+   "hider_train": -0.5865384615384615,
+   "seeker_train": -0.9134615384615383,
+   "hider_test": -0.2596153846153846,
+   "seeker_test": -0.956730769230769,
+   "encoded_states": 1194
+  },
+  {
+   "update": 80,
+   "secs": 4111.3,
+   "hider_train": -0.5721153846153846,
+   "seeker_train": -0.9278846153846152,
+   "hider_test": -0.3221153846153846,
+   "seeker_test": -0.908653846153846,
+   "encoded_states": 1234
+  },
+  {
+   "update": 100,
+   "secs": 5086.1,
+   "hider_train": -0.5817307692307692,
+   "seeker_train": -0.8365384615384615,
+   "hider_test": -0.32692307692307687,
+   "seeker_test": -0.9278846153846152,
+   "encoded_states": 1252
+  }
+ ],
+ "secs": 5111.088140010834
+}
