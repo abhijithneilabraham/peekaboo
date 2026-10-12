@@ -316,7 +316,7 @@ we moved to it.
 - **In-distribution tasks.** §5.1 tests on rows of tasks the model received feedback on. Cross-task
   transfer exists (+4.2) but is smaller and needs volume.
 - **Exploration is real.** The learner samples answers, so during learning some decisions are deliberately
-  non-greedy. In the online run the first pass matched the released model's accuracy. A deployment would
+  non-greedy. We did not measure first-pass accuracy separately. A deployment would
   want conservative exploration (e.g. only on low-stakes questions, or only within Vega's conformal
   prediction set). That is the natural next step and is not done here.
 - **Baseline tuning.** TTT uses vegaml's defaults (k = 128, l2 = 1e-2). The supervised adapter shares our
