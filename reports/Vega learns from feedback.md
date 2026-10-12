@@ -1,347 +1,547 @@
 # Learning from right and wrong
-### Calibrated, label-free adaptation of the Vega decision model from deployment feedback
+### How the Vega decision model can learn from user feedback, without labels, and keep honest probabilities
 
 *abhijithneilabraham · October 2026 · code and raw results: `experiments/vega_policy/`*
 
----
-
-## Abstract
-
-Small local decision models such as Vega (a frozen 0.8B Qwen backbone read by a 14.3M-parameter
-"physics" engine) answer typed questions about a situation with calibrated probabilities, privately and
-in milliseconds. Once deployed, such a model rarely receives gold labels. What it does receive is
-feedback on the answer it gave: an accepted suggestion, a reverted action, a thumbs-down. We treat this
-as a contextual bandit and ask whether Vega can improve from that signal alone.
-
-The method has two parts:
-1. A fresh gated low-rank adapter on the released engine is trained by REINFORCE on the model's own
-   sampled answers, with a KL anchor to the released model.
-2. A single temperature is fitted from the same right/wrong signal, using the fact that a calibrated
-   model's sampled answer is correct with exactly the probability it assigned.
-
-We evaluate on exactly the 1,075 DecisionBench rows that Vega's README reports. The adaptation pool is
-3,205 other rows of the same 43 tasks, and labels are never read except through a 0/1 reward. Results
-over 3 seeds:
-- Accuracy rises from **0.509 to 0.611** (+10.2 points, 95% CI [+7.9, +12.6]).
-- NLL falls from 1.628 to **1.291**, and expected calibration error from 0.098 to **0.054**, the best of
-  any method we ran.
-- Vega's own adaptation (`fit()`, a TTT head trained on all 3,205 *gold labels*) reaches 0.531. Our
-  label-free method beats it by **+8.0 points [+5.6, +10.5]**.
-- A supervised adapter with standard temperature scaling, which reads every label, reaches 0.627. Our
-  method is statistically indistinguishable from it (−1.6 points [−3.5, +0.3]) and better calibrated.
-
-Three controls locate the gain:
-- Without the feedback calibration step, the same policy has ECE 0.24–0.29.
-- Without Vega's engine (the same feedback on a bilinear scorer over the same features), accuracy is 0.26.
-- With a ten-times-stronger KL anchor, the gain shrinks to +3.8 points.
-
-On a larger 1,720-row test set the gain grows smoothly with feedback, from +3.1 points at 5 rows per
-task to +11.3 at 60. A single online pass, in which each row is seen once, gives +6.9. Feedback from 33
-tasks transfers to 10 unseen tasks with +4.2 points. The adapter adds 409k parameters and about 0.2 ms
-per decision. We also report a smaller self-play result in Kuhn poker and several null results.
+*Language: this version of the report uses ASD-STE100 Simplified Technical English [a standard for
+technical writing: short sentences, one topic in each sentence, active voice, and words with one
+meaning]. Text in square brackets [ ] gives an explanation for readers who are new to the subject. You
+can skip the brackets if you know the subject.*
 
 ---
 
-## 1. Motivation
+## Summary
 
-A decision model deployed inside an agent, a moderation queue or a support flow makes thousands of
-small decisions per day. Examples:
-- Is this tool call risky?
-- Does this request need a human?
-- Which category does this belong to?
+**The model.** Vega is a small decision model [a program that reads a situation and a question, and
+then selects one answer from a list]. It has two parts:
+- A frozen backbone [a language model that reads the text. "Frozen" means that we do not change its
+  weights (its learned numbers)]. The backbone is Qwen, with 0.8 billion parameters [learned numbers].
+- An "engine" with 14.3 million parameters. The engine makes the decision.
 
-Labelling those decisions is the expensive step that teams skip. Feedback on them is almost free:
-- the user undoes the action;
-- the reviewer overrides the call;
-- the customer replies "that's not what I asked".
+Vega gives a probability for each answer. Its probabilities are calibrated [when the model says
+"70% sure", it is correct about 70% of the time]. Vega runs on your own computer. Thus, no data goes to
+an outside company, and each decision takes some milliseconds.
 
-A model that improves from that stream, *without becoming overconfident*, is directly useful to
-anyone running one. That is especially true of a model that runs locally with nothing leaving the
-machine.
+**The problem.** After a company starts to use a model, it almost never gets gold labels [the correct
+answer for each case, written by a person]. But it often gets feedback on the answer that the model
+gave. Examples:
+- A user accepts a suggestion.
+- A user cancels an action.
+- A user clicks "thumbs down".
 
-Calibration is the hard part. Vega's README makes calibration its headline advantage: on DecisionBench
-it trails the hosted reference by 24 accuracy points but has a better likelihood by a factor of two.
-Fine-tuning usually destroys calibration (we see the same: supervised adapters reach ECE 0.15–0.33
-before rescaling), and the standard repair, temperature scaling, needs labelled data. We needed a
-method that improves accuracy *and* keeps calibration using only the signal a deployment produces.
+We ask this question: can Vega improve from this right-or-wrong signal only?
 
-## 2. Setting
+[In machine learning, this setting is a "contextual bandit". The model sees a situation (the context),
+selects one action, and gets a reward for that action only. It never learns what the best action was.]
 
-**Vega.** `vegaml` 0.8.0 with the public checkpoint `nandakishorm/vega-08b-public-intents`:
-- a frozen Qwen3.5-0.8B backbone pooled at layers 13 and 19;
-- a 14.3M-parameter engine in which each option is a potential well and the answer is where a particle
-  settles;
-- a shipped thermal calibration, which sets a per-question temperature from the trajectory;
-- two shipped gated adapters, routed automatically.
+**Our method has two parts:**
+1. **Learning.** We add a small new part (an "adapter") to the engine. We train the adapter with
+   REINFORCE [a basic reinforcement-learning (RL) rule: make rewarded answers more probable, and make
+   unrewarded answers less probable]. A "KL anchor" stops the model from moving too far from the
+   original model. [KL divergence measures how different two probability distributions are.]
+2. **Calibration from feedback.** RL makes the model too confident. We correct this with one number,
+   the "temperature", and we find this number from the same right-or-wrong signal. The method uses one fact about calibrated models. When such a model selects an answer, the answer is right as often as its probability says.
 
-Everything shipped is kept exactly as released.
+**The test.** We use exactly the 1,075 DecisionBench rows that Vega's own README uses [DecisionBench is
+a public set of decision questions. A "row" is one question. The README is the main description page
+of the Vega project]. We learn from 3,205 different rows of the same 43 tasks. Our method never sees a
+label. It sees only a reward of 1 (right) or 0 (wrong). We ran each training method 3 times with
+different random seeds [a seed controls the random choices. Different seeds show if a result is
+stable].
 
-**Benchmark and the exact test set.** DecisionBench (`Hanno-Labs/decision-bench`) has 43 tasks over
-three primitives in 28 domains, such as agent control, privacy, legal, robotics and tax documents.
-Vega's README reports a 1,075-row slice built by its benchmark notebook (25 rows per task,
-seed 20261011). We reimplemented that sampler verbatim and reproduce the slice exactly. Our offline
-replay of the engine on cached backbone features matches the official `Vega.decide()` probabilities to
-0.0 on every checked row, and reproduces the README's numbers (accuracy 0.509, NLL 1.628, KL to gold
-1.012). **The 1,075 README rows are our test set.**
+**Results:**
+- Accuracy increases from **0.509 to 0.611**. This is +10.2 points. The 95% confidence interval (CI)
+  is [+7.9, +12.6]. [A 95% CI is the range where the true value probably is. The range does not
+  include zero, so the gain is not chance.]
+- NLL decreases from 1.628 to **1.291**. [NLL, "negative log-likelihood", measures how much probability
+  the model gave to the correct answer. Lower is better.]
+- ECE decreases from 0.098 to **0.054**. [ECE, "expected calibration error", measures the difference
+  between the confidence and the real accuracy. Lower is better.] This is the best ECE of all the
+  methods that we tested.
+- Vega's own adaptation tool, `fit()`, gets 0.531. It uses the *gold labels* of all 3,205 rows. Our
+  method uses no labels, and it is **+8.0 points [+5.6, +10.5]** better.
+- A standard supervised method gets 0.627. [Supervised: the method trains on the correct answers.] It
+  reads every label. Our method is not significantly different from it: −1.6 points [−3.5, +0.3]. Also,
+  our method is better calibrated.
 
-**Adaptation pool.** Running the same sampler at 100 rows per task gives 4,280 rows, a strict superset
-of the slice. The 3,205 rows outside the slice form the pool. 20% of each task's pool (641 rows) is
-held out for calibration, leaving 2,564 rows to learn from. Every method sees the same rows.
+**Three control tests show where the gain comes from:**
+- If we remove the calibration step, ECE is 0.24 to 0.29 (much worse).
+- If we remove Vega's engine and keep everything else, accuracy is 0.26 (much worse).
+- If we make the KL anchor 10 times stronger, the gain decreases to +3.8 points.
 
-**Feedback.** For a pool row the learner samples an option from its own distribution and receives
-r = 1 if it is the gold option, else 0. Nothing else about the label is revealed. This is simulated
-feedback derived from gold labels. Real deployment feedback is noisier, a limitation we return to in
-§8.
+**More results:**
+- On a larger test set (1,720 rows), the gain increases with more feedback. It is +3.1 points with 5 rows for each task, and +11.3 points with 60 rows.
+- With one pass [the model sees each row one time only, as in real use], the gain is +6.9 points.
+- Feedback from 33 tasks also improves 10 tasks that the model did not see: +4.2 points.
+- The adapter adds 409 thousand parameters and approximately 0.2 ms to each decision.
+- We also report a smaller result in a poker game, and some ideas that did not work.
+
+---
+
+## 1. Why this is important
+
+Companies put decision models in AI agents, moderation systems and customer-support systems. Such a
+model makes thousands of small decisions each day. Examples:
+- Is this tool call dangerous? [A "tool call" is an action that an AI agent does, for example "delete
+  this file".]
+- Must a person examine this request?
+- Which category is correct for this message?
+
+It is expensive to label these decisions [to have a person write the correct answer for each one].
+Thus, most teams do not do it. But feedback on the decisions is almost free:
+- The user cancels the action.
+- The reviewer changes the decision.
+- The customer writes "That is not what I asked".
+
+A model that improves from this feedback is useful to all users of such models. The model must not
+become overconfident while it learns. This is very important for a model that runs locally [on your
+own computer], because then no data goes out of the computer.
+
+Calibration is the difficult part. Calibration is the main advantage of Vega in its README. On
+DecisionBench, Vega is 24 accuracy points below a hosted model [a large model that a company runs on
+its own servers, which you use through the internet]. But Vega's likelihood is two times better.
+
+Fine-tuning usually damages calibration [fine-tuning: more training of a model that is already
+trained]. We saw this too: our supervised adapters had an ECE of 0.15 to 0.33 before correction. The
+standard correction is "temperature scaling", but it needs labelled data. Thus, we needed a method
+that does two things with feedback only:
+- It increases accuracy.
+- It keeps the calibration.
+
+## 2. Setup
+
+### 2.1 Vega
+
+We use `vegaml` version 0.8.0 with the public model `nandakishorm/vega-08b-public-intents`. It has
+these parts:
+- **A frozen backbone.** Qwen3.5-0.8B reads the text. Vega uses the outputs of layers 13 and 19
+  [a language model has many layers. Each layer makes a more abstract version of the text]. Vega
+  "pools" these outputs [it makes an average, so that one fixed-size list of numbers represents the
+  text].
+- **The engine, 14.3 million parameters.** The engine uses a physics model. Each answer is a "potential
+  well" [a low point in a landscape, like a hole]. A particle moves through the landscape, and the
+  answer is the well where the particle stops. A deeper well means a lower "energy" and a more probable
+  answer.
+- **A thermal calibration.** It sets a temperature for each question from the path of the particle.
+  [Temperature controls how sure the probabilities are. A high temperature makes the probabilities
+  more equal. A low temperature makes the top answer more dominant.]
+- **Two adapters, which Vega selects automatically.** [An adapter is a small add-on to a model. It
+  changes the behaviour for some types of questions.]
+
+We do not change any of these parts. They stay exactly as Vega releases them.
+
+### 2.2 The benchmark and the exact test set
+
+DecisionBench (`Hanno-Labs/decision-bench`) has 43 tasks. The tasks use three question types
+("primitives") in 28 domains. Some domains are agent control, privacy, legal, robotics and tax
+documents. [A "benchmark" is a standard test that many people use, so that the results are easy to
+compare.]
+
+Vega's README uses a "slice" [a selected part of the benchmark] of 1,075 rows. A notebook in the Vega
+project makes this slice: 25 rows for each task, with the random seed 20261011. We copied the sampling
+code exactly. It gives exactly the same 1,075 rows.
+
+We also did a check of our pipeline [the chain of steps that our code does]:
+- We saved the backbone outputs ("cached features") one time, so that we do not run the large backbone
+  again.
+- We ran the engine on these saved features.
+- The probabilities are exactly equal to the official `Vega.decide()` probabilities. The difference is
+  0.0 on each row that we examined.
+- We get the same numbers as the README: accuracy 0.509, NLL 1.628, and KL to gold 1.012.
+
+**These 1,075 README rows are our test set.** [The test set is the data that we use only to measure
+the result. The model never learns from it.]
+
+### 2.3 The data for learning (the "pool")
+
+We ran the same sampling code with 100 rows for each task. This gives 4,280 rows. These rows include
+all of the 1,075 test rows. The other 3,205 rows are the pool [the data that the methods can learn
+from].
+
+From each task in the pool, we kept 20% (641 rows in total) for calibration only. Thus, 2,564 rows stay
+for learning. All methods get the same rows.
+
+### 2.4 The feedback
+
+For each pool row, the model selects an answer at random from its own probabilities. [Example: if the
+model gives answer A 70% and answer B 30%, it selects A 7 times in 10.] Then it gets a reward:
+- r = 1 if the answer is the correct (gold) answer.
+- r = 0 if the answer is not correct.
+
+The model gets no other information about the label. This feedback is simulated [we make it from the
+gold labels]. Real feedback has more errors. Section 8 discusses this limitation.
 
 ## 3. Method
 
-**Policy.** π(a|s) is Vega's own calibrated readout, softmax(−E_a / τ(s)). The energies E come from
-the engine with a new adapter, and τ(s) is the shipped thermal temperature, held fixed.
+### 3.1 The policy
 
-**What is trained.** We attach one gated LoRA adapter (rank 8) to the engine's input layers, through
-vegaml's own `attach_adapter`. That is 409k parameters, 2.9% of the engine. Its gate starts open, and
-the shipped adapters keep routing and calibrating exactly as released.
+[A "policy" is the rule that the model uses to select an action.] Our policy is Vega's own calibrated
+output:
 
-**Update.** The loss is REINFORCE with a running-mean baseline plus a KL anchor to the released model:
+  π(a|s) = softmax(−E_a / τ(s))
+
+[Read this as: "the probability of answer a in situation s". E_a is the energy of answer a, from the
+engine. τ(s) is the temperature for this situation. Softmax changes a list of numbers into
+probabilities that add up to 1. A lower energy gives a higher probability.]
+
+The engine with the new adapter gives the energies. We keep the shipped temperature τ(s) fixed.
+
+### 3.2 What we train
+
+We attach one gated LoRA adapter, with rank 8, to the input layers of the engine. We use vegaml's own
+function `attach_adapter`.
+- [LoRA, "low-rank adaptation", adds two small matrices to a layer. Their product is a small change to
+  the layer. "Rank 8" sets the size of the matrices. A small rank gives few parameters.]
+- ["Gated" means that a small network, the gate, decides how much of the adapter to use for each
+  question.]
+
+The adapter has 409 thousand parameters. This is 2.9% of the size of the engine. Its gate starts open.
+The two shipped adapters continue to work exactly as before.
+
+### 3.3 The update rule
+
+[The update rule says how we change the parameters after each batch of feedback. The "loss" is the
+number that training makes smaller.]
 
   L = −(r − b) · log π(a|s) + β · KL(π(·|s) ‖ π₀(·|s)),   β = 0.1
 
-We use 8 passes over the pool, batch 32, and Adam at lr 1e-3. The anchor keeps the policy from
-collapsing onto a few options. Without it, NLL reaches 7.5. In Kuhn poker (§7), the same
-collapse-and-anchor pattern was the first thing we found.
+- **First term (REINFORCE).** r is the reward. b is the average reward recently (the "baseline"). If an
+  answer gets more reward than the average, its probability increases. If it gets less, its probability
+  decreases. [The baseline makes learning more stable. It shows which answers are better than normal,
+  not only which answers are good.]
+- **Second term (the KL anchor).** π₀ is the original model. The term increases when the new model
+  moves away from the original model. β = 0.1 sets the strength of the anchor.
 
-**Feedback calibration.** RL sharpens the distribution: after training, the raw policy has ECE 0.24–0.29.
-The repair uses one observation. If a model is calibrated, the option it samples is correct with
-probability exactly p(a). Each logged pair (a, r) is therefore a Bernoulli observation of p(a). On fresh
-interactions with the 641 held-out rows, we sample a, observe r, and choose the temperature T that
-maximises
+Training settings: 8 passes through the pool, batches of 32 rows, and the Adam optimizer with a learning
+rate of 0.001. [An optimizer is the algorithm that changes the parameters. The learning rate sets the
+size of each change.]
 
-  Σ r · log p_T(a) + (1 − r) · log(1 − p_T(a)).
+Why the anchor is necessary: without it, the model "collapses" [it puts almost all probability on a few
+answers, also on answers that are wrong]. Without the anchor, NLL increases to 7.5. We saw the same
+collapse first in the poker experiment (Section 7).
 
-That is one scalar, fitted by grid search, with no labels read. It is the bandit-feedback counterpart
-of temperature scaling. The fitted T is 5.4–6.9 for β = 0.1 and about 1.9 for β = 1.
+### 3.4 Calibration from feedback
 
-## 4. Baselines
+RL makes the probabilities too sharp [too confident]. After training, the uncorrected model has an ECE
+of 0.24 to 0.29.
 
-| method | reads from the pool | description |
+The correction uses one fact. Assume that a model is calibrated. Then the answer that it selects is
+correct with probability p(a) exactly. Thus, each logged pair (answer a, reward r) is a "Bernoulli"
+observation of p(a). [A Bernoulli observation is one yes-or-no result, like one toss of a coin with
+probability p.]
+
+The procedure:
+1. Use the 641 rows that you kept for calibration.
+2. For each row, let the model select an answer a.
+3. Record the reward r (1 or 0).
+4. Find the temperature T that gives the highest value of this sum:
+
+  Σ r · log p_T(a) + (1 − r) · log(1 − p_T(a))
+
+[p_T(a) is the probability of answer a after we divide the scores by T. The sum is the "log-likelihood"
+of the rewards. A high value means that the probabilities agree with how often the model is really
+right.]
+
+T is one number. We find it with a grid search [we try many values and keep the best]. We read no
+labels. This is the feedback version of standard temperature scaling. The value of T was 5.4 to 6.9
+for β = 0.1, and approximately 1.9 for β = 1. [T higher than 1 makes the probabilities less sharp. This
+agrees with the fact that RL made them too sharp.]
+
+## 4. The methods that we compare (baselines)
+
+[A "baseline" is a different method that we compare with our method. Good baselines make the
+comparison fair.]
+
+| method | what it reads from the pool | description |
 |---|---|---|
-| Released Vega 0.8B | nothing | the model as published |
-| vegaml `fit()` TTT, `auto` | **gold labels** of all 3,205 rows | Vega's own adaptation: a PCA + logistic head on the same frozen features, one per task. It is kept when 5-fold CV accuracy beats chance, as `fit()` does; otherwise the engine answers. To be generous to it, a test row whose options the head never saw goes to the engine instead of getting probability 0 for that option |
-| Supervised adapter + temperature scaling | **gold labels** | the same adapter trained with cross-entropy and the same KL anchor, then standard temperature scaling on the 641 held-out labelled rows. This is the strongest labelled recipe we ran |
-| No-engine control | right/wrong only | a bilinear state × option scorer over the same frozen features, with the same feedback, entropy bonus and feedback calibration |
-| Ours, β = 1 | right/wrong only | ablation: a 10× stronger anchor |
-| **Ours** | right/wrong only | §3 |
+| Released Vega 0.8B | nothing | The model as the authors publish it. |
+| vegaml `fit()` TTT, `auto` | **gold labels** of all 3,205 rows | Vega's own adaptation tool. For each task it trains a "TTT head" [a small classifier: PCA (a method that makes the data smaller) and logistic regression (a simple classifier)] on the same frozen features. It keeps a head only when the head is better than chance in 5-fold cross-validation [a test that trains on 4/5 of the data and tests on the other 1/5, five times]. Otherwise the engine answers. This is what `fit()` does. We were generous to this method: when a test row has an answer that the head never saw, the engine answers that row. |
+| Supervised adapter + temperature scaling | **gold labels** | The same adapter, trained on the correct answers with cross-entropy [the standard supervised loss] and the same KL anchor. Then standard temperature scaling on the 641 calibration rows, with their labels. This is the strongest labelled method that we tested. |
+| No-engine control | right or wrong only | A simple bilinear scorer [it multiplies a state vector with each answer vector to get a score] on the same frozen features, without Vega's engine. It uses the same feedback, an entropy bonus [a term that prevents early collapse], and the same feedback calibration. |
+| Ours, β = 1 | right or wrong only | Ablation [a test that changes one part of the method]: an anchor that is 10 times stronger. |
+| **Ours** | right or wrong only | The method in Section 3. |
 
 ## 5. Results
 
-### 5.1 Head to head on Vega's exact test set
+### 5.1 Direct comparison on Vega's exact test set
 
-1,075 rows. Training methods use 3 seeds (mean ± s.d.); the released model and TTT are deterministic.
-"Skill" is chance-corrected accuracy. KL to gold is on the 10 rows with soft gold labels, so it is
-noisy.
+All results use the same 1,075 rows. The training methods use 3 seeds. We show "mean ± s.d." [the
+average and the standard deviation (the spread) of the 3 runs]. The released model and TTT have no
+random parts, so they need only one run.
+
+Some terms:
+- **Skill** is accuracy with chance removed. [A random selection gets some answers right by chance.
+  Skill 0 means no better than chance. Skill 1 means always right.]
+- **KL to gold** compares the model's probabilities with "soft" gold probabilities [some rows give a
+  probability for each answer, not only one correct answer]. Only 10 rows have soft gold labels. Thus,
+  this number is not very reliable.
+- ↓ means that a lower value is better.
 
 | method | learns from | accuracy | skill | NLL ↓ | ECE ↓ | KL to gold ↓ |
 |---|---|---|---|---|---|---|
 | Released Vega 0.8B | — | 0.509 | 0.362 | 1.628 | 0.098 | 1.012 |
 | vegaml `fit()` TTT, `auto` | gold labels | 0.531 | 0.391 | 1.628 | 0.111 | 1.263 |
 | Supervised adapter + temp. scaling | gold labels | **0.627 ± 0.010** | **0.515** | **1.183** | 0.074 ± 0.017 | 0.786 |
-| No-engine control | right/wrong | 0.262 ± 0.023 | 0.041 | 1.949 | 0.115 | 0.794 |
-| Ours, β = 1 | right/wrong | 0.547 ± 0.002 | 0.412 | 1.430 | 0.076 | 0.758 |
-| **Ours** | right/wrong | **0.611 ± 0.015** | 0.495 | 1.291 ± 0.024 | **0.054 ± 0.008** | 1.101 ± 0.332 |
+| No-engine control | right or wrong | 0.262 ± 0.023 | 0.041 | 1.949 | 0.115 | 0.794 |
+| Ours, β = 1 | right or wrong | 0.547 ± 0.002 | 0.412 | 1.430 | 0.076 | 0.758 |
+| **Ours** | right or wrong | **0.611 ± 0.015** | 0.495 | 1.291 ± 0.024 | **0.054 ± 0.008** | 1.101 ± 0.332 |
 
-**Paired accuracy differences.** These are per-row on the same 1,075 rows, averaged over seeds, with a
-95% bootstrap CI:
+**Paired accuracy differences.** [Paired: we compare the two methods on each row, and then we take the
+average. This is more exact than a comparison of two averages.] We use the same 1,075 rows and the
+average of the seeds. The intervals are 95% bootstrap CIs. [Bootstrap: we sample the rows again
+thousands of times, and we calculate the difference each time. The spread of these differences gives
+the interval.]
 
-| comparison | points |
+| comparison | difference, accuracy points |
 |---|---|
-| Ours vs released Vega | **+10.2 [+7.9, +12.6]** |
-| Ours vs vegaml TTT (gold labels) | **+8.0 [+5.6, +10.5]** |
-| Ours vs supervised + temp. scaling (gold labels) | −1.6 [−3.5, +0.3] |
-| TTT vs released Vega | +2.2 [−0.1, +4.4] |
-| Supervised + temp. scaling vs released Vega | +11.8 [+8.9, +14.6] |
+| Ours compared with released Vega | **+10.2 [+7.9, +12.6]** |
+| Ours compared with vegaml TTT (gold labels) | **+8.0 [+5.6, +10.5]** |
+| Ours compared with supervised + temp. scaling (gold labels) | −1.6 [−3.5, +0.3] |
+| TTT compared with released Vega | +2.2 [−0.1, +4.4] |
+| Supervised + temp. scaling compared with released Vega | +11.8 [+8.9, +14.6] |
 
-### 5.2 Next to the README's own DecisionBench table
+[How to read this: if an interval does not include 0, the difference is probably real. The interval
+for "ours compared with supervised" includes 0. Thus, the two methods are statistically equal. The
+interval for "TTT compared with released Vega" also includes 0. Thus, the gain of TTT is not certain.]
 
-The first three rows are copied from Vega's README (same 1,075 rows). The README's ECE uses its own
-estimator; ours gives 0.098 for the released 0.8B, where the README prints 0.103.
+### 5.2 Comparison with the README's DecisionBench table
 
-| system | accuracy | NLL ↓ | ECE ↓ | needs |
+We copied the first three rows from Vega's README. They use the same 1,075 rows.
+
+The README uses a different ECE calculation. Our calculation gives 0.098 for the released 0.8B model.
+The README gives 0.103 for the same model.
+
+| system | accuracy | NLL ↓ | ECE ↓ | what it needs |
 |---|---|---|---|---|
 | Vega 0.8B (README) | 0.509 | 1.628 | 0.103 | — |
-| Vega 4B (README) | 0.633 | 1.420 | 0.098 | 9.3 GB backbone, about 1.4× the latency |
-| Jev, hosted (README) | 0.752 | 3.196 | 0.122 | API, data leaves the machine |
-| **Vega 0.8B + ours** | **0.611** | **1.291** | **0.054** | right/wrong feedback, 409k extra parameters, about +0.2 ms |
+| Vega 4B (README) | 0.633 | 1.420 | 0.098 | a 9.3 GB backbone, approximately 1.4 times the latency [latency: the time for one answer] |
+| Jev, hosted (README) | 0.752 | 3.196 | 0.122 | an API; your data goes out of your computer [API: a service that you call through the internet] |
+| **Vega 0.8B + ours** | **0.611** | **1.291** | **0.054** | right-or-wrong feedback, 409 thousand more parameters, approximately 0.2 ms more |
 
-With feedback alone, the 0.8B model closes 82% of the accuracy gap to the 4B. It has the best
-likelihood and calibration in the table, while keeping the 0.8B's footprint. The hosted model remains
-far more accurate.
+With feedback only, the 0.8B model closes 82% of the accuracy gap to the 4B model. It has the best NLL
+and the best calibration in the table. It keeps the small size of the 0.8B model. The hosted model is
+still much more accurate.
 
-### 5.3 Why it wins over vegaml's own adaptation
+### 5.3 Why our method is better than Vega's own adaptation
 
-**TTT can only adapt where labels are stable.** A TTT head is a classifier over a fixed label set. Many
-DecisionBench tasks give every row its own options (an ordinal scale worded differently each time, a
-list of candidate records). `fit()` kept heads for 20 of 43 tasks, and those heads cover only 394 of the
-1,075 test rows. The other 681 rows get nothing from it. Our adapter changes the engine, which reads
-the option text, so it applies to every row:
+**Reason 1: TTT works only when the answer list stays the same.**
+- A TTT head is a classifier with a fixed list of labels.
+- In many DecisionBench tasks, each row has its own answer list. Examples: a scale that has different
+  words in each row, or a different list of candidate records in each row.
+- `fit()` kept heads for 20 of the 43 tasks. These heads apply to only 394 of the 1,075 test rows.
+- The other 681 rows get no benefit from TTT.
 
-| test rows | n | released | TTT | ours | supervised + TS |
+Our adapter changes the engine. The engine reads the text of each answer. Thus, our method applies to
+all rows:
+
+| test rows | number of rows | released | TTT | ours | supervised + temp. scaling |
 |---|---|---|---|---|---|
-| a TTT head answers | 394 | 0.558 | 0.619 | **0.646** | 0.661 |
-| TTT falls back to the engine | 681 | 0.480 | 0.480 | **0.591** | 0.607 |
+| rows that a TTT head answers | 394 | 0.558 | 0.619 | **0.646** | 0.661 |
+| rows where TTT gives the row to the engine | 681 | 0.480 | 0.480 | **0.591** | 0.607 |
 
-Ours wins on both parts of the test set, and by 11 points where TTT cannot act.
+Our method is better on both parts of the test set. It is 11 points better on the rows where TTT
+cannot work.
 
-**TTT also hurts some domains.** Its CV-gated heads lower logic from 0.44 to 0.24, web from 0.76 to
-0.60, and multi-hop search from 0.56 to 0.44. Ours moves the same three domains by −8, −4 and +3 points.
+**Reason 2: TTT makes some domains worse.**
+- TTT heads pass the cross-validation test, but they decrease some domains. Logic goes from 0.44 to 0.24, web from 0.76 to 0.60, and multi-hop search from 0.56 to 0.44.
+- Our method changes the same three domains by −8, −4 and +3 points.
 
-**Calibration survives because of the feedback temperature.** Without that step, our policy is as
-miscalibrated as any fine-tune (ECE 0.24–0.29, NLL 3.1–4.1). With it, ECE is 0.054. The supervised
-recipe needs held-out *labels* to do the same, and ends at 0.074.
+**Reason 3: the feedback temperature keeps the calibration.**
+- Without this step, our model is as badly calibrated as other fine-tuned models: ECE 0.24 to 0.29, and
+  NLL 3.1 to 4.1.
+- With this step, the ECE is 0.054.
+- The supervised method needs *labels* for the same correction, and it gets an ECE of 0.074.
 
-**The engine matters.** The same feedback, calibration and features, without Vega's engine, give 0.26.
-That is worse than the released model, because a policy learning from scratch with 2,564 bandit
-rewards over 43 tasks has nothing to start from. Vega's zero-shot energies are what make the bandit
-problem easy enough to learn from 0/1 rewards. This matches our Kuhn-poker control (§7), where the
-regulariser, not the prior, explained the gain. Here the prior is essential.
+**Reason 4: Vega's engine is necessary.**
+- The no-engine control uses the same feedback, the same calibration and the same features. It gets
+  only 0.26. This is worse than the released model.
+- Why: that scorer starts from nothing. 2,564 rewards of 0 or 1, in 43 tasks, are not sufficient to
+  learn from nothing.
+- Vega's zero-shot energies are a good start point. [Zero-shot: the model answers without any training
+  for this task.] With this start point, a model can learn from 0-or-1 rewards.
+- In the poker experiment (Section 7), the result was different. There, the anchor gave the gain, and
+  Vega's knowledge did not. On DecisionBench, Vega's knowledge is necessary.
 
-### 5.4 Largest domain gains
+### 5.4 The domains that changed most
 
-From 3-seed means:
-- home automation 0.44 → 0.76
-- online safety 0.48 → 0.86
-- knowledge graphs 0.32 → 0.51
-- software engineering 0.44 → 0.68
-- web content 0.76 → 1.00
-- robotics 0.28 → 0.45
-- public sector 0.76 → 0.93
+These are the averages of 3 seeds (released model → our method).
 
-Losses:
-- logic 0.44 → 0.36
-- evidence reasoning 0.52 → 0.52 (no change; supervised reaches 0.61)
+Increases:
+- home automation: 0.44 → 0.76
+- online safety: 0.48 → 0.86
+- knowledge graphs: 0.32 → 0.51
+- software engineering: 0.44 → 0.68
+- web content: 0.76 → 1.00
+- robotics: 0.28 → 0.45
+- public sector: 0.76 → 0.93
 
-Tax documents stays near zero for every method except supervised (0.19).
+Decreases or no change:
+- logic: 0.44 → 0.36
+- evidence reasoning: 0.52 → 0.52 (no change; the supervised method gets 0.61)
 
-### 5.5 How much feedback, online use, unseen tasks
+Tax documents stays near zero for all methods. Only the supervised method gets more (0.19).
 
-The second experiment uses a larger, fixed test set: 40 rows per task, 1,720 rows, drawn from the
-4,280-row pool and disjoint from the training rows. It has 3 seeds and paired CIs. In this sweep the
-feedback temperature was fitted on the training rows rather than a held-out slice, which is slightly
-less clean than §5.1.
+### 5.5 How much feedback is necessary, one-pass learning, and tasks that the model did not see
+
+This second experiment uses a larger, fixed test set: 40 rows for each task, 1,720 rows in total. These
+rows come from the 4,280-row pool. The model never learns from them. We used 3 seeds and paired CIs.
+
+One difference from Section 5.1: in this experiment, we found the feedback temperature on the training
+rows, not on separate rows. This method is a little less clean.
 
 ![learning curve](figures/vega_feedback_curve.png)
 
-| feedback rows per task | 5 | 15 | 30 | 60 |
+[The figure. Left: the accuracy gain compared with the released model, for different quantities of
+feedback. Right: the calibration error (lower is better). The dashed line is the released model.]
+
+| feedback rows for each task | 5 | 15 | 30 | 60 |
 |---|---|---|---|---|
 | ours: accuracy gain, points | +3.1 [+1.4, +4.7] | +5.0 [+3.2, +6.7] | +8.4 [+6.6, +10.3] | **+11.3 [+9.4, +13.1]** |
-| ours: ECE (released 0.119) | 0.105 | 0.118 | 0.081 | **0.066** |
+| ours: ECE (released model: 0.119) | 0.105 | 0.118 | 0.081 | **0.066** |
 | supervised, no calibration: gain | +1.4 | +4.2 | +9.2 | +11.7 |
 | supervised, no calibration: ECE | 0.249 | 0.275 | 0.202 | 0.155 |
 | ours, β = 1: gain | +0.9 | +2.1 | +2.9 | +4.4 |
 
-**Learning curve.** Feedback-only learning stays within about a point of label-supervised learning
-at 15–60 rows per task, and is ahead at 5. With the feedback temperature, calibration is better than the
-released model from 30 rows per task on.
+**Learning curve.**
+- From 15 to 60 rows for each task, feedback-only learning stays within approximately 1 point of
+  label-supervised learning.
+- At 5 rows for each task, feedback-only learning is better.
+- From 30 rows for each task, the calibration of our method is better than the released model.
 
-**Online.** One pass, each of the 2,560 rows seen once, as in a live deployment: +6.9 points
-[+5.3, +8.5], ECE 0.054. In the 8-pass runs of §5.1, the average reward on the model's own sampled
-answers rose from 0.48 in the first pass to 0.67 in the last. Sampled answers are right less often than
-greedy ones, so early exploration has a real cost to the people being answered (see §8).
+**One pass ("online").** The model sees each of the 2,560 rows one time only, as in real use.
+- Result: +6.9 points [+5.3, +8.5], and ECE 0.054.
+- In the 8-pass runs of Section 5.1, the average reward rose from 0.48 in the first pass to 0.67 in the
+  last pass. [This is the reward on answers that the model selected at random from its probabilities.]
+- A random selection is right less often than the top answer. Thus, "exploration" has a real cost for
+  the users during learning. [Exploration: the model sometimes tries answers that are not its best
+  guess, so that it can learn.] Section 8 discusses this.
 
-**Unseen tasks.** We learn from all rows of 33 tasks and test on 10 tasks never seen (1,000 rows):
-- accuracy 0.378 → 0.420 (+4.2 [+1.9, +6.6]);
-- NLL 2.100 → 1.850;
-- ECE 0.105 → 0.065.
+**Tasks that the model did not see.** We trained on all rows of 33 tasks, and we tested on 10 different
+tasks (1,000 rows):
+- accuracy: 0.378 → 0.420 (+4.2 [+1.9, +6.6])
+- NLL: 2.100 → 1.850
+- ECE: 0.105 → 0.065
 
-On the small 25-row-per-task pool this transfer was absent (+0.4). It needs volume.
+With the smaller pool (25 rows for each task), this transfer did not occur (+0.4). Transfer needs more
+data.
 
 ### 5.6 Cost
 
 | | released engine | engine + feedback adapter |
 |---|---|---|
-| engine time per decision, CPU, batch 1, p50 / p95 | 6.3 / 7.4 ms | 6.5 / 8.6 ms |
-| parameters | 14.34M | +0.41M |
+| engine time for one decision, CPU, one row at a time, p50 / p95 | 6.3 / 7.4 ms | 6.5 / 8.6 ms |
+| parameters | 14.34 million | + 0.41 million |
 
-The backbone read (about 74 ms on a T4, per the README) is unchanged and dominates. Training on
-cached features takes 4–15 minutes on a laptop CPU, in under 1.2 GB of memory.
+[p50 is the median time: half of the decisions are faster. p95: 95% of the decisions are faster.]
 
-## 6. Things that did not work
+The backbone takes most of the time: approximately 74 ms on a T4 GPU, from the README. Our method does
+not change this time. Training on the saved features takes 4 to 15 minutes on a laptop CPU. It uses less
+than 1.2 GB of memory.
 
-| idea | result on the 1,075-row slice |
+## 6. Ideas that did not work
+
+| idea | result on the 1,075-row test set |
 |---|---|
-| Contrast amplification: move each state's features away from its task's mean by ×1.5, 2 or 3, with no training | 0.504 / 0.504 / 0.511 accuracy vs 0.509: null |
-| Shipped adapters off | accuracy 0.501, NLL 1.567, ECE 0.069: better calibrated, slightly less accurate |
-| Let the physics run 24 steps without halting | accuracy 0.475, ECE 0.057, KL to gold 0.70: calibration up, accuracy down |
-| Feedback without the KL anchor (pilot, 15 rows/task of the slice) | +1.9 points, NLL 7.5: collapses onto a few options |
-| A stronger anchor, β = 1 | stable and calibrated, but only a third of the gain |
+| Contrast amplification [no training: move the features of each row away from the average of its task, by 1.5, 2 or 3 times, so that differences become larger] | accuracy 0.504 / 0.504 / 0.511, compared with 0.509: no effect |
+| Shipped adapters off | accuracy 0.501, NLL 1.567, ECE 0.069: better calibration, but a little less accurate |
+| Let the physics engine run for 24 steps without stopping early | accuracy 0.475, ECE 0.057, KL to gold 0.70: better calibration, lower accuracy |
+| Feedback without the KL anchor (pilot test, 15 rows for each task) | +1.9 points, NLL 7.5: the model collapses to a few answers |
+| A stronger anchor, β = 1 | stable and calibrated, but only one third of the gain |
 
-Contrast amplification did help in poker (§7), where states differ by one word. DecisionBench states
-differ substantially already.
+Contrast amplification did help in the poker game (Section 7). In poker, two situations can differ by
+only one word. In DecisionBench, the rows are already very different.
 
-## 7. Where this started: Vega as a self-play policy in Kuhn poker
+## 7. The start of this work: Vega as a self-play policy in Kuhn poker
 
-Our first experiment used Vega as the policy in text Kuhn poker, the setting of our earlier Laya paper,
-with the same PPO loop and opponent pool, at 64 hands per update.
+[Kuhn poker is a very small poker game with 3 cards: Jack, Queen and King. Researchers use it because a
+computer can calculate the perfect strategy exactly. "Self-play" means that the model plays against
+copies of itself and learns from the results.]
 
-Exploitability is measured by the same script for every row: the mean over the last 5 evaluations of the
-current policy. That is not the time-averaged strategy figure quoted in the Laya paper. Lower is better.
+Our first experiment used Vega as the player in a text version of Kuhn poker. This is the same game as
+in our earlier paper on the Laya model. We used the same PPO training loop [PPO, "proximal policy
+optimization", is a standard RL algorithm] and the same opponent pool [a set of earlier versions of the
+model to play against]. Each update used 64 hands.
 
-| | updates | seeds | exploitability, 3-card | unseen 4-card deck |
+**How we measure.** We use "exploitability" [how many chips a perfect opponent can win against the
+strategy. 0 is a perfect (Nash) strategy, so lower is better]. The same script measures each row of the
+table: the average of the last 5 measurements of the current strategy. This is not the same number as
+the "time-averaged strategy" in the Laya paper.
+
+| method | updates | seeds | exploitability, 3 cards | 4-card deck that the model did not see |
 |---|---|---|---|---|
-| Vega zero-shot | 0 | — | 0.429 | 0.431 |
+| Vega, zero-shot | 0 | — | 0.429 | 0.431 |
 | Vega + contrast ×5, no training | 0 | — | 0.340 | 0.404 |
-| Vega + PPO, any lr from 1e-5 to 3e-4 | 150 | 2 | 0.333 (collapses to always bet/call) | 0.25 |
+| Vega + PPO, all learning rates from 0.00001 to 0.0003 | 150 | 2 | 0.333 (collapses to "always bet or call") | 0.25 |
 | **Vega adapter + PPO + KL anchor** | 150 | 3 | **0.246 ± 0.016** | **0.308** |
-| Laya head + PPO (earlier paper's runs) | 150 | 3 | 0.275 ± 0.058 | 0.631 |
+| Laya head + PPO (the runs from the earlier paper) | 150 | 3 | 0.275 ± 0.058 | 0.631 |
 | Vega adapter + PPO + KL anchor | 300 | 5 | 0.225 ± 0.007 | 0.318 |
-| Lookup table + PPO + the same KL to uniform | 300 | 5 | 0.173 ± 0.005 | n/a |
-| Lookup table + PPO, no KL | 300 | 5 | 0.292 ± 0.087 | n/a |
+| Lookup table + PPO + the same KL anchor to a uniform policy | 300 | 5 | 0.173 ± 0.005 | not possible |
+| Lookup table + PPO, no KL anchor | 300 | 5 | 0.292 ± 0.087 | not possible |
 
-Plain RL on Vega collapsed within 10 updates. The diagnosis was that features for different cards are
-99.6% cosine-similar, so every update moves all cards together. Yet the engine *can* represent the Nash
-strategy: supervised, it fits it to 0.001. The KL anchor fixed the collapse and beat trained Laya at the
-same budget. It also ran in about 30 s and 480 MB per run, against hours for Laya.
+[A "lookup table" policy stores one probability for each possible situation. It cannot work on a deck
+that it never saw, because it has no entries for the new cards.]
 
-The control matters, though. At 300 updates, a lookup table with the same KL regulariser did better still (0.173 vs 0.225), so in poker
-the gain came from the regulariser, not from Vega's prior. DecisionBench is the opposite case. There
-the no-engine control fails and the prior is what makes 0/1 feedback learnable. That contrast is why
-we moved to it.
+**What we found:**
+- With normal RL, Vega collapsed in 10 updates.
+- The cause: the features for different cards were 99.6% similar (cosine similarity). Thus, each
+  update moved all cards in the same direction.
+- But the engine *can* represent the perfect strategy. With supervised training, the error was only
+  0.001.
+- The KL anchor stopped the collapse. With the same budget, it was better than the trained Laya model.
+- Each Vega run took approximately 30 s and 480 MB of memory. Each Laya run took hours.
+
+**The control test is important.** At 300 updates, a lookup table with the same KL anchor was better
+still (0.173 compared with 0.225). Thus, in poker, the anchor gave the gain, not Vega's knowledge.
+DecisionBench is the opposite case: there, the no-engine control fails, and Vega's knowledge is
+necessary. This difference is the reason that we moved to DecisionBench.
 
 ## 8. Limitations
 
-- **Simulated feedback.** Rewards are derived from gold labels, so they are noise-free and unbiased. Real
-  feedback is sparse, delayed, and biased: users rarely confirm correct answers and often miss wrong ones.
-  The method needs only a 0/1 signal, but its robustness to label noise and selective feedback is untested.
-- **One benchmark, one backbone size.** Vega 4B (9.3 GB) does not fit our 8 GB machine. We ran nothing
-  on the hosted reference; its numbers are copied from the README.
-- **In-distribution tasks.** §5.1 tests on rows of tasks the model received feedback on. Cross-task
-  transfer exists (+4.2) but is smaller and needs volume.
-- **Exploration is real.** The learner samples answers, so during learning some decisions are deliberately
-  non-greedy. We did not measure first-pass accuracy separately. A deployment would
-  want conservative exploration (e.g. only on low-stakes questions, or only within Vega's conformal
-  prediction set). That is the natural next step and is not done here.
-- **Baseline tuning.** TTT uses vegaml's defaults (k = 128, l2 = 1e-2). The supervised adapter shares our
-  hyperparameters and was not tuned separately. Ours was not tuned on the comparison either, but there
-  is a disclosure to make. β = 0.1 was picked from {0, 0.1, 1} in pilot runs that trained and tested on a
-  split *of the same 1,075-row slice*, so the slice informed that one choice. The other settings
-  (8 passes, lr 1e-3, rank 8) were set before any DecisionBench result. β = 1 is reported alongside as
-  the alternative we did not pick.
-- **KL to gold** is measured on 10 rows and has a large variance (ours 1.10 ± 0.33).
+[Limitations are the conditions where the results may not be true, or the parts that we did not test.]
 
-## 9. Reproduce
+- **The feedback is simulated.** We make the rewards from gold labels. Thus, they have no errors and no
+  bias. Real feedback is different:
+  - It is sparse [it comes for only some decisions].
+  - It comes late.
+  - It has a bias: users seldom confirm correct answers, and they often do not see wrong answers.
 
-The code is in `experiments/vega_policy/`, and everything runs on CPU with a memory watchdog.
+  The method needs only a 0-or-1 signal. But we did not test it with noisy or selective feedback.
+- **One benchmark and one model size.** Vega 4B (9.3 GB) is too large for our computer, which has 8 GB
+  of memory. We did not run the hosted model. We copied its numbers from the README.
+- **The test tasks are known tasks.** Section 5.1 tests on new rows of tasks that gave feedback. The
+  transfer to new tasks is real (+4.2), but it is smaller, and it needs more data.
+- **Exploration has a cost.** During learning, the model selects some answers at random from its
+  probabilities, not only its best answer. We did not measure the accuracy of the first pass
+  separately. A real system must explore carefully. Examples: explore only on low-risk questions, or
+  explore only inside Vega's conformal prediction set [a set of answers that contains the correct answer
+  with a guaranteed probability]. We did not do this. It is the next step.
+- **Tuning of the methods.** [Tuning: the selection of settings, for example the learning rate.]
+  - TTT uses the default settings of vegaml (k = 128, l2 = 0.01).
+  - The supervised adapter uses our settings. We did not tune it separately.
+  - We did not tune our method on the comparison. But there is one fact that we must tell you. We
+    selected β = 0.1 from {0, 0.1, 1} in pilot tests. Those pilot tests trained and tested on parts of
+    the same 1,075 rows. Thus, the test set had an effect on that one choice.
+  - We selected the other settings (8 passes, learning rate 0.001, rank 8) before we had any
+    DecisionBench result.
+  - We also show β = 1, the value that we did not select.
+- **KL to gold uses only 10 rows.** Thus, it has a large spread. Our value is 1.10 ± 0.33.
+
+## 9. How to do the experiments again
+
+The code is in `experiments/vega_policy/`. All of it runs on a CPU. A watchdog script [a program that
+monitors the memory] stops a run if the computer gets low on memory.
 
 | script | what it does |
 |---|---|
-| `bench_extract.py` | rebuilds the README's 1,075-row slice and caches backbone features; `DB_PER_TASK=100` builds the 4,280-row pool. About 3 s per row on a laptop CPU |
-| `bench_eval.py` | offline replay (verified against `Vega.decide()`), zero-parameter variants |
-| `compare.py --method {zero, ttt_auto, sup_ts, feedback, linear_fb} --seed N` | the head-to-head of §5.1 |
-| `compare_table.py` | the head-to-head tables |
-| `bench_rl.py` | the scaling, online and unseen-task runs |
-| `dbgroup.py` | summarises the scaling, online and unseen-task runs |
-| `figure.py` | draws the learning curve |
-| `latency.py` | §5.6 |
-| `vtrain.py` | the Kuhn poker experiments |
-| `group.py` | summarises the Kuhn poker runs |
+| `bench_extract.py` | Makes the README's 1,075-row slice again and saves the backbone features. Set `DB_PER_TASK=100` to make the 4,280-row pool. It takes approximately 3 s for each row on a laptop CPU. |
+| `bench_eval.py` | Runs the engine on the saved features. We compared its output with `Vega.decide()`. It also tests the ideas that need no training. |
+| `compare.py --method {zero, ttt_auto, sup_ts, feedback, linear_fb} --seed N` | Does the direct comparison of Section 5.1. |
+| `compare_table.py` | Makes the tables of the direct comparison. |
+| `bench_rl.py` | Does the runs of Section 5.5: quantity of feedback, one pass, and tasks that the model did not see. |
+| `dbgroup.py` | Makes a summary of the runs of Section 5.5. |
+| `figure.py` | Draws the learning curve. |
+| `latency.py` | Measures the time for each decision (Section 5.6). |
+| `vtrain.py` | Does the Kuhn poker experiments. |
+| `group.py` | Makes a summary of the Kuhn poker runs. |
 
-Raw results are in `results/`, and the head-to-head is in `results/compare/`.
+The raw results are in `results/`. The results of the direct comparison are in `results/compare/`.
