@@ -7,18 +7,15 @@
 
 ## Summary
 
-**The model.** Vega is a small decision model [a program that reads a situation and a question, and
-then selects one answer from a list]. It has two parts:
-- A frozen backbone [a language model that reads the text. "Frozen" means that we do not change its
-  weights (its learned numbers)]. The backbone is Qwen, with 0.8 billion parameters [learned numbers].
+**The model.** Vega is a small decision model. It has two parts:
+- A frozen backbone: Qwen, with 0.8 billion parameters.
 - An "engine" with 14.3 million parameters. The engine makes the decision.
 
 Vega gives a probability for each answer. Its probabilities are calibrated [when the model says
 "70% sure", it is correct about 70% of the time]. Vega runs on your own computer. Thus, no data goes to
 an outside company, and each decision takes some milliseconds.
 
-**The problem.** After a company starts to use a model, it almost never gets gold labels [the correct
-answer for each case, written by a person]. But it often gets feedback on the answer that the model
+**The problem.** After a company starts to use a model, it almost never gets gold labels. But it often gets feedback on the answer that the model
 gave. Examples:
 - A user accepts a suggestion.
 - A user cancels an action.
@@ -37,17 +34,13 @@ selects one action, and gets a reward for that action only. It never learns what
 2. **Calibration from feedback.** RL makes the model too confident. We correct this with one number,
    the "temperature", and we find this number from the same right-or-wrong signal. The method uses one fact about calibrated models. When such a model selects an answer, the answer is right as often as its probability says.
 
-**The test.** We use exactly the 1,075 DecisionBench rows that Vega's own README uses [DecisionBench is
-a public set of decision questions. A "row" is one question. The README is the main description page
-of the Vega project]. We learn from 3,205 different rows of the same 43 tasks. Our method never sees a
+**The test.** We use exactly the 1,075 DecisionBench rows that Vega's own README uses. We learn from 3,205 different rows of the same 43 tasks. Our method never sees a
 label. It sees only a reward of 1 (right) or 0 (wrong). We ran each training method 3 times with
-different random seeds [a seed controls the random choices. Different seeds show if a result is
-stable].
+different random seeds.
 
 **Results:**
 - Accuracy increases from **0.509 to 0.611**. This is +10.2 points. The 95% confidence interval (CI)
-  is [+7.9, +12.6]. [A 95% CI is the range where the true value probably is. The range does not
-  include zero, so the gain is not chance.]
+  is [+7.9, +12.6].
 - NLL decreases from 1.628 to **1.291**. [NLL, "negative log-likelihood", measures how much probability
   the model gave to the correct answer. Lower is better.]
 - ECE decreases from 0.098 to **0.054**. [ECE, "expected calibration error", measures the difference
@@ -55,7 +48,7 @@ stable].
   methods that we tested.
 - Vega's own adaptation tool, `fit()`, gets 0.531. It uses the *gold labels* of all 3,205 rows. Our
   method uses no labels, and it is **+8.0 points [+5.6, +10.5]** better.
-- A standard supervised method gets 0.627. [Supervised: the method trains on the correct answers.] It
+- A standard supervised method gets 0.627. It
   reads every label. Our method is not significantly different from it: −1.6 points [−3.5, +0.3]. Also,
   our method is better calibrated.
 
@@ -77,27 +70,23 @@ stable].
 
 Companies put decision models in AI agents, moderation systems and customer-support systems. Such a
 model makes thousands of small decisions each day. Examples:
-- Is this tool call dangerous? [A "tool call" is an action that an AI agent does, for example "delete
-  this file".]
+- Is this tool call dangerous?
 - Must a person examine this request?
 - Which category is correct for this message?
 
-It is expensive to label these decisions [to have a person write the correct answer for each one].
+It is expensive to label these decisions.
 Thus, most teams do not do it. But feedback on the decisions is almost free:
 - The user cancels the action.
 - The reviewer changes the decision.
 - The customer writes "That is not what I asked".
 
 A model that improves from this feedback is useful to all users of such models. The model must not
-become overconfident while it learns. This is very important for a model that runs locally [on your
-own computer], because then no data goes out of the computer.
+become overconfident while it learns. This is very important for a model that runs locally, because then no data goes out of the computer.
 
 Calibration is the difficult part. Calibration is the main advantage of Vega in its README. On
-DecisionBench, Vega is 24 accuracy points below a hosted model [a large model that a company runs on
-its own servers, which you use through the internet]. But Vega's likelihood is two times better.
+DecisionBench, Vega is 24 accuracy points below a hosted model. But Vega's likelihood is two times better.
 
-Fine-tuning usually damages calibration [fine-tuning: more training of a model that is already
-trained]. We saw this too: our supervised adapters had an ECE of 0.15 to 0.33 before correction. The
+Fine-tuning usually damages calibration. We saw this too: our supervised adapters had an ECE of 0.15 to 0.33 before correction. The
 standard correction is "temperature scaling", but it needs labelled data. Thus, we needed a method
 that does two things with feedback only:
 - It increases accuracy.
@@ -110,9 +99,8 @@ that does two things with feedback only:
 We use `vegaml` version 0.8.0 with the public model `nandakishorm/vega-08b-public-intents`. It has
 these parts:
 - **A frozen backbone.** Qwen3.5-0.8B reads the text. Vega uses the outputs of layers 13 and 19
-  [a language model has many layers. Each layer makes a more abstract version of the text]. Vega
-  "pools" these outputs [it makes an average, so that one fixed-size list of numbers represents the
-  text].
+. Vega
+  "pools" these outputs.
 - **The engine, 14.3 million parameters.** The engine uses a physics model. Each answer is a "potential
   well" [a low point in a landscape, like a hole]. A particle moves through the landscape, and the
   answer is the well where the particle stops. A deeper well means a lower "energy" and a more probable
@@ -120,8 +108,7 @@ these parts:
 - **A thermal calibration.** It sets a temperature for each question from the path of the particle.
   [Temperature controls how sure the probabilities are. A high temperature makes the probabilities
   more equal. A low temperature makes the top answer more dominant.]
-- **Two adapters, which Vega selects automatically.** [An adapter is a small add-on to a model. It
-  changes the behaviour for some types of questions.]
+- **Two adapters, which Vega selects automatically.**
 
 We do not change any of these parts. They stay exactly as Vega releases them.
 
@@ -129,14 +116,13 @@ We do not change any of these parts. They stay exactly as Vega releases them.
 
 DecisionBench (`Hanno-Labs/decision-bench`) has 43 tasks. The tasks use three question types
 ("primitives") in 28 domains. Some domains are agent control, privacy, legal, robotics and tax
-documents. [A "benchmark" is a standard test that many people use, so that the results are easy to
-compare.]
+documents.
 
-Vega's README uses a "slice" [a selected part of the benchmark] of 1,075 rows. A notebook in the Vega
+Vega's README uses a "slice" of 1,075 rows. A notebook in the Vega
 project makes this slice: 25 rows for each task, with the random seed 20261011. We copied the sampling
 code exactly. It gives exactly the same 1,075 rows.
 
-We also did a check of our pipeline [the chain of steps that our code does]:
+We also did a check of our pipeline:
 - We saved the backbone outputs ("cached features") one time, so that we do not run the large backbone
   again.
 - We ran the engine on these saved features.
@@ -144,22 +130,19 @@ We also did a check of our pipeline [the chain of steps that our code does]:
   0.0 on each row that we examined.
 - We get the same numbers as the README: accuracy 0.509, NLL 1.628, and KL to gold 1.012.
 
-**These 1,075 README rows are our test set.** [The test set is the data that we use only to measure
-the result. The model never learns from it.]
+**These 1,075 README rows are our test set.**
 
 ### 2.3 The data for learning (the "pool")
 
 We ran the same sampling code with 100 rows for each task. This gives 4,280 rows. These rows include
-all of the 1,075 test rows. The other 3,205 rows are the pool [the data that the methods can learn
-from].
+all of the 1,075 test rows. The other 3,205 rows are the pool.
 
 From each task in the pool, we kept 20% (641 rows in total) for calibration only. Thus, 2,564 rows stay
 for learning. All methods get the same rows.
 
 ### 2.4 The feedback
 
-For each pool row, the model selects an answer at random from its own probabilities. [Example: if the
-model gives answer A 70% and answer B 30%, it selects A 7 times in 10.] Then it gets a reward:
+For each pool row, the model selects an answer at random from its own probabilities. Then it gets a reward:
 - r = 1 if the answer is the correct (gold) answer.
 - r = 0 if the answer is not correct.
 
@@ -170,8 +153,7 @@ gold labels]. Real feedback has more errors. Section 8 discusses this limitation
 
 ### 3.1 The policy
 
-[A "policy" is the rule that the model uses to select an action.] Our policy is Vega's own calibrated
-output:
+Our policy is Vega's own calibrated output:
 
   π(a|s) = softmax(−E_a / τ(s))
 
@@ -195,8 +177,7 @@ The two shipped adapters continue to work exactly as before.
 
 ### 3.3 The update rule
 
-[The update rule says how we change the parameters after each batch of feedback. The "loss" is the
-number that training makes smaller.]
+The loss for each batch is:
 
   L = −(r − b) · log π(a|s) + β · KL(π(·|s) ‖ π₀(·|s)),   β = 0.1
 
@@ -208,8 +189,7 @@ number that training makes smaller.]
   moves away from the original model. β = 0.1 sets the strength of the anchor.
 
 Training settings: 8 passes through the pool, batches of 32 rows, and the Adam optimizer with a learning
-rate of 0.001. [An optimizer is the algorithm that changes the parameters. The learning rate sets the
-size of each change.]
+rate of 0.001.
 
 Why the anchor is necessary: without it, the model "collapses" [it puts almost all probability on a few
 answers, also on answers that are wrong]. Without the anchor, NLL increases to 7.5. We saw the same
@@ -217,7 +197,7 @@ collapse first in the poker experiment (Section 7).
 
 ### 3.4 Calibration from feedback
 
-RL makes the probabilities too sharp [too confident]. After training, the uncorrected model has an ECE
+RL makes the probabilities too sharp. After training, the uncorrected model has an ECE
 of 0.24 to 0.29.
 
 The correction uses one fact. Assume that a model is calibrated. Then the answer that it selects is
@@ -237,31 +217,27 @@ The procedure:
 of the rewards. A high value means that the probabilities agree with how often the model is really
 right.]
 
-T is one number. We find it with a grid search [we try many values and keep the best]. We read no
+T is one number. We find it with a grid search. We read no
 labels. This is the feedback version of standard temperature scaling. The value of T was 5.4 to 6.9
 for β = 0.1, and approximately 1.9 for β = 1. [T higher than 1 makes the probabilities less sharp. This
 agrees with the fact that RL made them too sharp.]
 
 ## 4. The methods that we compare (baselines)
 
-[A "baseline" is a different method that we compare with our method. Good baselines make the
-comparison fair.]
-
 | method | what it reads from the pool | description |
 |---|---|---|
 | Released Vega 0.8B | nothing | The model as the authors publish it. |
-| vegaml `fit()` TTT, `auto` | **gold labels** of all 3,205 rows | Vega's own adaptation tool. For each task it trains a "TTT head" [a small classifier: PCA (a method that makes the data smaller) and logistic regression (a simple classifier)] on the same frozen features. It keeps a head only when the head is better than chance in 5-fold cross-validation [a test that trains on 4/5 of the data and tests on the other 1/5, five times]. Otherwise the engine answers. This is what `fit()` does. We were generous to this method: when a test row has an answer that the head never saw, the engine answers that row. |
-| Supervised adapter + temperature scaling | **gold labels** | The same adapter, trained on the correct answers with cross-entropy [the standard supervised loss] and the same KL anchor. Then standard temperature scaling on the 641 calibration rows, with their labels. This is the strongest labelled method that we tested. |
+| vegaml `fit()` TTT, `auto` | **gold labels** of all 3,205 rows | Vega's own adaptation tool. For each task it trains a "TTT head" [a small classifier: PCA, then logistic regression] on the same frozen features. It keeps a head only when the head is better than chance in 5-fold cross-validation. Otherwise the engine answers. This is what `fit()` does. We were generous to this method: when a test row has an answer that the head never saw, the engine answers that row. |
+| Supervised adapter + temperature scaling | **gold labels** | The same adapter, trained on the correct answers with cross-entropy and the same KL anchor. Then standard temperature scaling on the 641 calibration rows, with their labels. This is the strongest labelled method that we tested. |
 | No-engine control | right or wrong only | A simple bilinear scorer [it multiplies a state vector with each answer vector to get a score] on the same frozen features, without Vega's engine. It uses the same feedback, an entropy bonus [a term that prevents early collapse], and the same feedback calibration. |
-| Ours, β = 1 | right or wrong only | Ablation [a test that changes one part of the method]: an anchor that is 10 times stronger. |
+| Ours, β = 1 | right or wrong only | Ablation: an anchor that is 10 times stronger. |
 | **Ours** | right or wrong only | The method in Section 3. |
 
 ## 5. Results
 
 ### 5.1 Direct comparison on Vega's exact test set
 
-All results use the same 1,075 rows. The training methods use 3 seeds. We show "mean ± s.d." [the
-average and the standard deviation (the spread) of the 3 runs]. The released model and TTT have no
+All results use the same 1,075 rows. The training methods use 3 seeds. We show "mean ± s.d.". The released model and TTT have no
 random parts, so they need only one run.
 
 Some terms:
@@ -309,8 +285,8 @@ The README gives 0.103 for the same model.
 | system | accuracy | NLL ↓ | ECE ↓ | what it needs |
 |---|---|---|---|---|
 | Vega 0.8B (README) | 0.509 | 1.628 | 0.103 | — |
-| Vega 4B (README) | 0.633 | 1.420 | 0.098 | a 9.3 GB backbone, approximately 1.4 times the latency [latency: the time for one answer] |
-| Jev, hosted (README) | 0.752 | 3.196 | 0.122 | an API; your data goes out of your computer [API: a service that you call through the internet] |
+| Vega 4B (README) | 0.633 | 1.420 | 0.098 | a 9.3 GB backbone, approximately 1.4 times the latency |
+| Jev, hosted (README) | 0.752 | 3.196 | 0.122 | an API; your data goes out of your computer |
 | **Vega 0.8B + ours** | **0.611** | **1.291** | **0.054** | right-or-wrong feedback, 409 thousand more parameters, approximately 0.2 ms more |
 
 With feedback only, the 0.8B model closes 82% of the accuracy gap to the 4B model. It has the best NLL
@@ -352,8 +328,7 @@ cannot work.
   only 0.26. This is worse than the released model.
 - Why: that scorer starts from nothing. 2,564 rewards of 0 or 1, in 43 tasks, are not sufficient to
   learn from nothing.
-- Vega's zero-shot energies are a good start point. [Zero-shot: the model answers without any training
-  for this task.] With this start point, a model can learn from 0-or-1 rewards.
+- Vega's zero-shot energies are a good start point. With this start point, a model can learn from 0-or-1 rewards.
 - In the poker experiment (Section 7), the result was different. There, the anchor gave the gain, and
   Vega's knowledge did not. On DecisionBench, Vega's knowledge is necessary.
 
@@ -427,8 +402,6 @@ data.
 | engine time for one decision, CPU, one row at a time, p50 / p95 | 6.3 / 7.4 ms | 6.5 / 8.6 ms |
 | parameters | 14.34 million | + 0.41 million |
 
-[p50 is the median time: half of the decisions are faster. p95: 95% of the decisions are faster.]
-
 The backbone takes most of the time: approximately 74 ms on a T4 GPU, from the README. Our method does
 not change this time. Training on the saved features takes 4 to 15 minutes on a laptop CPU. It uses less
 than 1.2 GB of memory.
@@ -453,8 +426,7 @@ computer can calculate the perfect strategy exactly. "Self-play" means that the 
 copies of itself and learns from the results.]
 
 Our first experiment used Vega as the player in a text version of Kuhn poker. This is the same game as
-in our earlier paper on the Laya model. We used the same PPO training loop [PPO, "proximal policy
-optimization", is a standard RL algorithm] and the same opponent pool [a set of earlier versions of the
+in our earlier paper on the Laya model. We used the same PPO training loop and the same opponent pool [a set of earlier versions of the
 model to play against]. Each update used 64 hands.
 
 **How we measure.** We use "exploitability" [how many chips a perfect opponent can win against the
@@ -492,11 +464,9 @@ necessary. This difference is the reason that we moved to DecisionBench.
 
 ## 8. Limitations
 
-[Limitations are the conditions where the results may not be true, or the parts that we did not test.]
-
 - **The feedback is simulated.** We make the rewards from gold labels. Thus, they have no errors and no
   bias. Real feedback is different:
-  - It is sparse [it comes for only some decisions].
+  - It is sparse.
   - It comes late.
   - It has a bias: users seldom confirm correct answers, and they often do not see wrong answers.
 
@@ -510,7 +480,7 @@ necessary. This difference is the reason that we moved to DecisionBench.
   separately. A real system must explore carefully. Examples: explore only on low-risk questions, or
   explore only inside Vega's conformal prediction set [a set of answers that contains the correct answer
   with a guaranteed probability]. We did not do this. It is the next step.
-- **Tuning of the methods.** [Tuning: the selection of settings, for example the learning rate.]
+- **Tuning of the methods.**
   - TTT uses the default settings of vegaml (k = 128, l2 = 0.01).
   - The supervised adapter uses our settings. We did not tune it separately.
   - We did not tune our method on the comparison. But there is one fact that we must tell you. We
@@ -523,8 +493,7 @@ necessary. This difference is the reason that we moved to DecisionBench.
 
 ## 9. How to do the experiments again
 
-The code is in `experiments/vega_policy/`. All of it runs on a CPU. A watchdog script [a program that
-monitors the memory] stops a run if the computer gets low on memory.
+The code is in `experiments/vega_policy/`. All of it runs on a CPU. A watchdog script stops a run if the computer gets low on memory.
 
 | script | what it does |
 |---|---|
