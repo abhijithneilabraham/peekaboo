@@ -3,11 +3,6 @@
 
 *abhijithneilabraham · October 2026 · code and raw results: `experiments/vega_policy/`*
 
-*Language: this version of the report uses ASD-STE100 Simplified Technical English [a standard for
-technical writing: short sentences, one topic in each sentence, active voice, and words with one
-meaning]. Text in square brackets [ ] gives an explanation for readers who are new to the subject. You
-can skip the brackets if you know the subject.*
-
 ---
 
 ## Summary
