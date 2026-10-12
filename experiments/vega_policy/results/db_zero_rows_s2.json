@@ -1,0 +1,36 @@
+{
+ "args": {
+  "method": "zero",
+  "split": "rows",
+  "seed": 2,
+  "epochs": 8,
+  "lr": 0.001,
+  "kl": 0.1,
+  "batch": 32,
+  "rank": 8,
+  "tag": ""
+ },
+ "n_train": 645,
+ "n_test": 430,
+ "hist": [
+  {
+   "epoch": 0,
+   "test": {
+    "acc": 0.5163,
+    "nll": 1.6002,
+    "ece": 0.0892,
+    "kl_soft": 1.1809,
+    "n_soft": 4,
+    "n": 430
+   },
+   "train": {
+    "acc": 0.5039,
+    "nll": 1.6471,
+    "ece": 0.1044,
+    "kl_soft": 0.8994,
+    "n_soft": 6,
+    "n": 645
+   }
+  }
+ ]
+}

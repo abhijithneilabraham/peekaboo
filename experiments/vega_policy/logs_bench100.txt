@@ -1,0 +1,39 @@
+4280 rows, 3205 to encode
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 1218.01it/s]
+Loading weights:   0%|          | 0/320 [00:00<?, ?it/s]Loading weights:   0%|          | 1/320 [00:04<23:05,  4.34s/it]Loading weights: 100%|██████████| 320/320 [00:04<00:00, 73.45it/s]
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+100/3205  276s  (2.8s/row, 500 tok)
+200/3205  552s  (2.8s/row, 332 tok)
+300/3205  764s  (2.5s/row, 224 tok)
+400/3205  979s  (2.4s/row, 479 tok)
+500/3205  1253s  (2.5s/row, 913 tok)
+600/3205  1599s  (2.7s/row, 1298 tok)
+700/3205  1792s  (2.6s/row, 384 tok)
+800/3205  2003s  (2.5s/row, 164 tok)
+900/3205  2210s  (2.5s/row, 300 tok)
+1000/3205  2456s  (2.5s/row, 372 tok)
+1100/3205  2674s  (2.4s/row, 171 tok)
+1200/3205  2880s  (2.4s/row, 213 tok)
+1300/3205  3156s  (2.4s/row, 1233 tok)
+1400/3205  3468s  (2.5s/row, 258 tok)
+1500/3205  3682s  (2.5s/row, 380 tok)
+1600/3205  4005s  (2.5s/row, 1746 tok)
+1700/3205  4377s  (2.6s/row, 360 tok)
+1800/3205  4626s  (2.6s/row, 729 tok)
+1900/3205  4823s  (2.5s/row, 305 tok)
+2000/3205  5037s  (2.5s/row, 238 tok)
+2100/3205  5789s  (2.8s/row, 2642 tok)
+2200/3205  6304s  (2.9s/row, 233 tok)
+2300/3205  6487s  (2.8s/row, 332 tok)
+2400/3205  6790s  (2.8s/row, 2249 tok)
+2500/3205  7277s  (2.9s/row, 476 tok)
+2600/3205  7512s  (2.9s/row, 575 tok)
+2700/3205  7760s  (2.9s/row, 294 tok)
+2800/3205  8077s  (2.9s/row, 129 tok)
+2900/3205  8381s  (2.9s/row, 319 tok)
+3000/3205  8876s  (3.0s/row, 338 tok)
+3100/3205  9098s  (2.9s/row, 156 tok)
+3200/3205  9298s  (2.9s/row, 207 tok)
+3205/3205  9309s  (2.9s/row, 203 tok)
+ALLDONE

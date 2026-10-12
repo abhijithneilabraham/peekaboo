@@ -1,0 +1,32 @@
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 2274.04it/s]
+done kuhn_adapter_pool1_s0_lr3e-4 18 s
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 2238.50it/s]
+done kuhn_adapter_pool1_s1_lr3e-4 21 s
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 2227.12it/s]
+done kuhn_adapter_pool1_s0_lr1e-4 18 s
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 1763.69it/s]
+done kuhn_adapter_pool1_s1_lr1e-4 19 s
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 1926.26it/s]
+done kuhn_adapter_pool1_s0_lr3e-5 19 s
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 1623.09it/s]
+done kuhn_adapter_pool1_s1_lr3e-5 19 s
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 1955.26it/s]
+done kuhn_adapter_pool1_s0_lr1e-5 21 s
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 1522.75it/s]
+done kuhn_adapter_pool1_s1_lr1e-5 20 s
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 1584.81it/s]
+done kuhn_engine_pool1_s0_lr3e-4 28 s
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 2195.48it/s]
+done kuhn_engine_pool1_s1_lr3e-4 28 s
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 2265.27it/s]
+done kuhn_engine_pool1_s0_lr1e-4 27 s
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 2159.15it/s]
+done kuhn_engine_pool1_s1_lr1e-4 30 s
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 1932.10it/s]
+done kuhn_engine_pool1_s0_lr3e-5 29 s
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 1875.21it/s]
+done kuhn_engine_pool1_s1_lr3e-5 30 s
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 1781.24it/s]
+done kuhn_engine_pool1_s0_lr1e-5 28 s
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 2549.06it/s]
+done kuhn_engine_pool1_s1_lr1e-5 27 s

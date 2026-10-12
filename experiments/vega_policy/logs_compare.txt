@@ -1,0 +1,13 @@
+feedback_s0 {"acc": 0.5981, "nll": 1.3123, "ece": 0.0507, "kl_soft": 0.8447, "n_soft": 10, "n": 1075, "skill": 0.4781} 268s
+sup_ts_s0 {"acc": 0.6158, "nll": 1.1681, "ece": 0.0569, "kl_soft": 0.8216, "n_soft": 10, "n": 1075, "skill": 0.501} 304s
+linear_fb_s0 {"acc": 0.2716, "nll": 1.9423, "ece": 0.1017, "kl_soft": 0.7215, "n_soft": 10, "n": 1075, "skill": 0.054} 11s
+feedback_s0_kl1 {"acc": 0.5498, "nll": 1.4234, "ece": 0.0731, "kl_soft": 0.7733, "n_soft": 10, "n": 1075, "skill": 0.4153} 264s
+feedback_s1 {"acc": 0.6037, "nll": 1.302, "ece": 0.0462, "kl_soft": 1.5698, "n_soft": 10, "n": 1075, "skill": 0.4853} 3151s
+sup_ts_s1 {"acc": 0.64, "nll": 1.1849, "ece": 0.097, "kl_soft": 0.7655, "n_soft": 10, "n": 1075, "skill": 0.5325} 276s
+linear_fb_s1 {"acc": 0.2298, "nll": 1.9764, "ece": 0.1448, "kl_soft": 0.9031, "n_soft": 10, "n": 1075, "skill": 0.0} 11s
+feedback_s1_kl1 {"acc": 0.547, "nll": 1.4287, "ece": 0.0832, "kl_soft": 0.7429, "n_soft": 10, "n": 1075, "skill": 0.4117} 285s
+feedback_s2 {"acc": 0.6316, "nll": 1.2576, "ece": 0.0644, "kl_soft": 0.8871, "n_soft": 10, "n": 1075, "skill": 0.5216} 846s
+sup_ts_s2 {"acc": 0.6242, "nll": 1.1974, "ece": 0.0691, "kl_soft": 0.7722, "n_soft": 10, "n": 1075, "skill": 0.512} 933s
+linear_fb_s2 {"acc": 0.2837, "nll": 1.9298, "ece": 0.0994, "kl_soft": 0.757, "n_soft": 10, "n": 1075, "skill": 0.0698} 12s
+feedback_s2_kl1 {"acc": 0.5451, "nll": 1.4392, "ece": 0.0711, "kl_soft": 0.7578, "n_soft": 10, "n": 1075, "skill": 0.4092} 286s
+ALLDONE

@@ -1,0 +1,49 @@
+1075 rows, 1075 to encode
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Fetching 7 files: 100%|██████████| 7/7 [00:00<00:00, 3822.93it/s]
+Loading weights:   0%|          | 0/320 [00:00<?, ?it/s]Loading weights:   0%|          | 1/320 [00:04<24:43,  4.65s/it]Loading weights: 100%|██████████| 320/320 [00:04<00:00, 68.49it/s]
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+25/1075  111s  (4.4s/row, 398 tok)
+50/1075  185s  (3.7s/row, 804 tok)
+75/1075  255s  (3.4s/row, 346 tok)
+100/1075  307s  (3.1s/row, 177 tok)
+125/1075  364s  (2.9s/row, 233 tok)
+150/1075  427s  (2.8s/row, 557 tok)
+175/1075  515s  (2.9s/row, 1386 tok)
+200/1075  615s  (3.1s/row, 1222 tok)
+225/1075  663s  (2.9s/row, 172 tok)
+250/1075  715s  (2.9s/row, 242 tok)
+275/1075  764s  (2.8s/row, 173 tok)
+300/1075  817s  (2.7s/row, 269 tok)
+325/1075  877s  (2.7s/row, 332 tok)
+350/1075  939s  (2.7s/row, 271 tok)
+375/1075  993s  (2.6s/row, 193 tok)
+400/1075  1046s  (2.6s/row, 294 tok)
+425/1075  1108s  (2.6s/row, 316 tok)
+450/1075  1213s  (2.7s/row, 1234 tok)
+475/1075  1267s  (2.7s/row, 277 tok)
+500/1075  1323s  (2.6s/row, 383 tok)
+525/1075  1388s  (2.6s/row, 256 tok)
+550/1075  1522s  (2.8s/row, 1770 tok)
+575/1075  1573s  (2.7s/row, 293 tok)
+600/1075  1635s  (2.7s/row, 465 tok)
+625/1075  1690s  (2.7s/row, 181 tok)
+650/1075  1747s  (2.7s/row, 1406 tok)
+675/1075  1795s  (2.7s/row, 233 tok)
+700/1075  2003s  (2.9s/row, 2697 tok)
+725/1075  2244s  (3.1s/row, 2897 tok)
+750/1075  2301s  (3.1s/row, 100 tok)
+775/1075  2356s  (3.0s/row, 225 tok)
+800/1075  2420s  (3.0s/row, 410 tok)
+825/1075  2581s  (3.1s/row, 715 tok)
+850/1075  2635s  (3.1s/row, 319 tok)
+875/1075  2695s  (3.1s/row, 578 tok)
+900/1075  2760s  (3.1s/row, 558 tok)
+925/1075  2818s  (3.0s/row, 511 tok)
+950/1075  2953s  (3.1s/row, 381 tok)
+975/1075  3002s  (3.1s/row, 217 tok)
+1000/1075  3154s  (3.2s/row, 1146 tok)
+1025/1075  3205s  (3.1s/row, 250 tok)
+1050/1075  3258s  (3.1s/row, 178 tok)
+1075/1075  3308s  (3.1s/row, 176 tok)
+ALLDONE

@@ -1,0 +1,88 @@
+done --method zero --n_train 60 --seed 0 --tag _big
+feedback temperature 3.249 {"acc": 0.5372, "nll": 1.9269, "ece": 0.1126, "kl_soft": 0.8854, "n_soft": 10, "n": 1720}
+done --method bandit --kl 0.1 --n_train 5 --seed 0 --tag _big_n5_kl0.1
+feedback temperature 1.625 {"acc": 0.5215, "nll": 1.4945, "ece": 0.0892, "kl_soft": 1.0298, "n_soft": 10, "n": 1720}
+done --method bandit --kl 1 --n_train 5 --seed 0 --tag _big_n5_kl1
+feedback temperature 0.616 {"acc": 0.525, "nll": 4.6675, "ece": 0.3301, "kl_soft": 1.1123, "n_soft": 10, "n": 1720}
+done --method sup --kl 0.1 --n_train 5 --seed 0 --tag _big_n5_sup
+feedback temperature 8.0 {"acc": 0.5669, "nll": 2.199, "ece": 0.1504, "kl_soft": 0.7649, "n_soft": 10, "n": 1720}
+done --method bandit --kl 0.1 --n_train 15 --seed 0 --tag _big_n15_kl0.1
+feedback temperature 1.516 {"acc": 0.5297, "nll": 1.4756, "ece": 0.0881, "kl_soft": 0.9698, "n_soft": 10, "n": 1720}
+done --method bandit --kl 1 --n_train 15 --seed 0 --tag _big_n15_kl1
+feedback temperature 0.574 {"acc": 0.5622, "nll": 4.252, "ece": 0.3289, "kl_soft": 1.3916, "n_soft": 10, "n": 1720}
+done --method sup --kl 0.1 --n_train 15 --seed 0 --tag _big_n15_sup
+feedback temperature 4.0 {"acc": 0.6052, "nll": 1.3957, "ece": 0.0756, "kl_soft": 0.7215, "n_soft": 10, "n": 1720}
+done --method bandit --kl 0.1 --n_train 30 --seed 0 --tag _big_n30_kl0.1
+feedback temperature 1.516 {"acc": 0.5395, "nll": 1.4589, "ece": 0.0894, "kl_soft": 0.9615, "n_soft": 10, "n": 1720}
+done --method bandit --kl 1 --n_train 30 --seed 0 --tag _big_n30_kl1
+feedback temperature 0.758 {"acc": 0.6035, "nll": 3.0159, "ece": 0.2471, "kl_soft": 1.012, "n_soft": 10, "n": 1720}
+done --method sup --kl 0.1 --n_train 30 --seed 0 --tag _big_n30_sup
+feedback temperature 4.925 {"acc": 0.6029, "nll": 1.4644, "ece": 0.0707, "kl_soft": 0.7863, "n_soft": 10, "n": 1720}
+done --method bandit --kl 0.1 --n_train 60 --seed 0 --tag _big_n60_kl0.1
+feedback temperature 1.625 {"acc": 0.5605, "nll": 1.4176, "ece": 0.0799, "kl_soft": 0.9504, "n_soft": 10, "n": 1720}
+done --method bandit --kl 1 --n_train 60 --seed 0 --tag _big_n60_kl1
+feedback temperature 0.616 {"acc": 0.6238, "nll": 2.4532, "ece": 0.2279, "kl_soft": 1.1795, "n_soft": 10, "n": 1720}
+done --method sup --kl 0.1 --n_train 60 --seed 0 --tag _big_n60_sup
+feedback temperature 3.482 {"acc": 0.5773, "nll": 1.4823, "ece": 0.0678, "kl_soft": 0.8276, "n_soft": 10, "n": 1720}
+done --method bandit --kl 0.1 --n_train 60 --epochs 1 --seed 0 --tag _big_n60_kl0.1_online
+feedback temperature 4.287 {"acc": 0.444, "nll": 1.8479, "ece": 0.0937, "kl_soft": 0.97, "n_soft": 27, "n": 1000}
+done --method bandit --kl 0.1 --split tasks --seed 0 --tag _big_tasks_kl0.1
+done --method zero --n_train 60 --seed 1 --tag _big
+feedback temperature 2.297 {"acc": 0.5523, "nll": 1.5684, "ece": 0.086, "kl_soft": 0.9558, "n_soft": 10, "n": 1720}
+done --method bandit --kl 0.1 --n_train 5 --seed 1 --tag _big_n5_kl0.1
+feedback temperature 1.625 {"acc": 0.5238, "nll": 1.4842, "ece": 0.0877, "kl_soft": 1.0355, "n_soft": 10, "n": 1720}
+done --method bandit --kl 1 --n_train 5 --seed 1 --tag _big_n5_kl1
+feedback temperature 0.5 {"acc": 0.5285, "nll": 4.4319, "ece": 0.3363, "kl_soft": 1.2025, "n_soft": 10, "n": 1720}
+done --method sup --kl 0.1 --n_train 5 --seed 1 --tag _big_n5_sup
+feedback temperature 4.925 {"acc": 0.5657, "nll": 1.6021, "ece": 0.1055, "kl_soft": 0.7864, "n_soft": 10, "n": 1720}
+done --method bandit --kl 0.1 --n_train 15 --seed 1 --tag _big_n15_kl0.1
+feedback temperature 1.414 {"acc": 0.539, "nll": 1.4842, "ece": 0.0954, "kl_soft": 0.9982, "n_soft": 10, "n": 1720}
+done --method bandit --kl 1 --n_train 15 --seed 1 --tag _big_n15_kl1
+feedback temperature 1.072 {"acc": 0.5564, "nll": 3.9819, "ece": 0.3078, "kl_soft": 0.8462, "n_soft": 10, "n": 1720}
+done --method sup --kl 0.1 --n_train 15 --seed 1 --tag _big_n15_sup
+feedback temperature 4.287 {"acc": 0.6012, "nll": 1.4946, "ece": 0.1092, "kl_soft": 0.7094, "n_soft": 10, "n": 1720}
+done --method bandit --kl 0.1 --n_train 30 --seed 1 --tag _big_n30_kl0.1
+feedback temperature 1.516 {"acc": 0.5436, "nll": 1.4529, "ece": 0.0797, "kl_soft": 0.9542, "n_soft": 10, "n": 1720}
+done --method bandit --kl 1 --n_train 30 --seed 1 --tag _big_n30_kl1
+feedback temperature 0.574 {"acc": 0.6174, "nll": 2.951, "ece": 0.2508, "kl_soft": 2.0752, "n_soft": 10, "n": 1720}
+done --method sup --kl 0.1 --n_train 30 --seed 1 --tag _big_n30_sup
+feedback temperature 3.732 {"acc": 0.6384, "nll": 1.3279, "ece": 0.075, "kl_soft": 0.5393, "n_soft": 10, "n": 1720}
+done --method bandit --kl 0.1 --n_train 60 --seed 1 --tag _big_n60_kl0.1
+feedback temperature 1.516 {"acc": 0.5552, "nll": 1.4466, "ece": 0.0865, "kl_soft": 0.8966, "n_soft": 10, "n": 1720}
+done --method bandit --kl 1 --n_train 60 --seed 1 --tag _big_n60_kl1
+feedback temperature 0.758 {"acc": 0.639, "nll": 2.0409, "ece": 0.2011, "kl_soft": 0.8988, "n_soft": 10, "n": 1720}
+done --method sup --kl 0.1 --n_train 60 --seed 1 --tag _big_n60_sup
+feedback temperature 2.297 {"acc": 0.5808, "nll": 1.3572, "ece": 0.0413, "kl_soft": 0.8836, "n_soft": 10, "n": 1720}
+done --method bandit --kl 0.1 --n_train 60 --epochs 1 --seed 1 --tag _big_n60_kl0.1_online
+feedback temperature 6.498 {"acc": 0.403, "nll": 1.8658, "ece": 0.0598, "kl_soft": 0.8651, "n_soft": 27, "n": 1000}
+done --method bandit --kl 0.1 --split tasks --seed 1 --tag _big_tasks_kl0.1
+done --method zero --n_train 60 --seed 2 --tag _big
+feedback temperature 2.462 {"acc": 0.5442, "nll": 1.8164, "ece": 0.1168, "kl_soft": 0.9545, "n_soft": 10, "n": 1720}
+done --method bandit --kl 0.1 --n_train 5 --seed 2 --tag _big_n5_kl0.1
+feedback temperature 1.516 {"acc": 0.5203, "nll": 1.4996, "ece": 0.0973, "kl_soft": 1.0737, "n_soft": 10, "n": 1720}
+done --method bandit --kl 1 --n_train 5 --seed 2 --tag _big_n5_kl1
+feedback temperature 0.574 {"acc": 0.5297, "nll": 4.2849, "ece": 0.3238, "kl_soft": 0.873, "n_soft": 10, "n": 1720}
+done --method sup --kl 0.1 --n_train 5 --seed 2 --tag _big_n5_sup
+feedback temperature 4.0 {"acc": 0.5576, "nll": 1.5007, "ece": 0.0973, "kl_soft": 0.7998, "n_soft": 10, "n": 1720}
+done --method bandit --kl 0.1 --n_train 15 --seed 2 --tag _big_n15_kl0.1
+feedback temperature 1.516 {"acc": 0.5337, "nll": 1.4702, "ece": 0.0892, "kl_soft": 1.0504, "n_soft": 10, "n": 1720}
+done --method bandit --kl 1 --n_train 15 --seed 2 --tag _big_n15_kl1
+feedback temperature 0.536 {"acc": 0.5488, "nll": 3.813, "ece": 0.3264, "kl_soft": 1.1919, "n_soft": 10, "n": 1720}
+done --method sup --kl 0.1 --n_train 15 --seed 2 --tag _big_n15_sup
+feedback temperature 4.925 {"acc": 0.5872, "nll": 1.5213, "ece": 0.0577, "kl_soft": 0.8008, "n_soft": 10, "n": 1720}
+done --method bandit --kl 0.1 --n_train 30 --seed 2 --tag _big_n30_kl0.1
+feedback temperature 1.625 {"acc": 0.5448, "nll": 1.4351, "ece": 0.0839, "kl_soft": 0.9454, "n_soft": 10, "n": 1720}
+done --method bandit --kl 1 --n_train 30 --seed 2 --tag _big_n30_kl1
+feedback temperature 0.616 {"acc": 0.5948, "nll": 3.4819, "ece": 0.2693, "kl_soft": 1.2887, "n_soft": 10, "n": 1720}
+done --method sup --kl 0.1 --n_train 30 --seed 2 --tag _big_n30_sup
+feedback temperature 3.732 {"acc": 0.6378, "nll": 1.3547, "ece": 0.0526, "kl_soft": 0.5918, "n_soft": 10, "n": 1720}
+done --method bandit --kl 0.1 --n_train 60 --seed 2 --tag _big_n60_kl0.1
+feedback temperature 1.516 {"acc": 0.5552, "nll": 1.426, "ece": 0.083, "kl_soft": 0.9431, "n_soft": 10, "n": 1720}
+done --method bandit --kl 1 --n_train 60 --seed 2 --tag _big_n60_kl1
+feedback temperature 0.66 {"acc": 0.6279, "nll": 1.9843, "ece": 0.1972, "kl_soft": 0.9196, "n_soft": 10, "n": 1720}
+done --method sup --kl 0.1 --n_train 60 --seed 2 --tag _big_n60_sup
+feedback temperature 3.249 {"acc": 0.5884, "nll": 1.4243, "ece": 0.052, "kl_soft": 0.8335, "n_soft": 10, "n": 1720}
+done --method bandit --kl 0.1 --n_train 60 --epochs 1 --seed 2 --tag _big_n60_kl0.1_online
+feedback temperature 5.278 {"acc": 0.414, "nll": 1.8353, "ece": 0.0417, "kl_soft": 0.9161, "n_soft": 27, "n": 1000}
+done --method bandit --kl 0.1 --split tasks --seed 2 --tag _big_tasks_kl0.1
+ALLDONE
