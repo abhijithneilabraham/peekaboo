@@ -275,23 +275,51 @@ the interval.]
 for "ours compared with supervised" includes 0. Thus, the two methods are statistically equal. The
 interval for "TTT compared with released Vega" also includes 0. Thus, the gain of TTT is not certain.]
 
-### 5.2 Comparison with the README's DecisionBench table
+### 5.2 Comparison with the README's benchmark table
 
-We copied the first three rows from Vega's README. They use the same 1,075 rows.
+This table uses the layout and the rows of the benchmark table in Vega's README. The columns "Vega
+0.8B", "Vega 4B" and "Jev" are copied from the README. The column "0.8B + ours" is our result on the
+same rows (mean of 3 seeds).
 
-The README uses a different ECE calculation. Our calculation gives 0.098 for the released 0.8B model.
-The README gives 0.103 for the same model.
+We reran the released Vega 0.8B on the same rows, and we got the README values again. Thus, the rows
+are the same. We did not run Vega 4B or Jev. Vega 4B is too large for our computer, and Jev is a paid
+hosted API.
 
-| system | accuracy | NLL ↓ | ECE ↓ | what it needs |
+ECE uses the README's own estimator (15 equal-width bins). With this estimator, our replay of the
+released 0.8B gives 0.103, the same as the README. [Section 5.1 uses 10 bins. Thus, its ECE values are
+a little different.]
+
+| benchmark | Vega 0.8B | **0.8B + ours** | Vega 4B | Jev |
 |---|---|---|---|---|
-| Vega 0.8B (README) | 0.509 | 1.628 | 0.103 | — |
-| Vega 4B (README) | 0.633 | 1.420 | 0.098 | a 9.3 GB backbone, approximately 1.4 times the latency |
-| Jev, hosted (README) | 0.752 | 3.196 | 0.122 | an API; your data goes out of your computer |
-| **Vega 0.8B + ours** | **0.611** | **1.291** | **0.054** | right-or-wrong feedback, 409 thousand more parameters, approximately 0.2 ms more |
+| **Public tasks on the menu (12 rows in the README)** | | | | |
+| unfair_tos, tweet_stance_abortion, prompt_injections, tweet_sentiment, tweet_offensive, enron_spam, jailbreak_cls, glue_rte, emotion, toxic_chat_toxicity, superglue_cb, clinc150_oos | see README | not run | see README | see README |
+| **Slices** | | | | |
+| JevBench family:temporal_numeric, 15 items | 0.467 | not run | 0.400 | 0.200 |
+| DecisionBench domain:privacy, 25 items | 0.880 | 0.920 | **1.000** | 0.960 |
+| DecisionBench domain:public_sector, 25 items | 0.760 | 0.933 | **0.960** | 0.880 |
+| **Calibration and cost, whole suites** | | | | |
+| Public menu, negative log likelihood | 1.099 | not run | **0.768** | 0.878 |
+| Public menu, p50 ms per decision | **74** | not run | 106 | 162 |
+| DecisionBench, accuracy | 0.509 | 0.611 | 0.633 | **0.752** |
+| DecisionBench, calibration error | 0.103 | **0.053 ± 0.009** | 0.098 | 0.122 |
+| DecisionBench, negative log likelihood | 1.628 | **1.291** | 1.420 | 3.196 |
+| DecisionBench, KL to the gold distribution (10 rows) | 1.012 | 1.101 ± 0.332 | **0.854** | 6.099 |
+| DecisionBench, rows answered | **1.000** | **1.000** | **1.000** | 0.997 |
+| DecisionBench, p50 ms per decision | **85** | ≈ 85 (+0.2 ms in the engine) | 245 | 163 |
 
-With feedback only, the 0.8B model closes 82% of the accuracy gap to the 4B model. It has the best NLL
-and the best calibration in the table. It keeps the small size of the 0.8B model. The hosted model is
-still much more accurate.
+[The "DecisionBench, accuracy" row is from the README's second table ("The rest of the menu"). The
+latency of "0.8B + ours" is not a new measurement on a T4 GPU. It is the README value plus the extra
+engine time that we measured on a CPU (Section 5.6).]
+
+What the table shows:
+- On DecisionBench, our method is better than the released 0.8B model on all rows except KL to gold.
+- Our method has the best NLL on DecisionBench of the four systems, and the best calibration error.
+- Our method closes 82% of the 0.8B-to-4B accuracy gap. But Vega 4B and Jev are still more accurate.
+- On the two domain slices, our method is better than the 0.8B model. It is better than Jev on
+  public_sector, but not on privacy. It is not better than Vega 4B on either slice. One slice has 25
+  rows, so one row changes the result by 4 points. The README also calls these slices "hints".
+- Vega 4B has a better KL to gold. This row uses only 10 rows, so the value is not reliable.
+- We did not run the public menu tasks or JevBench. Thus, we make no claim about them.
 
 ### 5.3 Why our method is better than Vega's own adaptation
 

@@ -59,8 +59,19 @@ def metrics(rows, P):
         idx = [i for i, it in enumerate(rows) if it['domain'] == d]
         s['by_domain'][d] = round(float(np.mean([np.argmax(P[i]) == gold(rows[i]) for i in idx])), 4)
     s['rows'] = {'correct': [int(np.argmax(p) == gold(it)) for p, it in zip(P, rows)],
-                 'p_gold': [float(p[gold(it)]) for p, it in zip(P, rows)]}
+                 'p_gold': [float(p[gold(it)]) for p, it in zip(P, rows)], 'conf': [float(np.max(p)) for p in P]}
+    s['ece15'] = round(ece15(s['rows']['conf'], s['rows']['correct']), 4)     # the README's estimator (15 equal bins)
     return s
+
+
+def ece15(conf, correct, bins=15):
+    """ECE exactly as Vega's benchmark notebook computes it: top-label confidence, 15 equal-width bins."""
+    conf, correct = np.asarray(conf, float), np.asarray(correct, float); e = np.linspace(0, 1, bins + 1); out = 0.0
+    for i in range(bins):
+        sel = (conf > e[i]) & (conf <= e[i + 1]) if i else (conf >= e[i]) & (conf <= e[i + 1])
+        if sel.any():
+            out += sel.mean() * abs(correct[sel].mean() - conf[sel].mean())
+    return float(out)
 
 
 def temp(P, T):
