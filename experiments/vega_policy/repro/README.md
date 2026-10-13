@@ -48,6 +48,7 @@ DecisionBench uses the exact 1,075-row slice from Vega's README as the test set.
 | `23_kuhn_kl_anchor.sh` | §7 | 150 updates: KL anchor vs entropy and contrast fixes |
 | `24_kuhn_long_runs.sh` | §7 | 300 updates × 5 seeds, against lookup-table controls |
 | `25_kuhn_fit_probe.sh` | §7 | supervised fit probe (the engine can represent Nash) |
+| `30_improvement_table.sh` | §5.2 | **the final table**: README layout, released vs + ours for each size → `results/readme_table.md` |
 | `run_decisionbench.sh` / `run_kuhn.sh` | | runs 02–16 / 20–25 in order |
 
 The poker scripts need `experiments/laya_policy/` (game code), which is in this repo.
@@ -63,8 +64,8 @@ VEGA_SIZE=4b bash repro/run_decisionbench.sh         # skips extraction, which i
 ```
 
 Rough cost: extraction is ~4,280 rows of 4B forward passes, about 1–3 h on one T4. The training runs
-take minutes each on a CPU. The 4B cache is ~2 GB on disk. Then compare `results_4b/compare/tables.md`
-with `results/compare/tables.md`.
+take minutes each on a CPU. The 4B cache is ~2 GB on disk. Then `bash repro/30_improvement_table.sh` fills the
+"Vega 4B" and "4B + ours" columns of the final table.
 
 On a macOS machine, every script waits for free memory first and runs a watchdog (`guard.sh`). The
 watchdog kills a run that grows too large. Other systems skip both.
