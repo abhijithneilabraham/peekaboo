@@ -8,12 +8,14 @@
 import glob, json, os, re
 import numpy as np
 
+import paths as P
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 R = {}
-for f in sorted(glob.glob(os.path.join(HERE, 'results', 'compare', '*.json'))):
+for f in sorted(f for f in glob.glob(os.path.join(P.COMPARE, '*.json')) if not f.endswith('latency.json')):
     d = json.load(open(f)); key = re.sub(r'_s\d+', '', os.path.basename(f)[:-5])
     R.setdefault(key, []).append(d)
-ORDER = [('zero', 'Released Vega 0.8B', 'none'), ('ttt_auto', "vegaml fit() TTT head, 'auto'", 'gold labels'),
+ORDER = [('zero', 'Released ' + P.LABEL, 'none'), ('ttt_auto', "vegaml fit() TTT head, 'auto'", 'gold labels'),
          ('sup_ts', 'Adapter, supervised + temp. scaling', 'gold labels'),
          ('linear_fb', 'No-engine control (bilinear), feedback', 'right/wrong only'),
          ('feedback_kl1', 'Ours, KL 1', 'right/wrong only'), ('feedback', 'Ours: feedback RL + feedback calibration', 'right/wrong only')]

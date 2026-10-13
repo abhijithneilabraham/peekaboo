@@ -1,7 +1,8 @@
 """DecisionBench feedback runs, mean over seeds. 'recal' = after the feedback-only temperature.
 Paired test: per test row, method vs the released model on the same rows; bootstrap 95% CI of the accuracy gain."""
-import json, glob, re, sys, numpy as np
-pat = sys.argv[1] if len(sys.argv) > 1 else 'results/db_*.json'
+import json, glob, os, re, sys, numpy as np
+import paths as P
+pat = sys.argv[1] if len(sys.argv) > 1 else os.path.join(P.RESULTS, 'db_*.json')
 G = {}
 for f in glob.glob(pat):
     d = json.load(open(f)); key = re.sub(r'_s\d+', '', f.split('/')[-1][:-5])

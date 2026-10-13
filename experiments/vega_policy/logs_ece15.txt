@@ -1,0 +1,5 @@
+feedback_s0_v2 {"acc": 0.5981, "nll": 1.3123, "ece": 0.0507, "kl_soft": 0.8447, "n_soft": 10, "n": 1075, "skill": 0.4781, "ece15": 0.0528} 288s
+feedback_s1_v2 {"acc": 0.6037, "nll": 1.302, "ece": 0.0462, "kl_soft": 1.5698, "n_soft": 10, "n": 1075, "skill": 0.4853, "ece15": 0.042} 273s
+feedback_s2_v2 {"acc": 0.6316, "nll": 1.2576, "ece": 0.0644, "kl_soft": 0.8871, "n_soft": 10, "n": 1075, "skill": 0.5216, "ece15": 0.0648} 250s
+zero_s0_v2 {"acc": 0.5088, "nll": 1.6283, "ece": 0.0983, "kl_soft": 1.012, "n_soft": 10, "n": 1075, "skill": 0.3621, "ece15": 0.1031} 6s
+ALLDONE

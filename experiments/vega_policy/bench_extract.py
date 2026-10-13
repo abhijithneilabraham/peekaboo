@@ -6,13 +6,16 @@ pooled features, option features, memory chunks, and the official probabilities,
 replays the engine on the cache and can check itself against the official numbers.
 
     python bench_extract.py [limit]
+    VEGA_SIZE=4b VEGA_DEVICE=cuda python bench_extract.py      # the 4B checkpoint (see paths.py)
 """
 import json, os, random, re, sys, time
 import numpy as np
 import torch
 
+import paths as P
+
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, 'bank_decisionbench.pt')
+OUT = P.bank('decisionbench')
 
 _POS = {"yes", "true", "relevant", "safe", "permitted", "permit", "allowed", "allow", "approve",
         "approved", "accept", "accepted", "retain", "valid", "compliant", "sufficient"}
@@ -107,7 +110,9 @@ def main():
     from vegaml._api import Vega
     from vegaml._common import build_prompt, serialize_state
     from vpol.vega import QWEN
-    v = Vega(hub.fetch(), backbone=QWEN, device='cpu')
+    local = QWEN if P.SFX == '' and os.path.isdir(QWEN) else None       # else Vega resolves the backbone from its config
+    v = Vega(hub.fetch(P.SIZE), backbone=local, device=P.device())
+    print(P.LABEL, 'on', v.device, '->', OUT, flush=True)
     cfg, C = v.cfg, (v.engine.memory_chunks if v.engine.memory is not None else 0)
     t0 = time.time()
     for n, it in enumerate(todo, 1):
@@ -127,8 +132,8 @@ def main():
             else:
                 (feats, opt_flat), chunks, cmask = v.perc.pooled(x, prefix_min=cfg.get('prefix_min_tokens', 4096)), None, None
         ans = v.decide(it['state'], {'q': it['question']})['answers']['q'] if len(bank) < 20 else None   # official reading, to check replays
-        bank[it['id']] = {'feats': feats[0].clone(), 'opts': opt_flat.clone(), 'n_tokens': len(ids),
-                          'chunks': None if chunks is None else chunks[0].clone(), 'cmask': None if cmask is None else cmask[0].clone(),
+        bank[it['id']] = {'feats': feats[0].float().cpu().clone(), 'opts': opt_flat.float().cpu().clone(), 'n_tokens': len(ids),
+                          'chunks': None if chunks is None else chunks[0].float().cpu().clone(), 'cmask': None if cmask is None else cmask[0].cpu().clone(),
                           'official': ans and {str(k): float(p) for k, p in ans['probs'].items()}}
         if n % 100 == 0 or n == len(todo):
             torch.save(bank, OUT + '.tmp'); os.replace(OUT + '.tmp', OUT)

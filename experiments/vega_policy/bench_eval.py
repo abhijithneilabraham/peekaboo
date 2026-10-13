@@ -10,20 +10,22 @@ import json, math, os, sys
 import numpy as np
 import torch
 
+import paths as P
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
 def load(items_file='decisionbench_items.json'):
     from vegaml import hub
     from vegaml._api import Vega
-    mdir = hub.fetch()
+    mdir = hub.fetch(P.SIZE)
     cfg = json.load(open(os.path.join(mdir, 'vega_config.json')))
 
     class Stub:
         feature_layers = cfg['feature_layers']
     v = Vega(mdir, device='cpu', perception=Stub())
     items = json.load(open(os.path.join(HERE, items_file)))
-    bank = torch.load(os.path.join(HERE, 'bank_decisionbench.pt'))
+    bank = torch.load(P.bank('decisionbench'))
     items = [it for it in items if it['id'] in bank and 'feats' in bank[it['id']]]
     return v, items, bank
 
@@ -105,7 +107,8 @@ def main():
         res[f'task_contrast_{c:g}'] = score(items, P); print(f'task_contrast {c:g}', res[f'task_contrast_{c:g}'], flush=True)
     for name, kw in [('adapters_off', dict(adapters='off')), ('no_halt', dict(halt=False)), ('steps24_nohalt', dict(steps=24, halt=False))]:
         res[name] = score(items, run(v, items, bank, **kw)); print(name, res[name], flush=True)
-    json.dump(res, open(os.path.join(HERE, 'results', 'decisionbench_variants.json'), 'w'), indent=1)
+    os.makedirs(P.RESULTS, exist_ok=True)
+    json.dump(res, open(os.path.join(P.RESULTS, 'decisionbench_variants.json'), 'w'), indent=1)
 
 
 if __name__ == '__main__':

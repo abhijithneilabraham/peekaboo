@@ -9,6 +9,7 @@ import itertools, os, sys
 import numpy as np
 
 from lpol import kuhn as K, grid_hs as G
+import paths as P
 from vpol.vega import FeatureBank, question
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -51,7 +52,7 @@ if __name__ == '__main__':
     pairs = kuhn_pairs() if which == 'kuhn' else grid_pairs()
     if len(sys.argv) > 2:
         pairs = pairs[:int(sys.argv[2])]
-    bank = FeatureBank(os.path.join(HERE, f'bank_{which}.pt'))
+    bank = FeatureBank(P.bank(which))
     print(which, len(pairs), 'situations,', len(bank.missing(pairs)), 'to encode', flush=True)
     bank.extract(pairs, QUESTIONS, batch=8, log=lambda m: print(m, flush=True))
     print('done', len(bank.d), flush=True)

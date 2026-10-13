@@ -17,8 +17,9 @@ import train as T                                   # noqa: E402  (game loops, e
 from lpol import kuhn as K                          # noqa: E402
 from vpol.vega import FeatureBank, VegaPolicy       # noqa: E402
 from extract import QUESTIONS                       # noqa: E402
+import paths as P                                   # noqa: E402
 
-RES = os.path.join(HERE, 'results'); os.makedirs(RES, exist_ok=True)
+RES = P.RESULTS; os.makedirs(RES, exist_ok=True)
 torch.set_num_threads(int(os.environ.get('OMP_NUM_THREADS', '4')))
 
 
@@ -115,7 +116,7 @@ def main():
     if os.path.exists(out):
         print('skip', tag); return
     rng = np.random.default_rng(a.seed); torch.manual_seed(a.seed)
-    bank = FeatureBank(os.path.join(HERE, f'bank_{a.env}.pt'))
+    bank = FeatureBank(P.bank(a.env))
     game, game4 = K.Kuhn(3), K.Kuhn(4)
     train = {'vega0': None, 'engine': 'engine', 'adapter': 'adapter', 'table': 'table'}[a.brain]
     lr = a.lr or {'engine': 1e-4, 'adapter': 1e-3, 'table': 5e-2}.get(a.brain, 0)

@@ -11,6 +11,7 @@ import copy, json, os
 import numpy as np
 import torch
 
+import paths as P
 from vegaml import hub
 from vegaml._common import (QTYPES, VegaEngine, attach_adapter, build_prompt, thermal_features)
 
@@ -18,7 +19,7 @@ QWEN = os.path.expanduser('~/.cache/huggingface/hub/models--Qwen--Qwen3.5-0.8B/s
 
 
 def model_dir():
-    return hub.fetch()
+    return hub.fetch(P.SIZE)
 
 
 def question(instructions, options):
@@ -47,7 +48,8 @@ class FeatureBank:
         from vegaml._common import Perception
         mdir = model_dir()
         cfg = json.load(open(os.path.join(mdir, 'vega_config.json')))
-        perc = Perception(QWEN, torch.device('cpu'), cfg['feature_layers'], cfg['option_layers'])
+        bb = QWEN if P.SFX == '' and os.path.isdir(QWEN) else cfg.get('backbone_name') or cfg['backbone']
+        perc = Perception(bb, torch.device(P.device()), cfg['feature_layers'], cfg['option_layers'])
         C = cfg.get('memory_chunks', 0)
         import time
         t0 = time.time()
@@ -67,9 +69,9 @@ class FeatureBank:
             o = 0
             for b, (key, it) in enumerate(zip(chunk, items)):
                 k = len(it['spans']['options'])
-                self.d[key] = {'feats': feats[b].clone().float(), 'opts': opt_flat[o:o + k].clone().float(),
-                               'chunks': None if chunks is None else chunks[b].clone().float(),
-                               'cmask': None if cmask is None else cmask[b].clone()}
+                self.d[key] = {'feats': feats[b].clone().float().cpu(), 'opts': opt_flat[o:o + k].clone().float().cpu(),
+                               'chunks': None if chunks is None else chunks[b].clone().float().cpu(),
+                               'cmask': None if cmask is None else cmask[b].clone().cpu()}
                 o += k
             if (s // batch) % 10 == 0:
                 log(f'encoded {s + len(chunk)}/{len(todo)}  {time.time() - t0:.0f}s')

@@ -1,6 +1,7 @@
 """Mean over seeds of final / last-5-eval exploitability, grouped by run name minus the seed."""
-import json, glob, re, sys, numpy as np
-pat = sys.argv[1] if len(sys.argv) > 1 else 'results/kuhn_*.json'
+import json, glob, os, re, sys, numpy as np
+import paths as P
+pat = sys.argv[1] if len(sys.argv) > 1 else os.path.join(P.RESULTS, 'kuhn_*.json')
 G = {}
 for f in glob.glob(pat):
     name = f.split('/')[-1][:-5]; key = re.sub(r'_s\d+', '', name)

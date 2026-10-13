@@ -3,14 +3,15 @@ import sys, torch, numpy as np
 from lpol import kuhn as K
 from vpol.vega import FeatureBank, VegaPolicy
 from extract import QUESTIONS
+import paths as P
 torch.manual_seed(0)
-bank = FeatureBank('bank_kuhn.pt'); g = K.Kuhn(3)
+bank = FeatureBank(P.bank('kuhn')); g = K.Kuhn(3)
 # a Nash equilibrium of Kuhn (alpha=0): P(bet/call)
 tgt = {'J':0,'Q':0,'K':0,'Jc':1/3,'Qc':0,'Kc':1,'Jb':0,'Qb':1/3,'Kb':1,'Jcb':0,'Qcb':1/3,'Kcb':1}
 data = {qk: [(g.describe(s[0], s[1:]), tgt[s]) for s in g.infosets if g.facing(s[1:]) == (qk == 'call')] for qk in ('bet','call')}
 def run(mode, lr, steps=300):
     if mode == 'linear':
-        heads = {qk: torch.nn.Linear(6*1024, 2) for qk in data}
+        heads = {qk: torch.nn.Linear(next(iter(bank.d.values()))['feats'].numel(), 2) for qk in data}
         params = [p for h in heads.values() for p in h.parameters()]
         def lg(st, qk): return heads[qk](torch.stack([bank.d[(s,qk)]['feats'].flatten() for s in st]))
     else:

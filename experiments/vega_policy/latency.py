@@ -1,5 +1,6 @@
 """Engine-only decision latency on CPU, batch 1, on cached features: released engine vs engine + one feedback adapter."""
-import json, time, numpy as np, torch
+import json, os, time, numpy as np, torch
+import paths as P
 import bench_eval as B
 from bench_rl import Policy
 torch.set_num_threads(4)
@@ -22,4 +23,4 @@ with torch.no_grad():   # give the adapter non-zero weights so its compute is re
 ad = bench(pol)
 n_ad = sum(p.numel() for p in pol.params)
 out = {'released_ms_p50_p95': base, 'with_adapter_ms_p50_p95': ad, 'adapter_params': n_ad, 'engine_params': sum(p.numel() for n, p in pol.eng.named_parameters() if 'lora_' not in n and 'gate_nets' not in n)}
-print(json.dumps(out)); json.dump(out, open('results/compare/latency.json', 'w'))
+print(json.dumps(out)); os.makedirs(P.COMPARE, exist_ok=True); json.dump(out, open(os.path.join(P.COMPARE, 'latency.json'), 'w'))

@@ -500,7 +500,8 @@ necessary. This difference is the reason that we moved to DecisionBench.
 
   The method needs only a 0-or-1 signal. But we did not test it with noisy or selective feedback.
 - **One benchmark and one model size.** Vega 4B (9.3 GB) is too large for our computer, which has 8 GB
-  of memory. We did not run the hosted model. We copied its numbers from the README.
+  of memory. We did not run the hosted model. We copied its numbers from the README. The scripts in
+  `repro/` can do all the experiments on 4B (`VEGA_SIZE=4b`), on a computer with a GPU.
 - **The test tasks are known tasks.** Section 5.1 tests on new rows of tasks that gave feedback. The
   transfer to new tasks is real (+4.2), but it is smaller, and it needs more data.
 - **Exploration has a cost.** During learning, the model selects some answers at random from its
@@ -522,6 +523,8 @@ necessary. This difference is the reason that we moved to DecisionBench.
 ## 9. How to do the experiments again
 
 The code is in `experiments/vega_policy/`. All of it runs on a CPU. A watchdog script stops a run if the computer gets low on memory.
+
+**One script for each experiment.** The folder `experiments/vega_policy/repro/` has one script for each experiment in this report. Its README gives the order and the section that each script makes. Set `VEGA_SIZE=4b` to do all the experiments on Vega 4B. With 4B, only the feature extraction needs a GPU. The 4B results go to `results_4b/`, so they do not mix with the 0.8B results.
 
 | script | what it does |
 |---|---|
