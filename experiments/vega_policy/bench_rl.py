@@ -19,11 +19,11 @@ import numpy as np
 import torch
 
 import bench_eval as B
-import paths as P
+import paths
 from vegaml._common import QTYPES, attach_adapter, thermal_features, thermal_tau
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-RES = P.RESULTS; os.makedirs(RES, exist_ok=True)
+RES = paths.RESULTS; os.makedirs(RES, exist_ok=True)
 
 
 def split(items, how, seed=0, n_train=15, n_test=10):

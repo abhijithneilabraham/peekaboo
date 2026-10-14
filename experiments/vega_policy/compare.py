@@ -23,11 +23,11 @@ import numpy as np
 import torch
 
 import bench_eval as B
-import paths as P
+import paths
 from bench_rl import Policy, predict
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-RES = P.COMPARE; os.makedirs(RES, exist_ok=True)
+RES = paths.COMPARE; os.makedirs(RES, exist_ok=True)
 TGRID = np.exp(np.linspace(np.log(0.25), np.log(32), 61))
 
 
