@@ -1,7 +1,7 @@
 """Reproduce "Vega learns from feedback" end to end, for Vega 0.8B and Vega 4B, and build the VegaML-style tables.
 
     python reproduce.py            # everything; resumable: finished steps are skipped
-    python reproduce.py --check    # status only: what is done, failed or still missing (exit 0 only when complete)
+    python reproduce.py --check    # exit 0 complete, 1 not complete and not running (see STATUS.md), 2 still running
     python reproduce.py --quick    # a few rows of everything, 0.8B, ~15 min on a GPU: tests the code paths
 
 What runs, per size (0.8B, then 4B):
@@ -156,6 +156,28 @@ def run_step(st, out, env):
     st.state = 'failed'
 
 
+def heartbeat(out, state):
+    """reproduction/RUNNING holds the current step and is touched every 30 s while a run is alive."""
+    import threading
+    path = os.path.join(out, 'RUNNING')
+
+    def beat():
+        while not state.get('stop'):
+            open(path, 'w').write(json.dumps({'pid': os.getpid(), 'step': state.get('step'), 'since': state.get('since'),
+                                              'beat': time.time()}))
+            time.sleep(30)
+    threading.Thread(target=beat, daemon=True).start()
+
+
+def running(out):
+    """The live run's heartbeat, or None (no run, or the last one died more than 2 minutes ago)."""
+    try:
+        hb = json.load(open(os.path.join(out, 'RUNNING')))
+        return hb if time.time() - hb['beat'] < 120 else None
+    except Exception:
+        return None
+
+
 def write_status(steps, out):
     by = {}
     for st in steps:
@@ -198,10 +220,21 @@ def main():
     for st in steps:
         if not st.always and st.done():
             st.state = 'done'
+    live = running(out)
     if a.check:
-        write_status(steps, out)
-        print(open(os.path.join(out, 'STATUS.md')).read())
-        sys.exit(0 if all(st.state == 'done' for st in steps if not st.always) else 1)
+        complete = all(st.state == 'done' for st in steps if not st.always)
+        if live:
+            print(f"RUNNING (pid {live['pid']}): step {live['step']} since {time.ctime(live['since'])}. "
+                  f"{sum(st.state == 'done' for st in steps)}/{len(steps)} steps done. Log: reproduction/run.log")
+            sys.exit(2)
+        if os.path.exists(os.path.join(out, 'STATUS.md')):
+            print(open(os.path.join(out, 'STATUS.md')).read())
+        print('COMPLETE' if complete else f"NOT RUNNING, {sum(st.state != 'done' for st in steps if not st.always)} steps not done")
+        sys.exit(0 if complete else 1)
+    if live:
+        sys.exit(f"another run is alive (pid {live['pid']}, step {live['step']}); wait for it, or check with --check")
+    hb = {'step': 'setup', 'since': time.time()}
+    heartbeat(out, hb)
     ensure_packages()
     try:
         import torch
@@ -220,12 +253,18 @@ def main():
         if bad:
             st.state, st.note = 'blocked', 'needs ' + ', '.join(bad); continue
         env = dict(base_env, VEGA_SIZE=st.size or '0.8b')
+        hb.update(step=st.name, since=time.time())
         run_step(st, out, env)
         write_status(steps, out)
     write_status(steps, out)
     left = [st for st in steps if st.state != 'done' and not st.always]
     print(f'\n{len(steps) - len(left)}/{len(steps)} steps done in {(time.time() - t0) / 3600:.1f} h. '
           + ('COMPLETE: ' + os.path.join(out, 'TABLES.md') if not left else f'{len(left)} not done: see {os.path.join(out, "STATUS.md")}'), flush=True)
+    hb['stop'] = True
+    try:
+        os.remove(os.path.join(out, 'RUNNING'))
+    except OSError:
+        pass
     sys.exit(0 if not left else 1)
 
 

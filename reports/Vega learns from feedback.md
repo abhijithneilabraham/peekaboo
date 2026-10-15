@@ -524,7 +524,7 @@ necessary. This difference is the reason that we moved to DecisionBench.
 
 The code is in `experiments/vega_policy/`. All of it runs on a CPU. A watchdog script stops a run if the computer gets low on memory.
 
-**One script does all the experiments.** Run `python experiments/vega_policy/reproduce.py`. It does every experiment for Vega 0.8B and Vega 4B: the 43 public tasks, JevBench and DecisionBench, read with VegaML's own benchmark code (`harness/`), then our method and the baselines on the same rows, the DecisionBench studies and Kuhn poker. It then writes `reproduction/TABLES.md`, which has VegaML's README tables with "this run" and "+ ours" columns for each size. It retries a failed step, and `reproduction/STATUS.md` shows what is not complete. `CLAUDE.md` tells an agent how to continue to full results.
+**One script does all the experiments.** Run `python experiments/vega_policy/reproduce.py`. It does every experiment for Vega 0.8B and Vega 4B: the 43 public tasks, JevBench and DecisionBench, read with VegaML's own benchmark code (`harness/`), then our method and the baselines on the same rows, the DecisionBench studies and Kuhn poker. It then writes `reproduction/TABLES.md`, which has VegaML's README tables with "this run" and "+ ours" columns for each size. It retries a failed step, and `reproduction/STATUS.md` shows what is not complete. `CLAUDE.md` tells an agent how to continue to full results: open Claude Code in the repository and type `/reproduce-vega`, and it runs, fixes failures and restarts until the results are complete.
 
 | script | what it does |
 |---|---|
