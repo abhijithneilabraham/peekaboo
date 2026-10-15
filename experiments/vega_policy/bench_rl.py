@@ -68,7 +68,9 @@ class Policy:
         chunks = torch.stack([r['chunks'] for r in R]) if R[0]['chunks'] is not None else None
         cmask = torch.stack([r['cmask'] for r in R]) if R[0]['cmask'] is not None else None
         qt = torch.tensor([QTYPES[it['question']['type']] for it in rows])
-        return feats, opts, mask, qt, chunks, cmask
+        dev = self.v.device
+        mv = lambda x: None if x is None else x.to(dev)
+        return feats.to(dev), opts.to(dev), mask.to(dev), qt.to(dev), mv(chunks), mv(cmask)
 
     def logp(self, bank, rows, adapter=True):
         """log pi(.|row) with gradient through the new adapter; shipped adapters route and calibrate as released."""
@@ -81,13 +83,14 @@ class Policy:
         if not adapter:
             self.eng.gate_nets[self.j][-1].bias.data.copy_(saved)
         with torch.no_grad():
-            phys = thermal_features(out, mask, self.eng.max_steps).numpy()
-            g = out['gates'].float().numpy()[:, :self.n_ship] if out.get('gates') is not None else None
+            phys = thermal_features(out, mask, self.eng.max_steps).cpu().numpy()
+            g = out['gates'].float().cpu().numpy()[:, :self.n_ship] if out.get('gates') is not None else None
             route = self.v._route(g)
             route = np.full(len(rows), -1) if route is None else route
-            tau = np.array([thermal_tau(self.v._cal(int(rt))['theta'], qt.numpy()[b:b + 1], phys[b:b + 1])[0]
+            qn = qt.cpu().numpy()
+            tau = np.array([thermal_tau(self.v._cal(int(rt))['theta'], qn[b:b + 1], phys[b:b + 1])[0]
                             for b, rt in enumerate(route)]).reshape(-1)
-        lg = out['logits'].float() / torch.as_tensor(tau, dtype=torch.float32)[:, None]
+        lg = out['logits'].float() / torch.as_tensor(tau, dtype=torch.float32, device=out['logits'].device)[:, None]
         return torch.log_softmax(lg.masked_fill(~mask, -1e4), -1), mask
 
 
@@ -97,7 +100,7 @@ def predict(pol, bank, rows, adapter=True, T=1.0):
         for s in range(0, len(rows), 64):
             lp, mask = pol.logp(bank, rows[s:s + 64], adapter=adapter)
             lp = torch.log_softmax(lp / T, -1)
-            P += [lp[b, :int(mask[b].sum())].exp().numpy() for b in range(len(lp))]
+            P += [lp[b, :int(mask[b].sum())].exp().cpu().numpy() for b in range(len(lp))]
     return P
 
 
@@ -158,7 +161,7 @@ def main():
             order = rng.permutation(len(tr)); rew = []
             for s in range(0, len(tr), a.batch):
                 rows = [tr[i] for i in order[s:s + a.batch]]
-                gold = torch.tensor([it['labels'].index(it['gold']) for it in rows])
+                gold = torch.tensor([it['labels'].index(it['gold']) for it in rows], device=pol.v.device)
                 lp, mask = pol.logp(bank, rows)
                 if a.method == 'sup':
                     loss = -lp[torch.arange(len(rows)), gold].mean()

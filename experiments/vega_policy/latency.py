@@ -4,7 +4,7 @@ import paths as P
 import bench_eval as B
 from bench_rl import Policy
 torch.set_num_threads(4)
-v, items, bank = B.load('decisionbench_items.json')
+v, items, bank = B.load('decisionbench_items.json', device='cpu')   # the paper's number is CPU, batch 1
 rows = items[:300]
 def bench(pol=None):
     ts = []

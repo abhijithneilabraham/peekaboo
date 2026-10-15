@@ -1,5 +1,6 @@
 """Can each parameterisation fit a card-dependent policy at all? Supervised CE to a Nash-like target."""
-import sys, torch, numpy as np
+import os, sys, torch, numpy as np
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'laya_policy'))   # lpol (the game code)
 from lpol import kuhn as K
 from vpol.vega import FeatureBank, VegaPolicy
 from extract import QUESTIONS

@@ -1,9 +1,10 @@
-# Versions that produced the paper's numbers (Python 3.12).
+# The versions VegaML's benchmark notebook pins (vegaml, transformers) and a datasets / huggingface_hub pair that
+# installs together. torch is not pinned: install the build that matches your GPU driver first
+# (https://pytorch.org); torch >= 2.4 works, the paper used 2.11.
 vegaml==0.8.0
-torch==2.11.0
 transformers==5.19.0
-datasets==4.8.2
-huggingface_hub==2.2.0
-safetensors==0.8.0
-numpy==2.4.3
-matplotlib==3.11.0
+datasets>=4.0
+huggingface_hub>=1.31,<2.0
+safetensors>=0.8.0
+numpy
+matplotlib

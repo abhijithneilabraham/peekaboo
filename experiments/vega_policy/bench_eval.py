@@ -1,8 +1,8 @@
 """Replay Vega's engine on cached DecisionBench features and score variants of the readout.
 
 No backbone is loaded: Vega is built around a stub perception, so only the 14M engine and its shipped adapters
-and calibration sit in memory. The baseline replay must reproduce the official probabilities stored by
-bench_extract.py before any variant is trusted.
+and calibration sit in memory. The baseline replay must reproduce the official probabilities kept by
+suite_cache.py before any variant is trusted.
 
     python bench_eval.py
 """
@@ -15,7 +15,8 @@ import paths
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
-def load(items_file='decisionbench_items.json'):
+def engine(device=None):
+    """The released Vega (engine, shipped adapters, calibration) with no backbone: it reads cached features."""
     from vegaml import hub
     from vegaml._api import Vega
     mdir = hub.fetch(paths.SIZE)
@@ -23,9 +24,15 @@ def load(items_file='decisionbench_items.json'):
 
     class Stub:
         feature_layers = cfg['feature_layers']
-    v = Vega(mdir, device='cpu', perception=Stub())
-    items = json.load(open(os.path.join(HERE, items_file)))
-    bank = torch.load(paths.bank('decisionbench'))
+    return Vega(mdir, device=device or paths.device(), perception=Stub())
+
+
+def load(items_file='decisionbench_items.json', suite='decisionbench', device=None):
+    v = engine(device)
+    items = json.load(open(paths.items(items_file)))
+    if isinstance(items, dict):
+        items = items['items']
+    bank = torch.load(paths.bank(suite))
     items = [it for it in items if it['id'] in bank and 'feats' in bank[it['id']]]
     return v, items, bank
 
@@ -43,24 +50,37 @@ def run(v, items, bank, feat_fn=None, steps=None, halt=None, adapters=None):
     with torch.no_grad():
         for it in items:
             r = bank[it['id']]
+            dev = v.device
             feats = r['feats'][None]
             if feat_fn:
                 feats = feat_fn(it, feats)
+            feats = feats.to(dev)
             k = r['opts'].shape[0]
-            opts, mask = r['opts'][None], torch.ones(1, k, dtype=torch.bool)
-            qt = torch.tensor([QTYPES[it['question']['type']]])
-            chunks = None if r['chunks'] is None else r['chunks'][None]
-            cmask = None if r['cmask'] is None else r['cmask'][None]
+            opts, mask = r['opts'][None].to(dev), torch.ones(1, k, dtype=torch.bool, device=dev)
+            qt = torch.tensor([QTYPES[it['question']['type']]], device=dev)
+            chunks = None if r['chunks'] is None else r['chunks'][None].to(dev)
+            cmask = None if r['cmask'] is None else r['cmask'][None].to(dev)
             out = eng(feats, opts, mask, qt, halt=v.halt if halt is None else halt, return_traj=False, chunks=chunks, chunk_mask=cmask)
-            lg = out['logits'].float().numpy()
-            phys = thermal_features(out, mask, eng.max_steps).numpy()
-            gates = out['gates'].float().numpy() if out.get('gates') is not None else None
+            lg = out['logits'].float().cpu().numpy()
+            phys = thermal_features(out, mask, eng.max_steps).cpu().numpy()
+            gates = out['gates'].float().cpu().numpy() if out.get('gates') is not None else None
             route = v._route(gates)
             rt = -1 if route is None else int(route[0])
-            P = softmax_np(lg, thermal_tau(v._cal(rt)['theta'], qt.numpy(), phys))[0, :k]
+            P = softmax_np(lg, thermal_tau(v._cal(rt)['theta'], qt.cpu().numpy(), phys))[0, :k]
             out_p.append(P)
     eng.adapter_mode, eng.max_steps = old
     return out_p
+
+
+def replay_diff(items, P, suite='decisionbench'):
+    """Largest |p_replay - p_official| over all rows, against the records suite_cache.py kept from decide()."""
+    f = os.path.join(paths.RESULTS, f'released_{suite}.json')
+    if not os.path.exists(f):
+        return None
+    recs = json.load(open(f))
+    diffs = [max(abs(recs[it['id']]['probs'].get(lab, 0.0) - float(p[j])) for j, lab in enumerate(it['labels']))
+             for it, p in zip(items, P) if recs.get(it['id'], {}).get('probs')]
+    return max(diffs) if diffs else None
 
 
 def ece(conf, corr, bins=10):
@@ -94,11 +114,9 @@ def main():
     v, items, bank = load()
     print(len(items), 'rows cached')
     P0 = run(v, items, bank)
-    chk = [(it, p) for it, p in zip(items, P0) if bank[it['id']].get('official')]
-    if chk:
-        diffs = [max(abs(bank[it['id']]['official'][str(lab)] - p[j]) for j, lab in
-                     enumerate(['False', 'True'] if it['question']['type'] == 'boolean' else it['labels'])) for it, p in chk]
-        print(f'replay vs official decide(): max |dp| = {max(diffs):.2e} over {len(chk)} rows')
+    d = replay_diff(items, P0)
+    if d is not None:
+        print(f'replay vs official decide(): max |dp| = {d:.2e} over {len(items)} rows')
     res = {'baseline': score(items, P0)}
     print('baseline', res['baseline'], flush=True)
     mu = task_means(items, bank)

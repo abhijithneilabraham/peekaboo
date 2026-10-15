@@ -8,6 +8,7 @@ and training never needs the backbone again.
 import itertools, os, sys
 import numpy as np
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'laya_policy'))   # lpol (the game code)
 from lpol import kuhn as K, grid_hs as G
 import paths as P
 from vpol.vega import FeatureBank, question

@@ -6,3 +6,6 @@ __pycache__/
 decisionbench_items*.json
 pip.log
 nohup.out
+items_*.json
+*.tmp
+reproduction_quick/

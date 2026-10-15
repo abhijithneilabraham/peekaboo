@@ -24,4 +24,4 @@ ax[0].set(xscale='log', xticks=[5, 15, 30, 60], xticklabels=['5', '15', '30', '6
 ax[1].set(xscale='log', xticks=[5, 15, 30, 60], xticklabels=['5', '15', '30', '60'], xlabel='feedback rows per task', ylabel='expected calibration error (lower is better)')
 for a_ in ax: a_.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
 ax[0].legend(fontsize=7.5, loc='upper left'); ax[1].legend(fontsize=7.5)
-plt.tight_layout(); out = os.path.join(P.FIGURES, f'vega_feedback_curve{P.SFX}.png'); plt.savefig(out, dpi=150); print('saved', out)
+plt.tight_layout(); os.makedirs(P.FIGURES, exist_ok=True); out = os.path.join(P.FIGURES, f'vega_feedback_curve{P.SFX}.png'); plt.savefig(out, dpi=150); print('saved', out)
