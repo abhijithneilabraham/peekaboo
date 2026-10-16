@@ -9,6 +9,7 @@
 | 43 public tasks (Vega README)         | base Vega; VegaML's TTT head; Vega answer-key adapter | Vega + Peekaboo     |
 | JevBench (Vega README)                | base Vega                                          | Vega + Peekaboo         |
 | typed-decisions (Laya README)         | base Laya; laya-typed-decisions (Laya's fine-tune) | Laya + Peekaboo         |
+| public tasks, JevBench, DecisionBench | base Laya; laya-typed-decisions                    | Laya + Peekaboo         |
 | typed-decisions, same rows            | base Vega; VegaML's TTT head; Vega answer-key adapter | Vega + Peekaboo     |
 Vega 0.8B and 4B, 3 seeds. DecisionBench (Vega README) is already done: experiments/vega_policy/results*.
 Then table.py writes output/TABLES.md with each benchmark's table, base vs + Peekaboo vs their own improvement.
@@ -49,14 +50,16 @@ def plan(out):
     for st in steps:                     # the 4B reads the row lists the 0.8B cache wrote, so the two never race
         if st.name.startswith('vega-4b/cache/'):
             st.needs.append('vega-0.8b/cache/' + st.name.split('/')[-1])
-    # Laya on its own benchmark: base Laya, its released fine-tune, and base Laya + Peekaboo
+    # Laya on every benchmark: base Laya, its released fine-tune (laya-typed-decisions), and base Laya + Peekaboo
     L = lambda n, model, a, d, g, needs: steps.append(Step(f'{model}/{n}', HERE, ['laya_peekaboo.py'] + a, d, model, g, needs))
-    for model in ('laya', 'laya_td'):
-        L('cache/typed', model, ['cache', '--suite', 'typed'], ex(f'results_{model}', 'cache_typed.done'), 4, ['vega-0.8b/cache/typed'])
-    L('replay/typed', 'laya', ['train', '--suite', 'typed', '--method', 'replay'], ex('results_laya', 'methods', 'typed', 'replay_s0.json'), 4, ['laya/cache/typed'])
-    for sd in SEEDS:
-        L(f'feedback/typed/s{sd}', 'laya', ['train', '--suite', 'typed', '--method', 'feedback', '--seed', str(sd)],
-          ex('results_laya', 'methods', 'typed', f'feedback_s{sd}.json'), 8, ['laya/cache/typed'])
+    for s in ('public', 'jevbench', 'decisionbench', 'typed'):
+        rows = ['laya/cache/decisionbench'] if s == 'decisionbench' else [f'vega-0.8b/cache/{s}']   # one writer per row list
+        L(f'cache/{s}', 'laya', ['cache', '--suite', s], ex('results_laya', f'cache_{s}.done'), 4, [] if s == 'decisionbench' else rows)
+        L(f'cache/{s}', 'laya_td', ['cache', '--suite', s], ex('results_laya_td', f'cache_{s}.done'), 4, rows)
+        L(f'replay/{s}', 'laya', ['train', '--suite', s, '--method', 'replay'], ex('results_laya', 'methods', s, 'replay_s0.json'), 4, [f'laya/cache/{s}'])
+        for sd in SEEDS:
+            L(f'feedback/{s}/s{sd}', 'laya', ['train', '--suite', s, '--method', 'feedback', '--seed', str(sd)],
+              ex('results_laya', 'methods', s, f'feedback_s{sd}.json'), 8, [f'laya/cache/{s}'])
     steps.append(Step('tables', HERE, ['table.py'], lambda: False, None, 0))
     return steps
 

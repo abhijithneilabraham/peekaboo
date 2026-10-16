@@ -1,7 +1,7 @@
 """TABLES.md: Peekaboo against Vega's and Laya's own results, on their own benchmarks.
 
-  1. Vega's README benchmark table (43 public tasks, JevBench, DecisionBench) with base Vega and Vega + Peekaboo
-     for 0.8B and 4B. DecisionBench comes from the finished runs in experiments/vega_policy/results*/compare.
+  1. Vega's README benchmark table (43 public tasks, JevBench, DecisionBench): base and + Peekaboo for Vega 0.8B,
+     Vega 4B and Laya, plus laya-typed-decisions. Vega's DecisionBench comes from experiments/vega_policy/results*.
   2. Laya's README benchmark (typed-decisions): base Laya, Laya's own answer-key fine-tune, Laya + Peekaboo,
      and Vega with VegaML's TTT head, Vega's answer-key adapter and Peekaboo on the same rows.
   3. The 43 public tasks with VegaML's own adaptation (TTT) and the answer-key adapter next to Peekaboo.
@@ -99,20 +99,25 @@ def main():
     S = {(m, s, meth): summary(m, s, meth) for m in ('0.8b', '4b') for s in ('public', 'jevbench') for meth in ('released', 'feedback', 'ttt', 'sup_ts')}
     for m in ('0.8b', '4b'):
         S[(m, 'decisionbench', 'released')] = db_from_repo(m, 'zero'); S[(m, 'decisionbench', 'feedback')] = db_from_repo(m, 'feedback')
+    for s_ in ('public', 'jevbench', 'decisionbench'):
+        S[('laya', s_, 'released')] = summary('laya', s_, 'released'); S[('laya', s_, 'feedback')] = summary('laya', s_, 'feedback')
+        S[('laya_td', s_, 'released')] = summary('laya_td', s_, 'released')
     val = lambda m, meth, key: next((S[(m, s, meth)][key] for s in ('public', 'jevbench', 'decisionbench') if key in S[(m, s, meth)]), None)
     L += ['## 1. Vega\'s README benchmark table, with Peekaboo', '']
     head = ['benchmark', 'Vega 0.8B (README)', 'base Vega 0.8B', '**Vega 0.8B + Peekaboo**', 'Vega 4B (README)', 'base Vega 4B',
-            '**Vega 4B + Peekaboo**', 'Jev (README)']
+            '**Vega 4B + Peekaboo**', 'base Laya', 'laya-typed-decisions', '**Laya + Peekaboo**', 'Jev (README)']
     L += ['| ' + ' | '.join(head) + ' |', '|---' * len(head) + '|']
     for row in VT.ROWS:
         if row[0] == 'h':
             L.append(f'| **{row[1]}** |' + ' |' * (len(head) - 1)); continue
         key, name, hib, r08, r4, rj = row
-        cols = [[r08], val('0.8b', 'released', key), val('0.8b', 'feedback', key), [r4], val('4b', 'released', key), val('4b', 'feedback', key), [rj]]
+        cols = [[r08], val('0.8b', 'released', key), val('0.8b', 'feedback', key), [r4], val('4b', 'released', key), val('4b', 'feedback', key),
+                val('laya', 'released', key), val('laya_td', 'released', key), val('laya', 'feedback', key), [rj]]
         vals = [mean(v) for v in cols]
-        txt = [VT.fmt(c[0], key) if i in (0, 3, 6) else cell(c, key) for i, c in enumerate(cols)]
+        txt = [VT.fmt(c[0], key) if i in (0, 3, len(cols) - 1) else cell(c, key) for i, c in enumerate(cols)]
         L.append(f'| {name} | ' + ' | '.join(bold(vals, txt, hib)) + ' |')
-    L += ['', 'DecisionBench rows: the finished runs in experiments/vega_policy/results*/compare (latency there is the README\'s).', '']
+    L += ['', 'Vega\'s DecisionBench rows: the finished runs in experiments/vega_policy/results*/compare (its latency is the README\'s). '
+          'Laya is measured in this run on every row. laya-typed-decisions is Laya\'s released answer-key fine-tune (on typed-decisions).', '']
 
     # 2. Laya's README benchmark: typed-decisions
     T = [('laya', 'released', 'base Laya', 'none', 0.362), ('laya_td', 'released', "laya-typed-decisions (Laya's own fine-tune)", 'answer key', 0.766),
@@ -153,16 +158,18 @@ def main():
             L.append(f'| {s} | {nm} | {paired(s, runs(m, s, "released"), pk)} | TTT: {paired(s, runs(m, s, "ttt"), pk)} · '
                      f'adapter: {paired(s, runs(m, s, "sup_ts"), pk)} |')
         L.append(f'| jevbench | {nm} | {paired("jevbench", runs(m, "jevbench", "released"), runs(m, "jevbench", "feedback"))} | — (Vega has none) |')
-    pk = runs('laya', 'typed', 'feedback')
-    L += [f'| typed | Laya | {paired("typed", runs("laya", "typed", "released"), pk)} | laya-typed-decisions: '
-          f'{paired("typed", runs("laya_td", "typed", "released"), pk)} |', '',
+    for s_ in ('public', 'jevbench', 'decisionbench', 'typed'):
+        pk = runs('laya', s_, 'feedback')
+        L.append(f'| {s_} | Laya | {paired(s_, runs("laya", s_, "released"), pk)} | laya-typed-decisions: '
+                 f'{paired(s_, runs("laya_td", s_, "released"), pk)} |')
+    L += ['',
           'DecisionBench (Vega 0.8B / 4B) is in the paper: +10.2 / +6.0 over base, +8.0 / +5.8 over TTT, -1.6 / +1.2 against the '
           'answer-key adapter.', '']
 
     # 5. checks
     L += ['## 5. Checks', '', '| model | suite | replay vs official answers, max abs. probability difference | rows the model could not answer |', '|---|---|---|---|']
     for m in ('0.8b', '4b', 'laya', 'laya_td'):
-        for s in (('typed',) if m.startswith('laya') else ('public', 'jevbench', 'typed')):
+        for s in (('public', 'jevbench', 'decisionbench', 'typed') if m.startswith('laya') else ('public', 'jevbench', 'typed')):
             f = os.path.join(ROOT, RES[m], 'methods', s, 'replay_s0.json'); rel = os.path.join(ROOT, RES[m], f'released_{s}.json')
             d = json.load(open(f))['info'].get('max_abs_dp') if os.path.exists(f) else None
             errs = sum('error' in r for r in json.load(open(rel)).values()) if os.path.exists(rel) else None

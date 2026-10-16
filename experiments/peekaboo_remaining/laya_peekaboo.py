@@ -1,5 +1,5 @@
-"""Laya on its own headline benchmark (LocalLLaMA/typed-decisions): base Laya, Laya's own answer-key fine-tune,
-and Laya + Peekaboo.
+"""Laya on every benchmark of the comparison (typed-decisions, its own headline, and Vega's public tasks, JevBench and
+DecisionBench): base Laya, Laya's own answer-key fine-tune, and Laya + Peekaboo.
 
   VEGA_SIZE=laya      base Laya, the English checkpoint as released (convaiinnovations/laya, 421M): README 0.362
   VEGA_SIZE=laya_td   laya-typed-decisions, Laya's released fine-tune of the same model on the same training split
