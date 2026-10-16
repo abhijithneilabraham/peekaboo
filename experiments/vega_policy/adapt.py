@@ -145,7 +145,10 @@ class Bilinear(torch.nn.Module):
 
     def forward(self, s, o, mask):
         lg = (self.A(s)[:, None, :] * self.C(o)).sum(-1) + self.w(self.C(o)).squeeze(-1)
-        return torch.log_softmax(lg.masked_fill(~mask, -1e4), -1)
+        # -1e9, not -1e4: on Vega 4B (15,360-dim features) real logits can fall below -1e4, and the softmax then puts all
+        # the mass on padded slots (NaN crash found in the 4B reproduction, reproductions/4b/0001-*.patch). Not -inf: the
+        # entropy term multiplies exp(lp) * lp over all slots.
+        return torch.log_softmax(lg.masked_fill(~mask, -1e9), -1)
 
 
 def linear_fb(bank, train, cal, test, rng, epochs=8, lr=1e-3, ent=0.01, batch=32):

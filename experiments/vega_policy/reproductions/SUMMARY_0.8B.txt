@@ -1,0 +1,46 @@
+VEGA POLICY RUN - SUMMARY  (independent reproduction, Vega 0.8B; pasted by the repo owner, 2026-10-15)
+experiments/vega_policy/run.sh  (peekaboo repo, commit ffe9cf3)
+==========================================================================
+STATUS:   finished, exit 0, no errors
+RUNTIME:  4h12m  (14:27 -> 18:39, 2026-10-15)
+MACHINE:  Windows 11, RTX 3080 Laptop 16GB, Python 3.13, torch 2.11.0+cu128
+SETTINGS: VEGA_SIZE=0.8b, SEEDS="0 1 2", feature extraction on GPU (0.1 s/row)
+
+HEADLINE  Feedback adapter accuracy gain over released Vega 0.8B:
+      this run:   +10.4 pts  [95% CI +8.0, +13.0]
+      published:  +10.2 pts  [95% CI +7.9, +12.5]      -> REPRODUCES
+
+FINAL TABLE  DecisionBench, 1,075 rows, 3 seeds
+                          Released 0.8B         0.8B + adapter
+                          this run  published   this run         published
+  Accuracy                0.506     0.509       0.611 +- 0.004   0.611 +- 0.015
+  Calibration err (ECE)   0.107     0.103       0.056 +- 0.007   0.053 +- 0.009
+  Neg. log likelihood     1.635     1.628       1.312 +- 0.042   1.291 +- 0.024
+  KL to gold (10 rows)    1.011     1.012       0.992 +- 0.249   1.101 +- 0.332
+  privacy slice (25)      0.880     0.880       0.880            0.920
+  public_sector (25)      0.720     0.760       0.880            0.933
+  rows answered           1.000     1.000       1.000            1.000
+
+ALL METHODS  accuracy, 3 seeds            this run   published   gain vs released
+  Released Vega 0.8B                      0.506      0.509       -
+  vegaml fit() TTT head                   0.529      0.531       +2.3
+  Supervised adapter + temp scaling       0.633      0.627       +12.7
+  Feedback adapter (OURS)                 0.611      0.611       +10.4
+  Feedback adapter, KL weight 1           0.548      0.547       +4.2
+  No-engine control                       0.269      0.262       -23.7
+
+STEP BY STEP
+  1. Feature extraction      OK   5,355 rows in 13 min on GPU (paper: ~4.5h CPU)
+  2. Replay check            PASS max |dp| = 9.7e-07 vs official decide()
+  3. Main comparison         REPRODUCES  all within ~1 std of published
+  4. Feedback amount         REPRODUCES  5 rows +3.6 (pub +3.1), 15 rows +5.5 (+5.0), 30 rows +8.8 (+8.4),
+                                         60 rows +11.0 (+11.3), unseen tasks +5.4 (+4.2)
+  5. Latency                 +0.5 ms per decision (9.4 vs 8.9 ms p50); adapter 409K params on a 14.3M engine
+  6. KL weight pilot         DOES NOT FULLY REPRODUCE
+                             rows split accuracy: KL 0 0.566 (pub 0.536), KL 0.1 0.571 (0.567), KL 1 0.552 (0.557)
+                             nearly tied; on the unseen-task split KL 0 is slightly ahead (0.397 vs 0.395)
+
+DIFFERENCES: released baseline 0.506 vs 0.509 (~3 of 1,075 rows; likely GPU bf16 vs CPU numerics).
+REPO ISSUES: requirements conflict (datasets vs huggingface_hub); shipped results/ made run.sh skip
+everything (moved aside); .venv activate path missing on Windows (ran with NO_VENV=1).
+NOT RUN: Kuhn poker, Vega 4B (4B followed in SUMMARY_4B.txt).

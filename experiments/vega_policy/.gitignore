@@ -9,3 +9,4 @@ nohup.out
 items_*.json
 *.tmp
 reproduction_quick/
+*.zip

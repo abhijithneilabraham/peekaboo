@@ -1,0 +1,39 @@
+From a663963f10c5a72f5275d07ad1b1d57736fde709 Mon Sep 17 00:00:00 2001
+From: Fadil <fadilrahman4u@gmail.com>
+Date: Fri, 16 Oct 2026 13:47:28 +0530
+Subject: [PATCH] Fix NaN crash in no-engine control on Vega 4B
+
+Bilinear.forward masked padded option slots with -1e4. On Vega 4B
+(15,360-dim features) real logits can fall below -1e4, so in a padded
+batch the softmax puts all mass on the padding: the real options get
+all-zero probabilities and fit_T_feedback crashes with "Probabilities
+contain NaN" (compare.py --method linear_fb --seed 1, VEGA_SIZE=4b).
+
+Mask with -1e9 instead. Not -inf, because the entropy term multiplies
+exp(lp) * lp over all slots. Verified no-op on 0.8B: linear_fb seeds
+0-2 give identical metrics before and after.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ experiments/vega_policy/compare.py | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/experiments/vega_policy/compare.py b/experiments/vega_policy/compare.py
+index 53753bd..fa7c8ed 100644
+--- a/experiments/vega_policy/compare.py
++++ b/experiments/vega_policy/compare.py
+@@ -170,7 +170,10 @@ class Bilinear(torch.nn.Module):
+ 
+     def forward(self, s, o, mask):
+         lg = (self.A(s)[:, None, :] * self.C(o)).sum(-1) + self.w(self.C(o)).squeeze(-1)
+-        return torch.log_softmax(lg.masked_fill(~mask, -1e4), -1)
++        # -1e9, not -1e4: on Vega 4B (15,360-dim features) real logits can fall below -1e4, and the softmax then puts all
++        # the mass on padded slots, giving all-zero probabilities and a NaN crash in fit_T_feedback. Not -inf: the
++        # entropy term multiplies exp(lp) * lp over all slots.
++        return torch.log_softmax(lg.masked_fill(~mask, -1e9), -1)
+ 
+ 
+ def linear_fb(bank, train, cal, test, rng, epochs=8, lr=1e-3, ent=0.01, batch=32):
+-- 
+2.54.0.windows.1
+

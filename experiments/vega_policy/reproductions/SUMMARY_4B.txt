@@ -1,0 +1,141 @@
+VEGA POLICY RUN - VEGA 4B - SUMMARY
+experiments/vega_policy/run.sh with VEGA_SIZE=4b
+peekaboo repo, commit ffe9cf3 + one fix (branch fix-bilinear-padding-mask, commit a663963)
+==========================================================================
+
+STATUS:   finished, exit 0, no errors (after the fix below)
+RUNTIME:  ~9h total. 1st attempt 23:20 -> 02:11 (crashed in step 3);
+          resumed with fix 13:47 -> 19:57 (2026-10-16), reusing cached work
+MACHINE:  Windows 11, RTX 3080 Laptop 16GB, Python 3.13, torch 2.11.0+cu128
+SETTINGS: VEGA_SIZE=4b, SEEDS="0 1 2", feature extraction on GPU
+
+--------------------------------------------------------------------------
+HEADLINE
+--------------------------------------------------------------------------
+  Feedback adapter accuracy gain over released Vega 4B:
+
+      4B:    +6.0 pts  [95% CI +4.1, +7.9]    (0.635 -> 0.695)
+      0.8B: +10.4 pts  [95% CI +8.0, +13.0]   (0.506 -> 0.611, earlier run)
+
+  -> The adapter also helps on 4B, by less than on 0.8B.
+     The paper has no 4B adapter results, so these numbers are new.
+
+--------------------------------------------------------------------------
+FINAL TABLE  (results/readme_table.md)  DecisionBench, 1,075 rows, 3 seeds
+--------------------------------------------------------------------------
+                          Vega 0.8B  0.8B + ours       Vega 4B  4B + ours
+  Accuracy                0.506      0.611 +- 0.004    0.635    0.695 +- 0.002
+  Calibration err (ECE)   0.107      0.056 +- 0.007    0.097    0.045 +- 0.006
+  Neg. log likelihood     1.635      1.312 +- 0.042    1.425    1.100 +- 0.016
+  KL to gold (10 rows)    1.011      0.992 +- 0.249    0.850    0.793 +- 0.032
+  privacy slice (25)      0.880      0.880             1.000    1.000
+  public_sector (25)      0.720      0.880             0.960    0.947 +- 0.019
+  rows answered           1.000      1.000             1.000    1.000
+
+--------------------------------------------------------------------------
+RELEASED 4B vs VEGA README  (checks we evaluate the same rows the same way)
+--------------------------------------------------------------------------
+                          this run   README
+  Accuracy                0.635      0.633
+  NLL                     1.425      1.420
+  ECE (15 bins)           0.097      0.098
+  KL to gold              0.850      0.854
+  privacy / public_sector 1.000 / 0.960   1.000 / 0.960
+  -> matches (accuracy off by ~2 of 1,075 rows)
+  Replay check: PASS, max |dp| = 2.8e-07 vs official decide()
+
+--------------------------------------------------------------------------
+ALL METHODS, 4B  (results_4b/compare/tables.md)  3 seeds
+--------------------------------------------------------------------------
+                                     accuracy        ECE     gain vs released
+  Released Vega 4B                   0.635           0.095   -
+  vegaml fit() TTT head              0.637           0.113   +0.2
+  Supervised adapter + temp scaling  0.683 +- 0.015  0.051   +4.7
+  Feedback adapter (OURS)            0.695 +- 0.002  0.035   +6.0
+  Feedback adapter, KL weight 1      0.656 +- 0.004  0.032   +2.0
+  No-engine control (fixed)          0.242 +- 0.021  0.143   -39.3
+
+  Note: on 4B the feedback adapter (right/wrong only) slightly beats the
+  supervised adapter (gold labels). On 0.8B it was the other way round.
+
+--------------------------------------------------------------------------
+STEP BY STEP, 4B
+--------------------------------------------------------------------------
+  1. Feature extraction  OK   5,355 rows in ~1h on GPU. Slowed to ~7 s/row on
+                              long rows (GPU memory full, 16.1/16.4 GB).
+  2. Replay check        PASS max |dp| = 2.8e-07
+  3. Main comparison     OK   (crashed first time, see FIX)
+  4. Feedback amount     gain vs rows of feedback per task (1,720-row test):
+                              5 rows   +0.5 pts  [-0.8, +1.9]
+                             15 rows   +3.0 pts
+                             30 rows   +5.0 pts
+                             60 rows   +6.7 pts  [+5.0, +8.4]
+                             60 rows, one pass   +3.3 pts
+                             unseen tasks        +4.6 pts  [+2.6, +6.6]
+  5. Latency             +0.85 ms per decision (12.3 vs 11.4 ms p50)
+                         adapter 857K params on a 30.9M engine
+  6. KL weight pilot     accuracy, rows split / tasks split:
+                             KL 0     0.638 / 0.421
+                             KL 0.1   0.646 / 0.427   (best on both)
+                             KL 1     0.635 / 0.409
+                         On 4B, KL 0.1 is best on both splits, but the
+                         confidence intervals overlap (gains +1.5 to +2.2 pts,
+                         CIs include 0). Weak evidence either way.
+
+--------------------------------------------------------------------------
+THE FIX  (0001-Fix-NaN-crash-in-no-engine-control-on-Vega-4B.patch)
+--------------------------------------------------------------------------
+  CRASH:  compare.py --method linear_fb --seed 1  (VEGA_SIZE=4b), step 3
+          ValueError: Probabilities contain NaN   (in fit_T_feedback)
+          run.sh uses set -e, so this stopped the whole run.
+
+  CAUSE:  Bilinear.forward (the no-engine control) masks padded answer slots
+          with -1e4 before the softmax. On 4B the features are 15,360-dim
+          and real logits can fall below -1e4 (seen: -14,924, -16,009 on an
+          8-option row). In a batch padded for longer rows, the softmax then
+          puts all probability on the fake padded slots: the real options
+          get exactly 0, p/p.sum() = 0/0 = NaN, crash.
+          Training itself was healthy (all params < 0.15, no NaN).
+          The authors only ran 0.8B, so they never hit it.
+
+  FIX:    compare.py, one line (plus a comment):
+            -  return torch.log_softmax(lg.masked_fill(~mask, -1e4), -1)
+            +  return torch.log_softmax(lg.masked_fill(~mask, -1e9), -1)
+          Not -inf: the entropy term multiplies exp(lp) * lp over all
+          slots, and 0 * -inf = NaN.
+
+  CHECKS: - 0.8B linear_fb seeds 0, 1, 2 rerun with the fix: metrics are
+            identical to before. The fix changes nothing where the bug did
+            not fire, so the 0.8B results already sent stand.
+          - 4B linear_fb seed 0: identical before and after the fix.
+          - 4B seed 1 (the crash) now completes: acc 0.237, in line with
+            seed 0 (0.271) and seed 2 (0.220).
+          - The same -1e4 mask is in bench_rl.py and vpol/vega.py, but there
+            logits come from Vega's engine divided by a temperature clamped to
+            [0.2, 20], so they cannot reach -1e4. Left unchanged.
+
+--------------------------------------------------------------------------
+REPO ISSUES (same as 0.8B run, plus the crash)
+--------------------------------------------------------------------------
+  1. NaN crash in the no-engine control on 4B (fixed above).
+  2. requirements.txt cannot be installed as written (datasets==4.8.2 needs
+     huggingface_hub<2.0, file pins 2.2.0). Installed datasets --no-deps.
+  3. The repo ships results/; run.sh skips existing results, so a plain run
+     recomputes nothing. (No 4B results are shipped, so 4B ran fresh.)
+  4. run.sh activates .venv/bin/activate (no such path on Windows); ran
+     with NO_VENV=1.
+
+NOT RUN: Kuhn poker section (`bash run.sh kuhn`).
+
+--------------------------------------------------------------------------
+FILES IN THE 4B ZIP
+--------------------------------------------------------------------------
+  0001-Fix-NaN-crash-in-no-engine-control-on-Vega-4B.patch   the fix (git am)
+  run_output_4b.log                   console output of the fixed run
+  run_output_4b_crashed.log           console output of the crashed attempt
+  results/readme_table.md             final table, 0.8B and 4B columns
+  results_4b/compare/tables.md        all methods, per-domain breakdown
+  results_4b/feedback_runs.txt        step 4 results
+  results_4b/compare/*.json           per-method, per-seed results
+  results_4b/db_*.json                step 4 and 6 per-run results
+  reports/figures/vega_feedback_curve_4b.png   step 4 figure
