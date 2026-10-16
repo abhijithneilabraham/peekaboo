@@ -105,7 +105,6 @@ VARIANTS = [('released', 'records', 'base model', 'none'),
             ('feedback', 'records_switch', 'Peekaboo + switch', 'right / wrong'),
             ('feedback', 'records_raw', 'Peekaboo without the honesty fix', 'right / wrong'),
             ('feedback_kl0', 'records', 'Peekaboo without the leash (KL 0)', 'right / wrong'),
-            ('feedback_kl1', 'records', 'Peekaboo, tighter leash (KL 1)', 'right / wrong'),
             ('pooled', 'records', '**pooled Peekaboo** (one add-on, all suites\' feedback)', 'right / wrong'),
             ('pooled', 'records_switch', 'pooled Peekaboo + switch', 'right / wrong'),
             ('pooled', 'records_raw', 'pooled Peekaboo without the honesty fix', 'right / wrong')]

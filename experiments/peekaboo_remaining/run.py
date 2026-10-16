@@ -75,9 +75,9 @@ def plan(out):
               ex(res, 'methods', f'pooled_s{sd}.done'), 2 * gr, [f'vega-{size}/cache/{x}' for x in SUITES])
         Lm('laya', f'pooled/s{sd}', ['train', '--suite', 'all', '--method', 'pooled', '--seed', str(sd)],
            ex('results_laya', 'methods', f'pooled_s{sd}.done'), 10, [f'laya/cache/{x}' for x in SUITES])
-    # 4. ablations of Peekaboo: no leash (KL 0), a tighter leash (KL 1). (No honesty fix and the switch come free
-    #    with every Peekaboo run: records_raw, records_switch.)
-    for m in ('feedback_kl0', 'feedback_kl1'):
+    # 4. ablation of Peekaboo: no leash (KL 0). (No honesty fix and the switch come free with every Peekaboo run:
+    #    records_raw, records_switch.) KL 1 is not rerun: DecisionBench already shows a 10x tighter leash costs accuracy.
+    for m in ('feedback_kl0',):
         for s in SUITES:
             for sd in SEEDS:
                 for size, res, _, gr in VEGA:
