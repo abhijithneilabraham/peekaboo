@@ -46,7 +46,11 @@ FEEDBACK = {'feedback': (0.0, 1.0, 1.0), 'feedback_kl1': (0.0, 1.0, 1.0),
 # Realistic-feedback tests of Peekaboo: noisy, missing, complaint-only feedback, and the logged-feedback baseline
 # (off-policy: one answer per row sampled from the released model, feedback logged once, trained by clipped IPS).
 REALISTIC = [k for k in FEEDBACK if k not in ('feedback', 'feedback_kl1')] + ['logged_ips']
-ADAPTER_METHODS = ('sup_ts', 'feedback', 'feedback_kl1') + tuple(REALISTIC)
+FEEDBACK['feedback_kl0'] = (0.0, 1.0, 1.0)          # ablation: no leash
+KL = {'feedback_kl1': 1.0, 'feedback_kl0': 0.0}      # every other feedback method uses 0.1
+ADAPTER_METHODS = ('sup_ts', 'feedback', 'feedback_kl1', 'feedback_kl0') + tuple(REALISTIC)
+POOL_SUITES = ('public', 'decisionbench', 'typed', 'emotion', 'agnews')   # suites whose training rows give feedback
+EVAL_SUITES = POOL_SUITES + ('jevbench',)                                  # pooled Peekaboo never sees JevBench
 CLEAN = (0.0, 1.0, 1.0)
 
 
@@ -182,10 +186,18 @@ def train_adapter(v, bank, train, method, rng, epochs=8, lr=1e-3, kl=0.1, batch=
     return pol, curve
 
 
+def switch_check(Pa, P0, cal, rng):
+    """Feedback-checked switch: on held-out rows, one answer sampled from the adapter and one from the base model are
+    each rated right / wrong; the adapter is kept only if it was right more often."""
+    rate = lambda P: float(np.mean([int(rng.choice(len(p), p=p / p.sum())) == gold(it) for p, it in zip(P, cal)])) if cal else 0.0
+    a, b = rate(Pa), rate(P0)
+    return {'adapter': a, 'base': b, 'on': bool(a > b), 'n': len(cal)}
+
+
 def run_adapter(v, bank, train, cal, test, method, rng):
     kind = 'sup' if method == 'sup_ts' else 'ips' if method == 'logged_ips' else 'bandit'
     spec = FEEDBACK.get(method, CLEAN)
-    pol, curve = train_adapter(v, bank, train, kind, rng, kl=1.0 if method == 'feedback_kl1' else 0.1, spec=spec)
+    pol, curve = train_adapter(v, bank, train, kind, rng, kl=KL.get(method, 0.1), spec=spec)
     Pc = [np.asarray(p, float) for p in predict(pol, bank, cal)]
     Pt = [np.asarray(p, float) for p in predict(pol, bank, test)]
     if kind == 'sup':
@@ -195,7 +207,10 @@ def run_adapter(v, bank, train, cal, test, method, rng):
         T = fit_T_feedback(Pc, cal, rng, actions=[int(rng.choice(len(p), p=p / p.sum())) for p in P0])
     else:
         T = fit_T_feedback(Pc, cal, rng, spec=spec)
-    return temp(Pt, T), {'T': T, 'reward_curve': curve, 'n_train': len(train), 'n_cal': len(cal), 'feedback': spec}, pol
+    sw = None
+    if kind != 'sup':                                # drawn after everything above, so earlier results are unchanged
+        sw = switch_check(temp(Pc, T), [np.asarray(p, float) for p in predict(pol, bank, cal, adapter=False)], cal, rng)
+    return temp(Pt, T), {'T': T, 'reward_curve': curve, 'n_train': len(train), 'n_cal': len(cal), 'feedback': spec, 'switch': sw}, pol, Pt
 
 
 class Bilinear(torch.nn.Module):
@@ -310,11 +325,61 @@ def overhead_ms(v, bank, rows, pol=None):
     return float(np.percentile(ts[20:] or ts, 50))
 
 
+# ───────────────────────────── pooled Peekaboo ─────────────────────────────
+def pooled(seed, rng):
+    """One Peekaboo adapter trained on the right / wrong feedback from every suite's training rows together
+    (POOL_SUITES), then used on every suite. JevBench gives no feedback at all: it is pure transfer. Each suite's
+    temperature and switch use only that suite's held-out feedback rows (JevBench: the union of all of them)."""
+    data, bank_all, trains, cals = {}, {}, [], {}
+    tag = lambda s, it: dict(it, id=f'{s}|{it["id"]}', _orig=it['id'])
+    for s in EVAL_SUITES:
+        if not (os.path.exists(paths.bank(s)) and os.path.exists(os.path.join(paths.RESULTS, f'released_{s}.json'))):
+            continue
+        items, bank, released, test, pool = load_suite(s)
+        data[s] = (released, test)
+        for k, x in bank.items():
+            bank_all[f'{s}|{k}'] = x
+        if s in POOL_SUITES and pool:
+            tr, ca = cal_split(pool)
+            trains += [tag(s, it) for it in tr]; cals[s] = [tag(s, it) for it in ca]
+    print(f'{paths.LABEL} pooled s{seed}: {len(trains)} feedback rows from {sorted(cals)}; evaluating {sorted(data)}', flush=True)
+    t0 = time.time()
+    v = B.engine()
+    pol, curve = train_adapter(v, bank_all, trains, 'bandit', rng, kl=0.1)
+    all_cal = [it for c in cals.values() for it in c]
+    for s, (released, test) in data.items():
+        usable = [tag(s, it) for it in test if 'feats' in bank_all.get(f'{s}|{it["id"]}', {})]
+        cal = cals.get(s) or all_cal
+        Pc = [np.asarray(p, float) for p in predict(pol, bank_all, cal)]
+        T = fit_T_feedback(Pc, cal, rng)
+        Pt = [np.asarray(p, float) for p in predict(pol, bank_all, usable)]
+        sw = switch_check(temp(Pc, T), [np.asarray(p, float) for p in predict(pol, bank_all, cal, adapter=False)], cal, rng) if s in cals else None
+        orig = [dict(it, id=it['_orig']) for it in usable]
+        recs, raw = to_records(orig, temp(Pt, T), released), to_records(orig, Pt, released)
+        swr = recs if (sw is None or sw['on']) else {it['id']: dict(released[it['id']], labels=it['labels']) for it in orig}
+        miss = lambda it: {'id': it['id'], 'gold': it['gold'], 'pred': None, 'probs': None, 'labels': it['labels'], 'error': 'no features'}
+        out_dir = os.path.join(paths.RESULTS, 'methods', s); os.makedirs(out_dir, exist_ok=True)
+        acc = np.mean([recs.get(it['id'], {}).get('pred') == it['gold'] for it in test])
+        print(f'{paths.LABEL} {s} pooled s{seed}: accuracy {acc:.4f} (T={T:.2f}, switch {sw and sw["on"]})', flush=True)
+        json.dump({'suite': s, 'method': 'pooled', 'seed': seed, 'size': paths.SIZE,
+                   'info': {'T': T, 'switch': sw, 'n_train': len(trains), 'feedback_suites': sorted(cals), 'reward_curve': curve},
+                   'records': [recs.get(it['id']) or miss(it) for it in test], 'records_raw': [raw.get(it['id']) or miss(it) for it in test],
+                   'records_switch': [swr.get(it['id']) or miss(it) for it in test]},
+                  open(os.path.join(out_dir, f'pooled_s{seed}.json'), 'w'))
+    open(os.path.join(paths.RESULTS, 'methods', f'pooled_s{seed}.done'), 'w').write(f'{time.time() - t0:.0f}s\n')
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--suite', required=True); ap.add_argument('--method', required=True)
     ap.add_argument('--seed', type=int, default=0)
     a = ap.parse_args()
+    if a.method == 'pooled':                         # one adapter for every suite: python adapt.py --suite all --method pooled
+        os.makedirs(os.path.join(paths.RESULTS, 'methods'), exist_ok=True)
+        if os.path.exists(os.path.join(paths.RESULTS, 'methods', f'pooled_s{a.seed}.done')):
+            print('skip pooled', a.seed); return
+        torch.manual_seed(a.seed)
+        return pooled(a.seed, np.random.default_rng(a.seed))
     out_dir = os.path.join(paths.RESULTS, 'methods', a.suite); os.makedirs(out_dir, exist_ok=True)
     out = os.path.join(out_dir, f'{a.method}_s{a.seed}.json')
     if os.path.exists(out):
@@ -322,7 +387,7 @@ def main():
     torch.manual_seed(a.seed); rng = np.random.default_rng(a.seed)
     items, bank, released, test, pool = load_suite(a.suite)
     usable = [it for it in test if 'feats' in bank.get(it['id'], {})]
-    t0, info, recs = time.time(), {}, {}
+    t0, info, recs, raw, swr = time.time(), {}, {}, {}, {}
 
     if a.method == 'ttt':
         if a.suite == 'jevbench':
@@ -346,7 +411,10 @@ def main():
             if a.method in ADAPTER_METHODS:
                 v = B.engine()
                 base_ms = overhead_ms(v, bank, te)
-                P, fi, pol = run_adapter(v, bank, train, cal, te, a.method, rng)
+                P, fi, pol, Praw = run_adapter(v, bank, train, cal, te, a.method, rng)
+                raw.update(to_records(te, Praw, released))
+                on = (fi.get('switch') or {}).get('on', True)
+                swr.update(to_records(te, P, released) if on else {it['id']: dict(released[it['id']], labels=it['labels']) for it in te})
                 fi['engine_ms_p50'] = {'released': base_ms, 'with_adapter': overhead_ms(v, bank, te, pol)}
                 extra = max(0.0, fi['engine_ms_p50']['with_adapter'] - base_ms)
                 del pol, v
@@ -364,8 +432,12 @@ def main():
                               'error': released.get(it['id'], {}).get('error', 'no features')}
     acc = np.mean([r['pred'] == r['gold'] for r in recs.values()])
     print(f'{paths.LABEL} {a.suite} {a.method} s{a.seed}: accuracy {acc:.4f} on {len(recs)} rows, {time.time() - t0:.0f}s', flush=True)
-    json.dump({'suite': a.suite, 'method': a.method, 'seed': a.seed, 'size': paths.SIZE, 'info': info,
-               'records': [recs[it['id']] for it in test]}, open(out + '.tmp', 'w'))
+    extra = {}
+    for name, d in (('records_raw', raw), ('records_switch', swr)):     # Peekaboo without the honesty fix; with the switch
+        if d:
+            extra[name] = [d.get(it['id'], recs[it['id']]) for it in test]
+    json.dump(dict({'suite': a.suite, 'method': a.method, 'seed': a.seed, 'size': paths.SIZE, 'info': info,
+                    'records': [recs[it['id']] for it in test]}, **extra), open(out + '.tmp', 'w'))
     os.replace(out + '.tmp', out)
 
 

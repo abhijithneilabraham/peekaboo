@@ -22,7 +22,7 @@ ROOT = VT.ROOT
 RES = {'0.8b': 'results', '4b': 'results_4b', 'laya': 'results_laya', 'laya_td': 'results_laya_td'}
 
 
-def runs(model, suite, method):
+def runs(model, suite, method, key='records'):
     res = os.path.join(ROOT, RES[model])
     if method == 'released':
         f = os.path.join(res, f'released_{suite}.json')
@@ -31,12 +31,17 @@ def runs(model, suite, method):
             return []
         recs = json.load(open(f))
         return [[recs[it['id']] for it in its]] if all(it['id'] in recs for it in its) else []
-    return [json.load(open(f))['records'] for f in sorted(glob.glob(os.path.join(res, 'methods', suite, f'{method}_s[0-9].json')))]
+    out = []
+    for f in sorted(glob.glob(os.path.join(res, 'methods', suite, f'{method}_s[0-9].json'))):
+        d = json.load(open(f))
+        if key in d:
+            out.append(d[key])
+    return out
 
 
-def summary(model, suite, method):
+def summary(model, suite, method, key='records'):
     vals = {}
-    for recs in runs(model, suite, method):
+    for recs in runs(model, suite, method, key):
         for k, x in VT.metrics(suite, recs).items():
             vals.setdefault(k, []).append(x)
     return vals
@@ -89,16 +94,68 @@ def bold(vals, txt, hib):
     return [f'**{t}**' if x is not None and best is not None and abs(x - best) < 5e-4 else t for x, t in zip(vals, txt)]
 
 
+# ───────────────────────────── the full grid ─────────────────────────────
+SUITES = ('public', 'jevbench', 'decisionbench', 'typed', 'emotion', 'agnews')
+PREFIX = {'public': 'pub', 'jevbench': 'jev', 'decisionbench': 'db', 'typed': 'td', 'emotion': 'em', 'agnews': 'ag'}
+VARIANTS = [('released', 'records', 'base model', 'none'),
+            ('ttt', 'records', "VegaML's TTT head", 'answer key'),
+            ('sup_ts', 'records', 'answer-key adapter (Laya: answer-key head)', 'answer key'),
+            ('laya_td', 'records', "laya-typed-decisions (Laya's released fine-tune)", 'answer key (typed-decisions)'),
+            ('feedback', 'records', '**Peekaboo**', 'right / wrong'),
+            ('feedback', 'records_switch', 'Peekaboo + switch', 'right / wrong'),
+            ('feedback', 'records_raw', 'Peekaboo without the honesty fix', 'right / wrong'),
+            ('feedback_kl0', 'records', 'Peekaboo without the leash (KL 0)', 'right / wrong'),
+            ('feedback_kl1', 'records', 'Peekaboo, tighter leash (KL 1)', 'right / wrong'),
+            ('pooled', 'records', '**pooled Peekaboo** (one add-on, all suites\' feedback)', 'right / wrong'),
+            ('pooled', 'records_switch', 'pooled Peekaboo + switch', 'right / wrong'),
+            ('pooled', 'records_raw', 'pooled Peekaboo without the honesty fix', 'right / wrong')]
+
+
+def variant_runs(model, suite, method, key):
+    if method == 'laya_td':
+        return runs('laya_td', suite, 'released') if model == 'laya' else []
+    return runs(model, suite, method, key)
+
+
+def grid():
+    L = ['## 0. Everything: every model, method and ablation on every benchmark', '',
+         'Accuracy (mean ± s.d. over 3 seeds), then calibration error, then the paired accuracy gain over the base model in '
+         'points with a 95% bootstrap CI. JevBench: per-suite Peekaboo learns by 5-fold cross-fitting; pooled Peekaboo never '
+         'sees a JevBench row. "switch" = the add-on is used only where held-out right / wrong feedback says it beats the base model.', '']
+    for title, what in (('accuracy', 'accuracy'), ('calibration error (ECE, lower is better)', 'ece'), ('gain over the base model', 'gain')):
+        L += [f'### {title}', '', '| model | method | learns from | ' + ' | '.join(SUITES) + ' |', '|---|---|---|' + '---|' * len(SUITES)]
+        for model, mname in (('0.8b', 'Vega 0.8B'), ('4b', 'Vega 4B'), ('laya', 'Laya')):
+            for method, key, name, src in VARIANTS:
+                if (model == 'laya' and method == 'ttt') or (model != 'laya' and method == 'laya_td'):
+                    continue
+                cells = []
+                for s in SUITES:
+                    rs = variant_runs(model, s, method, key)
+                    if not rs:
+                        cells.append(''); continue
+                    if what == 'gain':
+                        cells.append('—' if method == 'released' else paired(s, runs(model, s, 'released'), rs))
+                    else:
+                        vals = [VT.metrics(s, r).get(f'{PREFIX[s]}:{what}') for r in rs]
+                        cells.append(cell(vals))
+                if any(cells):
+                    L.append(f'| {mname} | {name} | {src} | ' + ' | '.join(c or '·' for c in cells) + ' |')
+        L.append('')
+    return L
+
+
 def main():
     L = ['# Peekaboo against Vega and Laya, on their own benchmarks', '',
          '"base" = the model as released, measured in this run. "+ Peekaboo" = the same model plus our adapter, trained '
          'only from right / wrong feedback (mean ± s.d. over 3 seeds). "README" = the number Vega or Laya publish. '
-         'Bold = best in the row.', '']
+         'Bold = best in the row.', ''] + grid()
 
     # 1. Vega's README table
     S = {(m, s, meth): summary(m, s, meth) for m in ('0.8b', '4b') for s in ('public', 'jevbench') for meth in ('released', 'feedback', 'ttt', 'sup_ts')}
-    for m in ('0.8b', '4b'):
-        S[(m, 'decisionbench', 'released')] = db_from_repo(m, 'zero'); S[(m, 'decisionbench', 'feedback')] = db_from_repo(m, 'feedback')
+    for m in ('0.8b', '4b'):                   # this run's DecisionBench when it has it, else the finished runs in the repo
+        here = summary(m, 'decisionbench', 'released')
+        S[(m, 'decisionbench', 'released')] = here or db_from_repo(m, 'zero')
+        S[(m, 'decisionbench', 'feedback')] = summary(m, 'decisionbench', 'feedback') if here else db_from_repo(m, 'feedback')
     for s_ in ('public', 'jevbench', 'decisionbench'):
         S[('laya', s_, 'released')] = summary('laya', s_, 'released'); S[('laya', s_, 'feedback')] = summary('laya', s_, 'feedback')
         S[('laya_td', s_, 'released')] = summary('laya_td', s_, 'released')

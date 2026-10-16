@@ -175,9 +175,11 @@ class Laya:
         return out
 
 
-def peekaboo(L, bank, train, cal, test, method, rng, epochs=8, lr=1e-4, kl=0.1, batch=32):
-    """Peekaboo on Laya: the same loop as Vega's (adapt.train_adapter), on a trainable copy of the decision head."""
-    spec = A.FEEDBACK.get(method, A.CLEAN)
+def peekaboo(L, bank, train, cal, test, method, rng, epochs=8, lr=1e-4, batch=32):
+    """Peekaboo on Laya: the same loop as Vega's (adapt.train_adapter), on a trainable copy of the decision head.
+    method 'sup_ts' trains the same copy with cross-entropy on the answer key + temperature scaling (the answer-key
+    baseline); 'feedback_kl0' / 'feedback_kl1' are the leash ablations. Returns calibrated and raw test probabilities."""
+    spec, kl = A.FEEDBACK.get(method, A.CLEAN), A.KL.get(method, 0.1)
     ref = L.released()
     mods = {k: copy.deepcopy(v).eval() for k, v in ref.items()}
     params = [p for m in mods.values() for p in m.parameters()]
@@ -197,7 +199,9 @@ def peekaboo(L, bank, train, cal, test, method, rng, epochs=8, lr=1e-4, kl=0.1, 
             g = torch.tensor([A.gold(it) for it in rows], device=L.dev)
             lp, mask, h = L.logp(bank, rows, mods)
             ar = torch.arange(len(rows), device=L.dev)
-            if method == 'logged_ips':
+            if method == 'sup_ts':
+                loss = -lp[ar, g].mean()
+            elif method == 'logged_ips':
                 a = torch.tensor([log[it['id']][0] for it in rows], device=L.dev)
                 r = torch.tensor([log[it['id']][1] for it in rows], device=L.dev)
                 p0 = torch.tensor([log[it['id']][2] for it in rows], device=L.dev)
@@ -211,18 +215,23 @@ def peekaboo(L, bank, train, cal, test, method, rng, epochs=8, lr=1e-4, kl=0.1, 
                 if n:
                     base = 0.9 * base + 0.1 * float((r * sf).sum() / n)
                 rew.append(float(r_true.mean()))
-            with torch.no_grad():
-                lq, _, _ = L.logp(bank, rows, ref, h=h)
-            loss = loss + kl * (lp.exp() * (lp - lq)).masked_fill(~mask, 0).sum(-1).mean()
+            if kl and method != 'sup_ts':
+                with torch.no_grad():
+                    lq, _, _ = L.logp(bank, rows, ref, h=h)
+                loss = loss + kl * (lp.exp() * (lp - lq)).masked_fill(~mask, 0).sum(-1).mean()
             opt.zero_grad(); loss.backward(); torch.nn.utils.clip_grad_norm_(params, 1.0); opt.step()
-        curve.append(float(np.mean(rew)))
+        curve.append(float(np.mean(rew)) if rew else None)
     Pc, Pt = L.predict(bank, cal, mods), L.predict(bank, test, mods)
+    if method == 'sup_ts':
+        T = A.fit_T_labels(Pc, cal)
+        return A.temp(Pt, T), {'T': T, 'n_train': len(train), 'n_cal': len(cal)}, Pt
     if method == 'logged_ips':
         acts = [int(rng.choice(len(p), p=p / p.sum())) for p in L.predict(bank, cal, ref)]
         T = A.fit_T_feedback(Pc, cal, rng, actions=acts)
     else:
         T = A.fit_T_feedback(Pc, cal, rng, spec=spec)
-    return A.temp(Pt, T), {'T': T, 'reward_curve': curve, 'n_train': len(train), 'n_cal': len(cal), 'feedback': spec}
+    sw = A.switch_check(A.temp(Pc, T), L.predict(bank, cal, ref), cal, rng)
+    return A.temp(Pt, T), {'T': T, 'reward_curve': curve, 'n_train': len(train), 'n_cal': len(cal), 'feedback': spec, 'switch': sw}, Pt
 
 
 def train_main(suite, method, seed):
@@ -235,7 +244,7 @@ def train_main(suite, method, seed):
     ok = lambda it: 'ids' in bank.get(it['id'], {})
     pool = [it for it in items if it['split'] == 'pool' and ok(it)]
     usable = [it for it in test if ok(it)]
-    L = Laya(); t0 = time.time(); recs, info = {}, {'folds': []}
+    L = Laya(); t0 = time.time(); recs, raw, swr, info = {}, {}, {}, {'folds': []}
     if method == 'replay':
         P = L.predict(bank, usable, L.released())
         diffs = [max(abs(released[it['id']]['probs'][lab] - float(p[j])) for j, lab in enumerate(it['labels'])) for it, p in zip(usable, P)]
@@ -250,8 +259,11 @@ def train_main(suite, method, seed):
                 train = [it for it in tr_pool if A.stable('cal' + it['id']) % 5]; cal = [it for it in tr_pool if not A.stable('cal' + it['id']) % 5]
             else:
                 train, cal = A.cal_split(tr_pool)
-            P, fi = peekaboo(L, bank, train, cal, te, method, rng)
+            P, fi, Praw = peekaboo(L, bank, train, cal, te, method, rng)
             recs.update(A.to_records(te, P, released))   # same architecture and cost as base Laya: no extra latency
+            raw.update(A.to_records(te, Praw, released))
+            if fi.get('switch') is not None:
+                swr.update(A.to_records(te, P, released) if fi['switch']['on'] else {it['id']: dict(released[it['id']], labels=it['labels']) for it in te})
             info['folds'].append(dict(fi, fold=f, n_test=len(te)))
     for it in test:
         if it['id'] not in recs:
@@ -259,9 +271,79 @@ def train_main(suite, method, seed):
                               'error': released.get(it['id'], {}).get('error', 'no input')}
     acc = np.mean([r['pred'] == r['gold'] for r in recs.values()])
     print(f'Laya {suite} {method} s{seed}: accuracy {acc:.4f} on {len(recs)} rows, {time.time() - t0:.0f}s', flush=True)
-    json.dump({'suite': suite, 'method': method, 'seed': seed, 'size': 'laya', 'info': info,
-               'records': [recs[it['id']] for it in test]}, open(out + '.tmp', 'w'))
+    extra = {k: [d.get(it['id'], recs[it['id']]) for it in test] for k, d in (('records_raw', raw), ('records_switch', swr)) if d}
+    json.dump(dict({'suite': suite, 'method': method, 'seed': seed, 'size': paths.SIZE, 'info': info,
+                    'records': [recs[it['id']] for it in test]}, **extra), open(out + '.tmp', 'w'))
     os.replace(out + '.tmp', out)
+
+
+def pooled_main(seed):
+    """Pooled Peekaboo on Laya: one trainable head trained on the feedback from every suite's training rows, used on
+    every suite (as adapt.pooled does for Vega). JevBench gives no feedback: pure transfer."""
+    done = os.path.join(paths.RESULTS, 'methods', f'pooled_s{seed}.done')
+    if os.path.exists(done):
+        print('skip pooled', seed); return
+    torch.manual_seed(seed); rng = np.random.default_rng(seed)
+    data, bank_all, trains, cals = {}, {}, [], {}
+    tag = lambda s, it: dict(it, id=f'{s}|{it["id"]}', _orig=it['id'])
+    for s in A.EVAL_SUITES:
+        if not (os.path.exists(paths.bank(s)) and os.path.exists(os.path.join(paths.RESULTS, f'released_{s}.json'))):
+            continue
+        items, bank, released, test, _ = A.load_suite(s)
+        ok = lambda it: 'ids' in bank.get(it['id'], {})
+        data[s] = (released, test)
+        for k, x in bank.items():
+            bank_all[f'{s}|{k}'] = x
+        pool = [it for it in items if it['split'] == 'pool' and ok(it)]
+        if s in A.POOL_SUITES and pool:
+            tr, ca = A.cal_split(pool); trains += [tag(s, it) for it in tr]; cals[s] = [tag(s, it) for it in ca]
+    print(f'Laya pooled s{seed}: {len(trains)} feedback rows from {sorted(cals)}; evaluating {sorted(data)}', flush=True)
+    L = Laya(); t0 = time.time()
+    all_cal = [it for c in cals.values() for it in c]
+    mods = train_head(L, bank_all, trains, rng)
+    ref = L.released()
+    for s, (released, test) in data.items():
+        usable = [tag(s, it) for it in test if 'ids' in bank_all.get(f'{s}|{it["id"]}', {})]
+        cal = cals.get(s) or all_cal
+        Pc = L.predict(bank_all, cal, mods); T = A.fit_T_feedback(Pc, cal, rng)
+        Pt = L.predict(bank_all, usable, mods)
+        sw = A.switch_check(A.temp(Pc, T), L.predict(bank_all, cal, ref), cal, rng) if s in cals else None
+        orig = [dict(it, id=it['_orig']) for it in usable]
+        recs, raw = A.to_records(orig, A.temp(Pt, T), released), A.to_records(orig, Pt, released)
+        swr = recs if (sw is None or sw['on']) else {it['id']: dict(released[it['id']], labels=it['labels']) for it in orig}
+        miss = lambda it: {'id': it['id'], 'gold': it['gold'], 'pred': None, 'probs': None, 'labels': it['labels'], 'error': 'no input'}
+        out_dir = os.path.join(paths.RESULTS, 'methods', s); os.makedirs(out_dir, exist_ok=True)
+        acc = np.mean([recs.get(it['id'], {}).get('pred') == it['gold'] for it in test])
+        print(f'Laya {s} pooled s{seed}: accuracy {acc:.4f} (T={T:.2f}, switch {sw and sw["on"]})', flush=True)
+        json.dump({'suite': s, 'method': 'pooled', 'seed': seed, 'size': paths.SIZE,
+                   'info': {'T': T, 'switch': sw, 'n_train': len(trains), 'feedback_suites': sorted(cals)},
+                   'records': [recs.get(it['id']) or miss(it) for it in test], 'records_raw': [raw.get(it['id']) or miss(it) for it in test],
+                   'records_switch': [swr.get(it['id']) or miss(it) for it in test]}, open(os.path.join(out_dir, f'pooled_s{seed}.json'), 'w'))
+    open(done, 'w').write(f'{time.time() - t0:.0f}s\n')
+
+
+def train_head(L, bank, train, rng, epochs=8, lr=1e-4, kl=0.1, batch=32):
+    """The Peekaboo training loop alone (clean feedback), returning the trained head."""
+    ref = L.released()
+    mods = {k: copy.deepcopy(v).eval() for k, v in ref.items()}
+    params = [p for m in mods.values() for p in m.parameters()]
+    for p in params:
+        p.requires_grad_(True)
+    opt = torch.optim.Adam(params, lr=lr); base = 0.5
+    for ep in range(epochs):
+        order = rng.permutation(len(train))
+        for s in range(0, len(train), batch):
+            rows = [train[i] for i in order[s:s + batch]]
+            g = torch.tensor([A.gold(it) for it in rows], device=L.dev)
+            lp, mask, h = L.logp(bank, rows, mods); ar = torch.arange(len(rows), device=L.dev)
+            with torch.no_grad():
+                a = torch.multinomial(lp.exp(), 1).squeeze(1); r = (a == g).float()
+                lq, _, _ = L.logp(bank, rows, ref, h=h)
+            loss = -((r - base) * lp[ar, a]).mean() + kl * (lp.exp() * (lp - lq)).masked_fill(~mask, 0).sum(-1).mean()
+            base = 0.9 * base + 0.1 * float(r.mean())
+            opt.zero_grad(); loss.backward(); torch.nn.utils.clip_grad_norm_(params, 1.0); opt.step()
+        print(f'  pooled epoch {ep + 1}/{epochs}', flush=True)
+    return mods
 
 
 if __name__ == '__main__':
@@ -269,4 +351,9 @@ if __name__ == '__main__':
     ap.add_argument('stage', choices=['cache', 'train']); ap.add_argument('--suite', required=True)
     ap.add_argument('--method', default='feedback'); ap.add_argument('--seed', type=int, default=0)
     a = ap.parse_args()
-    cache(a.suite) if a.stage == 'cache' else train_main(a.suite, a.method, a.seed)
+    if a.stage == 'cache':
+        cache(a.suite)
+    elif a.method == 'pooled':
+        pooled_main(a.seed)
+    else:
+        train_main(a.suite, a.method, a.seed)

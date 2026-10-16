@@ -31,35 +31,59 @@ class Step:
         self.needs, self.state, self.note, self.tries, self.proc, self.t0 = list(needs), 'pending', '', 0, None, 0
 
 
+SUITES = ('public', 'jevbench', 'decisionbench', 'typed', 'emotion', 'agnews')
+VEGA = (('0.8b', 'results', 8, 2), ('4b', 'results_4b', 24, 4))
+
+
 def plan(out):
+    """Every step, in priority order (the scheduler starts ready steps in this order): read every suite through
+    every model; the main comparison (base, their answer-key improvement, Peekaboo); pooled Peekaboo; the ablations."""
     steps = []
     ex = lambda *p: (lambda: os.path.exists(os.path.join(out, *p)))
-    for size, sfx, gpu_cache, gpu_run in (('0.8b', '', 8, 2), ('4b', '_4b', 24, 4)):
-        res = 'results' + sfx
-        add = lambda n, a, d, g, needs=(): steps.append(Step(f'vega-{size}/{n}', VP, a, d, size, g, [f'vega-{size}/{x}' for x in needs]))
-        for s in ('public', 'jevbench', 'typed'):
-            add(f'cache/{s}', ['suite_cache.py', '--suite', s], ex(res, f'cache_{s}.done'), gpu_cache)
-            add(f'replay/{s}', ['adapt.py', '--suite', s, '--method', 'replay'], ex(res, 'methods', s, 'replay_s0.json'), gpu_run, [f'cache/{s}'])
-            methods = ['feedback'] if s == 'jevbench' else ['sup_ts', 'feedback']
+    V = lambda size, n, a, d, g, needs: steps.append(Step(f'vega-{size}/{n}', VP, a, d, size, g, needs))
+    Lm = lambda model, n, a, d, g, needs: steps.append(Step(f'{model}/{n}', HERE, ['laya_peekaboo.py'] + a, d, model, g, needs))
+    rows_from = lambda s: 'laya/cache/decisionbench' if s == 'decisionbench' else f'vega-0.8b/cache/{s}'   # one writer per row list
+    # 1. read every suite once through every model
+    for s in SUITES:
+        for size, res, gc, _ in VEGA:
+            needs = [] if (size == '0.8b' and s != 'decisionbench') else [rows_from(s)]
+            V(size, f'cache/{s}', ['suite_cache.py', '--suite', s], ex(res, f'cache_{s}.done'), gc, needs)
+        for model in ('laya', 'laya_td'):
+            needs = [] if (model == 'laya' and s == 'decisionbench') else [rows_from(s)]
+            Lm(model, f'cache/{s}', ['cache', '--suite', s], ex(f'results_{model}', f'cache_{s}.done'), 4, needs)
+    for s in SUITES:
+        for size, res, _, gr in VEGA:
+            V(size, f'replay/{s}', ['adapt.py', '--suite', s, '--method', 'replay'], ex(res, 'methods', s, 'replay_s0.json'), gr, [f'vega-{size}/cache/{s}'])
+        Lm('laya', f'replay/{s}', ['train', '--suite', s, '--method', 'replay'], ex('results_laya', 'methods', s, 'replay_s0.json'), 4, [f'laya/cache/{s}'])
+    # 2. the main comparison: their answer-key improvement and Peekaboo, 3 seeds
+    for s in SUITES:
+        for size, res, _, gr in VEGA:
+            need = [f'vega-{size}/cache/{s}']
             if s != 'jevbench':
-                add(f'ttt/{s}', ['adapt.py', '--suite', s, '--method', 'ttt'], ex(res, 'methods', s, 'ttt_s0.json'), 0, [f'cache/{s}'])
-            for m in methods:
+                V(size, f'ttt/{s}', ['adapt.py', '--suite', s, '--method', 'ttt'], ex(res, 'methods', s, 'ttt_s0.json'), 0, need)
+            for m in (['feedback'] if s == 'jevbench' else ['sup_ts', 'feedback']):
                 for sd in SEEDS:
-                    add(f'{m}/{s}/s{sd}', ['adapt.py', '--suite', s, '--method', m, '--seed', str(sd)],
-                        ex(res, 'methods', s, f'{m}_s{sd}.json'), gpu_run, [f'cache/{s}'])
-    for st in steps:                     # the 4B reads the row lists the 0.8B cache wrote, so the two never race
-        if st.name.startswith('vega-4b/cache/'):
-            st.needs.append('vega-0.8b/cache/' + st.name.split('/')[-1])
-    # Laya on every benchmark: base Laya, its released fine-tune (laya-typed-decisions), and base Laya + Peekaboo
-    L = lambda n, model, a, d, g, needs: steps.append(Step(f'{model}/{n}', HERE, ['laya_peekaboo.py'] + a, d, model, g, needs))
-    for s in ('public', 'jevbench', 'decisionbench', 'typed'):
-        rows = ['laya/cache/decisionbench'] if s == 'decisionbench' else [f'vega-0.8b/cache/{s}']   # one writer per row list
-        L(f'cache/{s}', 'laya', ['cache', '--suite', s], ex('results_laya', f'cache_{s}.done'), 4, [] if s == 'decisionbench' else rows)
-        L(f'cache/{s}', 'laya_td', ['cache', '--suite', s], ex('results_laya_td', f'cache_{s}.done'), 4, rows)
-        L(f'replay/{s}', 'laya', ['train', '--suite', s, '--method', 'replay'], ex('results_laya', 'methods', s, 'replay_s0.json'), 4, [f'laya/cache/{s}'])
-        for sd in SEEDS:
-            L(f'feedback/{s}/s{sd}', 'laya', ['train', '--suite', s, '--method', 'feedback', '--seed', str(sd)],
-              ex('results_laya', 'methods', s, f'feedback_s{sd}.json'), 8, [f'laya/cache/{s}'])
+                    V(size, f'{m}/{s}/s{sd}', ['adapt.py', '--suite', s, '--method', m, '--seed', str(sd)], ex(res, 'methods', s, f'{m}_s{sd}.json'), gr, need)
+        for m in (['feedback'] if s == 'jevbench' else ['sup_ts', 'feedback']):
+            for sd in SEEDS:
+                Lm('laya', f'{m}/{s}/s{sd}', ['train', '--suite', s, '--method', m, '--seed', str(sd)],
+                   ex('results_laya', 'methods', s, f'{m}_s{sd}.json'), 8, ['laya/cache/' + s])
+    # 3. pooled Peekaboo: one adapter per model from every suite's feedback, used on every suite (JevBench: transfer only)
+    for sd in SEEDS:
+        for size, res, _, gr in VEGA:
+            V(size, f'pooled/s{sd}', ['adapt.py', '--suite', 'all', '--method', 'pooled', '--seed', str(sd)],
+              ex(res, 'methods', f'pooled_s{sd}.done'), 2 * gr, [f'vega-{size}/cache/{x}' for x in SUITES])
+        Lm('laya', f'pooled/s{sd}', ['train', '--suite', 'all', '--method', 'pooled', '--seed', str(sd)],
+           ex('results_laya', 'methods', f'pooled_s{sd}.done'), 10, [f'laya/cache/{x}' for x in SUITES])
+    # 4. ablations of Peekaboo: no leash (KL 0), a tighter leash (KL 1). (No honesty fix and the switch come free
+    #    with every Peekaboo run: records_raw, records_switch.)
+    for m in ('feedback_kl0', 'feedback_kl1'):
+        for s in SUITES:
+            for sd in SEEDS:
+                for size, res, _, gr in VEGA:
+                    V(size, f'{m}/{s}/s{sd}', ['adapt.py', '--suite', s, '--method', m, '--seed', str(sd)], ex(res, 'methods', s, f'{m}_s{sd}.json'), gr, [f'vega-{size}/cache/{s}'])
+                Lm('laya', f'{m}/{s}/s{sd}', ['train', '--suite', s, '--method', m, '--seed', str(sd)],
+                   ex('results_laya', 'methods', s, f'{m}_s{sd}.json'), 8, ['laya/cache/' + s])
     steps.append(Step('tables', HERE, ['table.py'], lambda: False, None, 0))
     return steps
 
@@ -175,10 +199,11 @@ def main():
     import torch
     gpu = torch.cuda.is_available() and os.environ.get('VEGA_DEVICE', 'cuda').startswith('cuda')
     budget = 0.9 * torch.cuda.get_device_properties(0).total_memory / 2 ** 30 if gpu else 0
-    jobs = a.jobs or (4 if gpu else 1)
+    jobs = a.jobs or (8 if gpu else 1)
     print(f'device: {torch.cuda.get_device_name(0) + f" ({budget / 0.9:.0f} GB)" if gpu else "CPU (the 4B will take days; use a GPU)"}; '
           f'{jobs} steps at a time; output {out}', flush=True)
-    base_env = dict(os.environ, VEGA_OUT=out, PYTHONUNBUFFERED='1', HF_HUB_DISABLE_XET='1', TOKENIZERS_PARALLELISM='false')
+    base_env = dict(os.environ, VEGA_OUT=out, PYTHONUNBUFFERED='1', HF_HUB_DISABLE_XET='1', TOKENIZERS_PARALLELISM='false',
+                    OMP_NUM_THREADS='8', MKL_NUM_THREADS='8')   # without a cap, every step starts a thread per core and they thrash
     hb = {}; heartbeat(out, hb); t0 = time.time(); last_status = 0
     while True:
         active = [st for st in steps if st.state == 'running']

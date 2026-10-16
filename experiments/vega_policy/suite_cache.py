@@ -73,6 +73,17 @@ def build_items(suite, quick=False):
             raise RuntimeError(f'{len(missing)} slice rows are not in the 100-per-task sample')
         meta = {k: v for k, v in meta.items() if k != 'binary_note'}
         return full, meta
+    if suite in ('emotion', 'agnews'):               # large public datasets with real training splits: dair-ai/emotion is the
+        key = {'emotion': 'emotion', 'agnews': 'ag_news'}[suite]   # dataset of Vega's fine-tuning recipe, AG News one Laya reports
+        r = load_task(BT.BY_KEY[key], n_eval=40 if quick else 2000, n_fit=80 if quick else 4000, seed=SEED)   # VegaML's own loader and question
+        if r.get('skipped'):
+            raise RuntimeError(f'{suite}: {r["skipped"]}')
+        out = []
+        for split, rows in (('test', r['items']), ('pool', r['fit'])):
+            for it in rows:
+                out.append({'id': f'{suite}:{it["id"]}', 'state': it['state'], 'gold': it['gold'], 'question': it.get('question') or r['question'],
+                            'labels': list(r['labels']), 'qtype': r['meta']['qtype'], 'task': key, 'split': split})
+        return out, {'source': r['meta'].get('hf'), 'n_test': len(r['items']), 'n_pool': len(r['fit']), 'labels': r['labels']}
     if suite == 'typed':                              # Laya's headline benchmark, LocalLLaMA/typed-decisions (all workflows)
         from datasets import load_dataset
         out, meta = [], {'source': 'LocalLLaMA/typed-decisions, config all', 'decisions': {}}

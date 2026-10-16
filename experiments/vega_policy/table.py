@@ -85,6 +85,11 @@ def metrics(suite, recs):
         m['jev:hard'] = BR.sliced(its, recs, lambda it: 'tier:' + str(it['tier'])).get('tier:hard', {}).get('accuracy')
         m['jev:temporal'] = BR.sliced(its, recs, lambda it: 'family:' + str(it['family'])).get('family:temporal_numeric', {}).get('accuracy')
         m['jev:paraphrase'] = BS.paraphrase_consistency(its, recs).get('paraphrase_consistency')
+    elif suite in ('emotion', 'agnews'):
+        pre = 'em' if suite == 'emotion' else 'ag'
+        al = bc.score_metrics(recs, its[0]['labels'], its[0]['qtype'], 1.0 / max(len(its[0]['labels']), 2)) if its else {}
+        m.update({f'{pre}:accuracy': al.get('accuracy'), f'{pre}:ece': al.get('ece'), f'{pre}:nll': al.get('nll'), f'{pre}:macro_f1': al.get('macro_f1'),
+                  f'{pre}:p50': al.get('latency_ms_p50')})
     elif suite == 'typed':
         al = BR.sliced(its, recs, lambda it: 'all')['all']
         m.update({'td:accuracy': al.get('accuracy'), 'td:ece': al.get('ece'), 'td:nll': al.get('nll'), 'td:coverage': al.get('coverage'),
