@@ -164,7 +164,9 @@ class Laya:
             lg = self.head_logits(mods, h, att, mpos, mmask, qt) / T[:, None]
         return torch.log_softmax(lg.masked_fill(~mmask, -1e4), -1), mmask, h
 
-    def predict(self, bank, rows, mods, bs=32):
+    def predict(self, bank, rows, mods, bs=1):
+        # one question per forward pass, as Laya's own prediction call does: with padding, autocast changes the
+        # probabilities by up to ~0.02 (measured on JevBench), so batched scoring would not match base Laya
         out = []
         with torch.no_grad():
             for s in range(0, len(rows), bs):
