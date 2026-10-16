@@ -1,6 +1,6 @@
-# Status of the remaining Peekaboo experiments  (Fri Oct 16 21:37:59 2026)
+# Status of the remaining Peekaboo experiments  (Fri Oct 16 21:48:59 2026)
 
-done: 128 · pending: 82 · running: 5  (of 215 steps)
+done: 129 · pending: 81 · running: 5  (of 215 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
@@ -55,10 +55,9 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - **pending** `laya/feedback/agnews/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite agnews --method feedback --seed 2`)
 - **pending** `vega-4b/pooled/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite all --method pooled --seed 0`)
 - **pending** `laya/pooled/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite all --method pooled --seed 0`)
-- **running** `vega-0.8b/pooled/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite all --method pooled --seed 1`)
 - **pending** `vega-4b/pooled/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite all --method pooled --seed 1`)
 - **pending** `laya/pooled/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite all --method pooled --seed 1`)
-- **pending** `vega-0.8b/pooled/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite all --method pooled --seed 2`)
+- **running** `vega-0.8b/pooled/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite all --method pooled --seed 2`)
 - **pending** `vega-4b/pooled/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite all --method pooled --seed 2`)
 - **pending** `laya/pooled/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite all --method pooled --seed 2`)
 - **pending** `laya/feedback_kl0/public/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method feedback_kl0 --seed 0`)
@@ -249,10 +248,10 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-0.8b/pooled/s0 935s
 - pending  vega-4b/pooled/s0 
 - pending  laya/pooled/s0 
-- running  vega-0.8b/pooled/s1 
+- done     vega-0.8b/pooled/s1 1205s
 - pending  vega-4b/pooled/s1 
 - pending  laya/pooled/s1 
-- pending  vega-0.8b/pooled/s2 
+- running  vega-0.8b/pooled/s2 
 - pending  vega-4b/pooled/s2 
 - pending  laya/pooled/s2 
 - done     vega-0.8b/feedback_kl0/public/s0 
