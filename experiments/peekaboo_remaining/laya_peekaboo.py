@@ -31,7 +31,7 @@ import torch
 import paths
 import adapt as A
 
-CHECKPOINT = {'laya': 'convaiinnovations/laya', 'laya_td': 'typed-decisions'}   # laya.load resolves the alias
+CHECKPOINT = {'laya': 'convaiinnovations/laya', 'laya_td': 'convaiinnovations/laya-typed-decisions'}
 
 
 def to_laya(q):
@@ -137,9 +137,13 @@ class Laya:
         d = self.dev
         return ids.to(d), att.to(d), mpos.to(d), mmask.to(d), qt.to(d), T.to(d)
 
+    def amp(self):
+        """The precision Laya's own prediction call runs the whole model in (the checkpoint's autocast dtype)."""
+        return torch.autocast(self.dev.type, dtype=self.ag.dtype, enabled=bool(self.ag.amp_enabled))
+
     def encode(self, ids, att):
-        with torch.no_grad(), torch.autocast(self.dev.type, dtype=torch.bfloat16, enabled=self.dev.type == 'cuda'):
-            return self.m.encoder(input_ids=ids, attention_mask=att).last_hidden_state.float()
+        with torch.no_grad(), self.amp():
+            return self.m.encoder(input_ids=ids, attention_mask=att).last_hidden_state
 
     def head_logits(self, mods, h, att, mpos, mmask, qt):
         """DecisionModel.forward after the encoder, with any head (the released one or a trainable copy)."""
@@ -156,7 +160,8 @@ class Laya:
     def logp(self, bank, rows, mods, h=None):
         ids, att, mpos, mmask, qt, T = self.batch(bank, rows)
         h = self.encode(ids, att) if h is None else h
-        lg = self.head_logits(mods, h, att, mpos, mmask, qt) / T[:, None]
+        with self.amp():
+            lg = self.head_logits(mods, h, att, mpos, mmask, qt) / T[:, None]
         return torch.log_softmax(lg.masked_fill(~mmask, -1e4), -1), mmask, h
 
     def predict(self, bank, rows, mods, bs=32):
