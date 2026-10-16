@@ -12,6 +12,11 @@ Methods, and what each may read from the suite's pool rows:
                                   fresh feedback on held-out rows. Gold labels are read only through the 0/1 reward.
   feedback_kl1  right/wrong only  ablation: KL weight 1
   linear_fb     right/wrong only  control without Vega's engine: a bilinear scorer on the same features, same feedback
+  feedback_noise10/20/30, feedback_half/quarter, feedback_complaints
+                right/wrong only  Peekaboo under realistic feedback: 10-30% of reports flipped; only half or a quarter of
+                                  answers rated; complaints only (every wrong answer reported, 20% of right ones)
+  logged_ips    right/wrong only  logged-feedback baseline: feedback on the released model's own answers, logged once,
+                                  learned off-policy with clipped importance weights
 
 Where the feedback comes from:
   public         the notebook's 50 "fit" rows per task (training split, never scored), the rows its TTT head gets
@@ -33,7 +38,28 @@ from bench_rl import Policy, predict
 
 paths.harness()
 TGRID = np.exp(np.linspace(np.log(0.25), np.log(32), 61))
-ADAPTER_METHODS = ('sup_ts', 'feedback', 'feedback_kl1')
+# Feedback as a deployment would deliver it: (flip probability, P(reported | right), P(reported | wrong)).
+FEEDBACK = {'feedback': (0.0, 1.0, 1.0), 'feedback_kl1': (0.0, 1.0, 1.0),
+            'feedback_noise10': (0.1, 1.0, 1.0), 'feedback_noise20': (0.2, 1.0, 1.0), 'feedback_noise30': (0.3, 1.0, 1.0),
+            'feedback_half': (0.0, 0.5, 0.5), 'feedback_quarter': (0.0, 0.25, 0.25),
+            'feedback_complaints': (0.0, 0.2, 1.0)}
+# Realistic-feedback tests of Peekaboo: noisy, missing, complaint-only feedback, and the logged-feedback baseline
+# (off-policy: one answer per row sampled from the released model, feedback logged once, trained by clipped IPS).
+REALISTIC = [k for k in FEEDBACK if k not in ('feedback', 'feedback_kl1')] + ['logged_ips']
+ADAPTER_METHODS = ('sup_ts', 'feedback', 'feedback_kl1') + tuple(REALISTIC)
+CLEAN = (0.0, 1.0, 1.0)
+
+
+def observe(r, spec):
+    """True 0/1 correctness -> (observed reward, reported mask). Users report based on the truth, then a report
+    may be flipped. Randomness is drawn only when the spec needs it, so clean feedback replays the paper exactly."""
+    flip, p_right, p_wrong = spec
+    seen = torch.ones_like(r, dtype=torch.bool)
+    if p_right < 1 or p_wrong < 1:
+        seen = torch.rand_like(r) < torch.where(r > 0, torch.full_like(r, p_right), torch.full_like(r, p_wrong))
+    if flip > 0:
+        r = torch.where(torch.rand_like(r) < flip, 1 - r, r)
+    return r, seen
 FOLDS = 5
 
 
@@ -87,11 +113,20 @@ def fit_T_labels(P, rows):
     return float(min(TGRID, key=lambda T: -np.mean([np.log(max(p[gi], 1e-12)) for p, gi in zip(temp(P, T), g)])))
 
 
-def fit_T_feedback(P, rows, rng):
-    """Sample a ~ p, observe r = [a correct]; maximise sum log Bernoulli(r; p_T(a)). Labels only through r."""
+def fit_T_feedback(P, rows, rng, spec=CLEAN, actions=None):
+    """Sample a ~ p, observe r = [a correct]; maximise sum log Bernoulli(r; p_T(a)). Labels only through r.
+    `spec` delivers the feedback as in training (noisy / missing); `actions` replaces sampling with logged answers
+    (valid because a calibrated model is right on any answer a with probability p(a), whoever chose a)."""
     logs = []
-    for p, it in zip(P, rows):
-        a = int(rng.choice(len(p), p=p / p.sum())); logs.append((p, a, float(a == gold(it))))
+    flip, p_right, p_wrong = spec
+    for i, (p, it) in enumerate(zip(P, rows)):
+        a = int(rng.choice(len(p), p=p / p.sum())) if actions is None else int(actions[i])
+        r = float(a == gold(it))
+        if (p_right < 1 or p_wrong < 1) and rng.random() >= (p_right if r else p_wrong):
+            continue
+        if flip > 0 and rng.random() < flip:
+            r = 1.0 - r
+        logs.append((p, a, r))
 
     def ll(T):
         tot = 0.0
@@ -102,9 +137,15 @@ def fit_T_feedback(P, rows, rng):
 
 
 # ───────────────────────────── adapters ─────────────────────────────
-def train_adapter(v, bank, train, method, rng, epochs=8, lr=1e-3, kl=0.1, batch=32):
+def train_adapter(v, bank, train, method, rng, epochs=8, lr=1e-3, kl=0.1, batch=32, spec=CLEAN):
     pol = Policy(v, lr, rank=8)
-    base, curve = 0.5, []
+    base, curve, log = 0.5, [], None
+    if method == 'ips':                              # log one answer per row from the released model, once
+        log = {}
+        for it, p in zip(train, predict(pol, bank, train, adapter=False)):
+            p = np.asarray(p, float); a = int(rng.choice(len(p), p=p / p.sum()))
+            log[it['id']] = (a, float(a == gold(it)), float(p[a]))
+        base = float(np.mean([x[1] for x in log.values()]))
     for ep in range(epochs):
         order = rng.permutation(len(train)); rew = []
         for s in range(0, len(train), batch):
@@ -114,11 +155,24 @@ def train_adapter(v, bank, train, method, rng, epochs=8, lr=1e-3, kl=0.1, batch=
             ar = torch.arange(len(rows), device=v.device)
             if method == 'sup':
                 loss = -lp[ar, g].mean()
+            elif method == 'ips':                    # clipped importance weights on the logged answers
+                a = torch.tensor([log[it['id']][0] for it in rows], device=v.device)
+                r = torch.tensor([log[it['id']][1] for it in rows], device=v.device)
+                p0 = torch.tensor([log[it['id']][2] for it in rows], device=v.device)
+                loss = -((r - base) * (lp[ar, a].exp() / p0).clamp(max=10.0)).mean(); rew.append(float(r.mean()))
             else:
                 with torch.no_grad():
-                    a = torch.multinomial(lp.exp(), 1).squeeze(1); r = (a == g).float()
-                loss = -((r - base) * lp[ar, a]).mean()
-                base = 0.9 * base + 0.1 * float(r.mean()); rew.append(float(r.mean()))
+                    a = torch.multinomial(lp.exp(), 1).squeeze(1); r_true = (a == g).float()
+                    r, seen = observe(r_true, spec)
+                if bool(seen.all()):
+                    loss = -((r - base) * lp[ar, a]).mean()
+                    base = 0.9 * base + 0.1 * float(r.mean())
+                else:
+                    sf = seen.float(); n = float(sf.sum())
+                    loss = -((r - base) * lp[ar, a] * sf).sum() / max(n, 1.0)
+                    if n:
+                        base = 0.9 * base + 0.1 * float((r * sf).sum() / n)
+                rew.append(float(r_true.mean()))
             if kl:
                 with torch.no_grad():
                     lq, _ = pol.logp(bank, rows, adapter=False)
@@ -129,12 +183,19 @@ def train_adapter(v, bank, train, method, rng, epochs=8, lr=1e-3, kl=0.1, batch=
 
 
 def run_adapter(v, bank, train, cal, test, method, rng):
-    kind = 'sup' if method == 'sup_ts' else 'bandit'
-    pol, curve = train_adapter(v, bank, train, kind, rng, kl=1.0 if method == 'feedback_kl1' else 0.1)
+    kind = 'sup' if method == 'sup_ts' else 'ips' if method == 'logged_ips' else 'bandit'
+    spec = FEEDBACK.get(method, CLEAN)
+    pol, curve = train_adapter(v, bank, train, kind, rng, kl=1.0 if method == 'feedback_kl1' else 0.1, spec=spec)
     Pc = [np.asarray(p, float) for p in predict(pol, bank, cal)]
     Pt = [np.asarray(p, float) for p in predict(pol, bank, test)]
-    T = fit_T_labels(Pc, cal) if kind == 'sup' else fit_T_feedback(Pc, cal, rng)
-    return temp(Pt, T), {'T': T, 'reward_curve': curve, 'n_train': len(train), 'n_cal': len(cal)}, pol
+    if kind == 'sup':
+        T = fit_T_labels(Pc, cal)
+    elif kind == 'ips':                              # calibration from answers logged by the released model too
+        P0 = [np.asarray(p, float) for p in predict(pol, bank, cal, adapter=False)]
+        T = fit_T_feedback(Pc, cal, rng, actions=[int(rng.choice(len(p), p=p / p.sum())) for p in P0])
+    else:
+        T = fit_T_feedback(Pc, cal, rng, spec=spec)
+    return temp(Pt, T), {'T': T, 'reward_curve': curve, 'n_train': len(train), 'n_cal': len(cal), 'feedback': spec}, pol
 
 
 class Bilinear(torch.nn.Module):
