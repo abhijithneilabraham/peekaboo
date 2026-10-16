@@ -1,6 +1,6 @@
 ---
 name: run-peekaboo-remaining
-description: Run the remaining Peekaboo experiments (Vega 0.8B and 4B on the public tasks and JevBench, realistic feedback, and Laya) unattended, fixing failures and restarting until the results are complete.
+description: Run the remaining Peekaboo experiments (Vega 0.8B and 4B on the public tasks, JevBench and typed-decisions; Laya on typed-decisions) unattended, fixing failures and restarting until the results are complete.
 ---
 
 Read `experiments/peekaboo_remaining/CLAUDE.md` and follow it exactly: start `python run.py` detached from that

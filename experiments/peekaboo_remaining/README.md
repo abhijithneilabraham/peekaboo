@@ -1,6 +1,6 @@
-# Remaining Peekaboo experiments
+# Remaining Peekaboo experiments: head to head with Vega and Laya
 
-One command runs everything that is not in the repo yet:
+Only comparisons on Vega's and Laya's own benchmarks, against their own models and their own ways to improve them.
 
 ```bash
 cd experiments/peekaboo_remaining
@@ -8,22 +8,24 @@ python run.py            # resumable; several steps at once on one GPU
 python run.py --check    # 0 complete, 1 stopped with steps not done, 2 running
 ```
 
-| what | base model | + Peekaboo | baselines |
-|---|---|---|---|
-| Vega 0.8B and 4B: 43 public tasks + JevBench | ✓ | ✓ | VegaML's TTT head, answer-key adapter, Peekaboo KL 1, no-engine control |
-| Vega 0.8B and 4B: DecisionBench, realistic feedback | ✓ | ✓ clean, noisy (10/20/30%), half / quarter rated, complaints only | logged-feedback (off-policy) |
-| Laya: DecisionBench, 43 public tasks, JevBench | ✓ | ✓ | Laya + RLCD (its own fine-tuning, answer key) |
-| Laya: DecisionBench, realistic feedback | | ✓ the same variants | logged-feedback (off-policy) |
+| benchmark (theirs) | their model, and their improvement (needs the answer key) | ours (right / wrong only) |
+|---|---|---|
+| 43 public tasks (Vega README) | base Vega · VegaML's TTT head · Vega answer-key adapter | Vega + Peekaboo |
+| JevBench (Vega README) | base Vega | Vega + Peekaboo |
+| typed-decisions (Laya README) | base Laya · laya-typed-decisions (Laya's own fine-tune, released) | Laya + Peekaboo |
+| typed-decisions, same rows | base Vega · VegaML's TTT head · Vega answer-key adapter | Vega + Peekaboo |
+| DecisionBench (Vega README) | already done: `experiments/vega_policy/results*/compare` | |
 
-3 seeds each. Output goes to `output/`. `output/TABLES.md` has VegaML's README table with base / + Peekaboo
-columns for Vega 0.8B, Vega 4B and Laya, every method per suite, and the realistic-feedback table.
-`output/STATUS.md` lists what is left.
+Vega 0.8B and 4B, 3 seeds. `output/TABLES.md` puts each benchmark in its owner's README layout with base,
+their improvement and + Peekaboo side by side, plus paired 95% confidence intervals. `output/STATUS.md` lists
+what is left.
 
-**Hardware:** one GPU with at least 24 GB (the 4B backbone); 48 GB (L40S, A6000) runs 4 steps at once,
-about 3–4 hours. 80 GB disk, 32 GB RAM, 8 CPU cores. Use the RunPod PyTorch template.
+**Hardware:** one GPU with at least 24 GB (the 4B backbone); 48 GB (L40S, A6000) runs 4 steps at once, about
+2–3 hours. 80 GB disk, 32 GB RAM, 8 CPU cores. RunPod PyTorch template.
 
-**Running it with Claude Code:** open Claude Code in the repository and type `/run-peekaboo-remaining`. It
-follows `CLAUDE.md`: it starts the run, polls it, fixes failures, restarts, and reports when complete.
+**With Claude Code:** open Claude Code in the repository and type `/run-peekaboo-remaining`. It follows
+`CLAUDE.md`: starts the run, polls it, fixes failures, restarts, and reports when complete.
 
-The code reuses `experiments/vega_policy/` (Vega, VegaML's vendored benchmark harness, the methods) and adds
-`laya_peekaboo.py` (Laya) and `table.py`.
+Vega's README also reports typed-decisions with its task adapter (0.763 / 0.803), but on six workflows whose rows
+are not published, so that number cannot be rerun; the typed-decisions rows here are the public benchmark Laya
+reports.

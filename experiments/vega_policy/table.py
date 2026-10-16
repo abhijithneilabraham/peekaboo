@@ -85,6 +85,17 @@ def metrics(suite, recs):
         m['jev:hard'] = BR.sliced(its, recs, lambda it: 'tier:' + str(it['tier'])).get('tier:hard', {}).get('accuracy')
         m['jev:temporal'] = BR.sliced(its, recs, lambda it: 'family:' + str(it['family'])).get('family:temporal_numeric', {}).get('accuracy')
         m['jev:paraphrase'] = BS.paraphrase_consistency(its, recs).get('paraphrase_consistency')
+    elif suite == 'typed':
+        al = BR.sliced(its, recs, lambda it: 'all')['all']
+        m.update({'td:accuracy': al.get('accuracy'), 'td:ece': al.get('ece'), 'td:nll': al.get('nll'), 'td:coverage': al.get('coverage'),
+                  'td:p50': al.get('latency_ms_p50')})
+        by = {r['id']: r for r in recs}
+        soft = [sum(g * float((by[it['id']].get('probs') or {}).get(lab, 0.0)) for lab, g in zip(it['labels'], it['soft_gold'])) / max(sum(it['soft_gold']), 1e-12)
+                for it in its if it.get('soft_gold') and it['id'] in by]
+        m['td:soft_accuracy'] = float(np.mean(soft)) if soft else None
+        for wf, sl in BR.sliced(its, recs, lambda it: 'wf:' + str(it['workflow']), min_rows=1).items():
+            if wf != 'all':
+                m['td:' + wf] = sl.get('accuracy')
     else:
         al = BR.sliced(its, recs, lambda it: 'all')['all']
         m.update({'db:accuracy': al.get('accuracy'), 'db:ece': al.get('ece'), 'db:nll': al.get('nll'), 'db:coverage': al.get('coverage'),

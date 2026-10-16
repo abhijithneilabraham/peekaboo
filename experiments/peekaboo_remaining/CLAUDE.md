@@ -42,8 +42,7 @@ Anything about the **environment**, and anything that keeps code from **running*
 
 ## What you must not change
 
-The methods, their settings and the evaluation: learning rates, epochs, ranks, KL weights, feedback noise levels,
-seeds, the temperature grid, the splits (which rows are test, pool or calibration), the metrics, the task list,
+The methods, their settings and the evaluation: learning rates, epochs, ranks, KL weights, seeds, the temperature grid, the splits (which rows are test, pool or calibration), the metrics, the task list,
 `experiments/vega_policy/harness/` (VegaML's own benchmark code, vendored unmodified), and any number in a result
 file. Do not edit or delete result files to make a step look done. If the only fix would change a result, stop and
 write it up in NOTES.md instead.
@@ -51,4 +50,4 @@ write it up in NOTES.md instead.
 ## Reporting
 
 When `--check` exits 0: zip `output/` without the `*.pt` files and the `items_*.json` files (dataset text). Tell
-the user where the zip is, paste section 1 of `output/TABLES.md`, and list every fix you made (also in NOTES.md).
+the user where the zip is, paste sections 1, 2 and 4 of `output/TABLES.md`, and list every fix you made (also in NOTES.md).

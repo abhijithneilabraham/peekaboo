@@ -1,18 +1,17 @@
-"""The remaining Peekaboo experiments, in one command.
+"""The remaining Peekaboo experiments: only head-to-head results on Vega's and Laya's own benchmarks.
 
     python run.py              # everything below; resumable (finished steps are skipped); several steps at once
     python run.py --check      # exit 0 complete, 1 not complete and not running (see output/STATUS.md), 2 running
     python run.py --plan       # list the steps without running anything
 
-What runs (DecisionBench's main comparison for Vega is already in the repo, experiments/vega_policy/results*):
-  Vega 0.8B and 4B   the 43 public tasks and JevBench: base Vega, Vega + Peekaboo, and the baselines
-                     (VegaML's TTT head, supervised adapter, Peekaboo with KL 1, no-engine control), 3 seeds
-  Vega 0.8B and 4B   DecisionBench: Peekaboo under realistic feedback (noisy, missing, complaints only) and the
-                     logged-feedback baseline, next to Peekaboo with clean feedback, 3 seeds
-  Laya               all three test suites: base Laya, Laya + Peekaboo, Laya + RLCD (Laya's own fine-tuning with
-                     the answer key), and the realistic-feedback tests on DecisionBench, 3 seeds
-Then table.py writes output/TABLES.md: VegaML's README tables with base / + Peekaboo columns for Vega 0.8B,
-Vega 4B and Laya, every method per suite, and the realistic-feedback table.
+| benchmark (theirs)                    | their model / their improvement (answer key)      | ours (right/wrong only) |
+|---------------------------------------|---------------------------------------------------|-------------------------|
+| 43 public tasks (Vega README)         | base Vega; VegaML's TTT head; Vega answer-key adapter | Vega + Peekaboo     |
+| JevBench (Vega README)                | base Vega                                          | Vega + Peekaboo         |
+| typed-decisions (Laya README)         | base Laya; laya-typed-decisions (Laya's fine-tune) | Laya + Peekaboo         |
+| typed-decisions, same rows            | base Vega; VegaML's TTT head; Vega answer-key adapter | Vega + Peekaboo     |
+Vega 0.8B and 4B, 3 seeds. DecisionBench (Vega README) is already done: experiments/vega_policy/results*.
+Then table.py writes output/TABLES.md with each benchmark's table, base vs + Peekaboo vs their own improvement.
 
 A failing step is retried 3 times, then recorded; everything that does not depend on it still runs.
 Settings: --jobs N (parallel steps, default 4 on a GPU), VEGA_DEVICE (default cuda), HF_TOKEN (optional).
@@ -23,9 +22,6 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 VP = os.path.abspath(os.path.join(HERE, '..', 'vega_policy'))
 SEEDS = [0, 1, 2]
 TRIES = 3
-REALISTIC = ['feedback_noise10', 'feedback_noise20', 'feedback_noise30', 'feedback_half', 'feedback_quarter',
-             'feedback_complaints', 'logged_ips']
-VEGA_BASELINES = ['sup_ts', 'feedback', 'feedback_kl1', 'linear_fb']
 
 
 class Step:
@@ -40,31 +36,27 @@ def plan(out):
     for size, sfx, gpu_cache, gpu_run in (('0.8b', '', 8, 2), ('4b', '_4b', 24, 4)):
         res = 'results' + sfx
         add = lambda n, a, d, g, needs=(): steps.append(Step(f'vega-{size}/{n}', VP, a, d, size, g, [f'vega-{size}/{x}' for x in needs]))
-        for s in ('public', 'jevbench', 'decisionbench'):
+        for s in ('public', 'jevbench', 'typed'):
             add(f'cache/{s}', ['suite_cache.py', '--suite', s], ex(res, f'cache_{s}.done'), gpu_cache)
             add(f'replay/{s}', ['adapt.py', '--suite', s, '--method', 'replay'], ex(res, 'methods', s, 'replay_s0.json'), gpu_run, [f'cache/{s}'])
-        for s in ('public', 'jevbench'):
-            if s == 'public':
+            methods = ['feedback'] if s == 'jevbench' else ['sup_ts', 'feedback']
+            if s != 'jevbench':
                 add(f'ttt/{s}', ['adapt.py', '--suite', s, '--method', 'ttt'], ex(res, 'methods', s, 'ttt_s0.json'), 0, [f'cache/{s}'])
-            for m in VEGA_BASELINES:
+            for m in methods:
                 for sd in SEEDS:
                     add(f'{m}/{s}/s{sd}', ['adapt.py', '--suite', s, '--method', m, '--seed', str(sd)],
                         ex(res, 'methods', s, f'{m}_s{sd}.json'), gpu_run, [f'cache/{s}'])
-        for m in ['feedback'] + REALISTIC:
-            for sd in SEEDS:
-                add(f'{m}/decisionbench/s{sd}', ['adapt.py', '--suite', 'decisionbench', '--method', m, '--seed', str(sd)],
-                    ex(res, 'methods', 'decisionbench', f'{m}_s{sd}.json'), gpu_run, ['cache/decisionbench'])
-    for s in ('public', 'jevbench', 'decisionbench'):            # Laya reads the row lists the Vega 0.8B cache wrote
-        L = lambda n, a, d, g, needs: steps.append(Step(f'laya/{n}', HERE, ['laya_peekaboo.py'] + a, d, 'laya', g, needs))
-        L(f'cache/{s}', ['cache', '--suite', s], ex('results_laya', f'cache_{s}.done'), 4, [f'vega-0.8b/cache/{s}'])
-        L(f'replay/{s}', ['train', '--suite', s, '--method', 'replay'], ex('results_laya', 'methods', s, 'replay_s0.json'), 4, [f'laya/cache/{s}'])
-        for m in ['feedback', 'rlcd'] + (REALISTIC if s == 'decisionbench' else []):
-            for sd in SEEDS:
-                L(f'{m}/{s}/s{sd}', ['train', '--suite', s, '--method', m, '--seed', str(sd)],
-                  ex('results_laya', 'methods', s, f'{m}_s{sd}.json'), 20 if m == 'rlcd' else 8, [f'laya/cache/{s}'])
     for st in steps:                     # the 4B reads the row lists the 0.8B cache wrote, so the two never race
         if st.name.startswith('vega-4b/cache/'):
             st.needs.append('vega-0.8b/cache/' + st.name.split('/')[-1])
+    # Laya on its own benchmark: base Laya, its released fine-tune, and base Laya + Peekaboo
+    L = lambda n, model, a, d, g, needs: steps.append(Step(f'{model}/{n}', HERE, ['laya_peekaboo.py'] + a, d, model, g, needs))
+    for model in ('laya', 'laya_td'):
+        L('cache/typed', model, ['cache', '--suite', 'typed'], ex(f'results_{model}', 'cache_typed.done'), 4, ['vega-0.8b/cache/typed'])
+    L('replay/typed', 'laya', ['train', '--suite', 'typed', '--method', 'replay'], ex('results_laya', 'methods', 'typed', 'replay_s0.json'), 4, ['laya/cache/typed'])
+    for sd in SEEDS:
+        L(f'feedback/typed/s{sd}', 'laya', ['train', '--suite', 'typed', '--method', 'feedback', '--seed', str(sd)],
+          ex('results_laya', 'methods', 'typed', f'feedback_s{sd}.json'), 8, ['laya/cache/typed'])
     steps.append(Step('tables', HERE, ['table.py'], lambda: False, None, 0))
     return steps
 

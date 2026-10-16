@@ -1,41 +1,37 @@
-"""Laya under the same experiments as Vega: base Laya, Laya + Peekaboo, and Laya + RLCD (Laya's own fine-tuning).
+"""Laya on its own headline benchmark (LocalLLaMA/typed-decisions): base Laya, Laya's own answer-key fine-tune,
+and Laya + Peekaboo.
 
-Same rows, splits, record format and metrics as the Vega runs (experiments/vega_policy), so the tables put the three
-models side by side. Laya is the English checkpoint as released (convaiinnovations/laya, ModernBERT-large encoder +
-a 2-layer decision head, 421M parameters). A Vega "boolean" question is asked as Laya's own yes/no type ("noul"),
-whose options are [false, true], the same order as Vega's labels; choice and score questions are unchanged.
+  VEGA_SIZE=laya      base Laya, the English checkpoint as released (convaiinnovations/laya, 421M): README 0.362
+  VEGA_SIZE=laya_td   laya-typed-decisions, Laya's released fine-tune of the same model on the same training split
+                      with the answer key (its RLCD recipe): README 0.766
+  Laya + Peekaboo     base Laya plus Peekaboo trained on that training split with right / wrong only
 
-  cache   read every row once through Laya's own prediction call (agent.system_one): the official record (base Laya)
-          and the tokenised input Laya built for it, captured from inside the call
-  train   one method, one suite, one seed:
-            feedback (Peekaboo)  a trainable copy of Laya's decision head (the encoder stays frozen), trained by
-                                 REINFORCE on right/wrong only, KL anchor (0.1) to the released head, then one
-                                 temperature fitted from feedback. Head learning rate 1e-4, as in Laya's own recipe.
-            feedback_noise10/20/30, feedback_half/quarter, feedback_complaints, logged_ips
-                                 Peekaboo under realistic feedback, and the logged-feedback baseline (as for Vega)
-            rlcd                 Laya's own fine-tuning recipe with the answer key (notebooks/laya_finetune_typed_
-                                 decisions_mps.py: full model, Gaussian-perturbation policy gradient on a proper scoring
-                                 rule + cross-entropy, 4 epochs, micro-batch 2 x 16, per-type temperatures fitted on
-                                 held-out labelled rows)
-            replay               check: the frozen model on the captured input must reproduce the official answer
+Same rows, splits, record format and metrics as the Vega runs (experiments/vega_policy). A yes/no question is asked
+as Laya's own "noul" type, whose options are [false, true], the same order as Vega's labels.
 
-    python laya_peekaboo.py cache --suite decisionbench
-    python laya_peekaboo.py train --suite decisionbench --method feedback --seed 0
-Output (VEGA_OUT): bank_<suite>_laya.pt, results_laya/released_<suite>.json, results_laya/methods/<suite>/*.json
+  cache   read every row once through Laya's own prediction call (agent.system_one): the official record, and the
+          tokenised input Laya built for it, captured from inside the call
+  train   --method feedback (Peekaboo): a trainable copy of Laya's decision head (the encoder stays frozen), trained
+          by REINFORCE on right/wrong only, KL anchor (0.1) to the released head, then one temperature fitted from
+          feedback on held-out training rows. Head learning rate 1e-4, as in Laya's own recipe.
+          --method replay: check that the frozen model on the captured input reproduces the official answer
+
+    VEGA_SIZE=laya python laya_peekaboo.py cache --suite typed
+    VEGA_SIZE=laya python laya_peekaboo.py train --suite typed --method feedback --seed 0
+Output (VEGA_OUT): bank_typed_<size>.pt, results_<size>/released_typed.json, results_<size>/methods/typed/*.json
 """
 import argparse, copy, json, math, os, random, sys, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, '..', 'vega_policy'))
-os.environ['VEGA_SIZE'] = 'laya'                     # paths.py then files everything under *_laya
+os.environ.setdefault('VEGA_SIZE', 'laya')          # paths.py files everything under *_laya / *_laya_td
 import numpy as np
 import torch
 
 import paths
 import adapt as A
 
-LAYA_ID = 'convaiinnovations/laya'
-LAYA_METHODS = ['feedback'] + A.REALISTIC + ['rlcd']
+CHECKPOINT = {'laya': 'convaiinnovations/laya', 'laya_td': 'typed-decisions'}   # laya.load resolves the alias
 
 
 def to_laya(q):
@@ -54,7 +50,7 @@ def answer_probs(ans, labels):
 
 def load_agent():
     import laya
-    ag = laya.load(LAYA_ID, device=paths.device())
+    ag = laya.load(CHECKPOINT[paths.SIZE], device=paths.device())
     ag.model.eval()
     return ag
 
@@ -222,82 +218,6 @@ def peekaboo(L, bank, train, cal, test, method, rng, epochs=8, lr=1e-4, kl=0.1, 
     return A.temp(Pt, T), {'T': T, 'reward_curve': curve, 'n_train': len(train), 'n_cal': len(cal), 'feedback': spec}
 
 
-def rlcd(L, bank, train, cal, test, seed, epochs=4, micro=2, accum=16):
-    """Laya's own fine-tuning recipe, with the answer key (one-hot gold as the target)."""
-    from laya.common import clamp_temperature, proper_reward
-    model = copy.deepcopy(L.m).float().to(L.dev)
-    for p in model.parameters():
-        p.requires_grad_(True)
-    model.encoder.gradient_checkpointing_enable(gradient_checkpointing_kwargs={'use_reentrant': False})
-    model.head_checkpointing = True
-    model.train()
-    enc = [p for n, p in model.named_parameters() if 'encoder.' in n]
-    head = [p for n, p in model.named_parameters() if 'encoder.' not in n]
-    opt = torch.optim.AdamW([{'params': enc, 'lr': 2.5e-5}, {'params': head, 'lr': 1e-4}], weight_decay=0.01)
-    updates = max(1, math.ceil(len(train) / micro / accum) * epochs)
-    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=updates, eta_min=1e-6)
-    rows_all = list(train)
-    for ep in range(epochs):
-        random.Random(1000 * seed + 42 + ep).shuffle(rows_all)
-        sigma = 0.4 + (0.1 - 0.4) * ep / max(1, epochs - 1)
-        opt.zero_grad(set_to_none=True); nb = 0
-        for s in range(0, len(rows_all), micro):
-            rows = rows_all[s:s + micro]
-            ids, att, mpos, mmask, qt, _ = L.batch(bank, rows)
-            target = torch.zeros(mmask.shape, device=L.dev)
-            for i, it in enumerate(rows):
-                target[i, A.gold(it)] = 1.0
-            logits, act = model(ids, att, mpos, mmask, qt)
-            logits = logits.float(); k = mmask.sum(-1, keepdim=True).float()
-            eps = torch.randn((4,) + logits.shape, device=L.dev) * sigma * mmask
-            eps = (eps - eps.sum(-1, keepdim=True) / k) * mmask
-            noisy = logits.detach().unsqueeze(0) + eps
-            probs = torch.softmax(noisy.masked_fill(~mmask, -1e4), -1)
-            with torch.no_grad():
-                reward = proper_reward(probs, target.unsqueeze(0), qt, mmask, w_sph=0.75, w_rps=1.0)
-                adv = reward - reward.mean(0, keepdim=True); adv = adv / (adv.std() + 1e-6)
-            logp = -(((noisy - logits.unsqueeze(0)) ** 2) * mmask).sum(-1) / (2 * sigma ** 2)
-            loss = (-(adv * logp).mean() - (target * torch.log_softmax(logits.masked_fill(~mmask, -1e4), -1)).sum(-1).mean()
-                    + 0.0 * act.sum()) / accum
-            loss.backward(); nb += 1
-            if nb % accum == 0 or s + micro >= len(rows_all):
-                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0); opt.step(); sched.step(); opt.zero_grad(set_to_none=True)
-        print(f'  rlcd epoch {ep + 1}/{epochs}', flush=True)
-    model.eval()
-
-    def raw(rows):
-        out = []
-        with torch.no_grad():
-            for s in range(0, len(rows), 16):
-                rr = rows[s:s + 16]; ids, att, mpos, mmask, qt, _ = L.batch(bank, rr)
-                lg, _ = model(ids, att, mpos, mmask, qt)
-                out += [(lg[b, :int(mmask[b].sum())].float().cpu(), int(qt[b])) for b in range(len(rr))]
-        return out
-    # per-type temperatures on held-out labelled rows (the recipe's LBFGS fit), clamped as Laya serves them
-    groups = {}
-    for (lg, q), it in zip(raw(cal), cal):
-        groups.setdefault(q, []).append((lg, A.gold(it)))
-    Ts = {}
-    for q, sm in groups.items():
-        if len(sm) < 10:
-            Ts[q] = 1.0; continue
-        K = max(len(l) for l, _ in sm)
-        X = torch.full((len(sm), K), -1e4); Y = torch.zeros(len(sm), K)
-        for i, (l, g) in enumerate(sm):
-            X[i, :len(l)] = l; Y[i, g] = 1.0
-        lt = torch.zeros(1, requires_grad=True); o = torch.optim.LBFGS([lt], lr=0.1, max_iter=100)
-
-        def closure():
-            o.zero_grad(); ls = -(Y * torch.log_softmax(X / lt.exp(), -1)).sum(-1).mean(); ls.backward(); return ls
-        o.step(closure)
-        Ts[q] = float(clamp_temperature(float(torch.clamp(lt.exp(), 0.1, 10.0))))
-    P = []
-    for lg, q in raw(test):
-        z = (lg / Ts.get(q, 1.0)).numpy(); e = np.exp(z - z.max()); P.append(e / e.sum())
-    del model; torch.cuda.empty_cache() if torch.cuda.is_available() else None
-    return P, {'temperatures': {str(k): v for k, v in Ts.items()}, 'n_train': len(train), 'n_cal': len(cal)}
-
-
 def train_main(suite, method, seed):
     out_dir = os.path.join(paths.RESULTS, 'methods', suite); os.makedirs(out_dir, exist_ok=True)
     out = os.path.join(out_dir, f'{method}_s{seed}.json')
@@ -323,7 +243,7 @@ def train_main(suite, method, seed):
                 train = [it for it in tr_pool if A.stable('cal' + it['id']) % 5]; cal = [it for it in tr_pool if not A.stable('cal' + it['id']) % 5]
             else:
                 train, cal = A.cal_split(tr_pool)
-            P, fi = rlcd(L, bank, train, cal, te, seed) if method == 'rlcd' else peekaboo(L, bank, train, cal, te, method, rng)
+            P, fi = peekaboo(L, bank, train, cal, te, method, rng)
             recs.update(A.to_records(te, P, released))   # same architecture and cost as base Laya: no extra latency
             info['folds'].append(dict(fi, fold=f, n_test=len(te)))
     for it in test:

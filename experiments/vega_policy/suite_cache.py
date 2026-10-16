@@ -11,6 +11,8 @@ Suites and rows, all loaded with the notebook's own code (harness/):
   jevbench       the public tiers (231 items); no training rows exist, so methods cross-fit (adapt.py)
   decisionbench  the README slice (25 per task, 1,075 rows) plus a pool of other rows of the same tasks
                  (100 per task minus the slice)
+  typed          LocalLLaMA/typed-decisions, Laya's headline benchmark: 2,000 test decisions, the 6,000 training
+                 decisions as the pool
 
     python suite_cache.py --suite public            # VEGA_SIZE / VEGA_OUT / VEGA_DEVICE from the environment
 """
@@ -71,6 +73,44 @@ def build_items(suite, quick=False):
             raise RuntimeError(f'{len(missing)} slice rows are not in the 100-per-task sample')
         meta = {k: v for k, v in meta.items() if k != 'binary_note'}
         return full, meta
+    if suite == 'typed':                              # Laya's headline benchmark, LocalLLaMA/typed-decisions (all workflows)
+        from datasets import load_dataset
+        out, meta = [], {'source': 'LocalLLaMA/typed-decisions, config all', 'decisions': {}}
+        for split, tag in (('test', 'test'), ('train', 'pool')):
+            ds = load_dataset('LocalLLaMA/typed-decisions', 'all', split=split)
+            rows = list(ds)[:12 if quick else None]
+            for r in rows:
+                state = r['state']
+                try:
+                    state = json.loads(state)
+                except Exception:
+                    pass
+                qs, gold = json.loads(r['questions']), json.loads(r['gold'])
+                for qid, qd in qs.items():
+                    if qid not in gold:
+                        continue
+                    g, t = gold[qid], qd['type']
+                    if t == 'choice':
+                        labels = [str(k) for k in qd['criteria']]; lab = str(g['label'])
+                        q = {'type': 'choice', 'instructions': qd['instructions'], 'criteria': qd['criteria']}
+                    elif t == 'noul':                 # Laya's yes/no type is Vega's boolean: options [false, true]
+                        labels = ['false', 'true']; lab = str(g['label']).lower()
+                        q = {'type': 'boolean', 'instructions': qd['instructions'],
+                             'criteria': {k: v for k, v in (qd.get('criteria') or {}).items()} or {'false': 'no', 'true': 'yes'}}
+                    elif t == 'score':
+                        labels = [str(i) for i in range(len(qd['criteria']))]; lab = str(int(g['label']))
+                        q = {'type': 'score', 'instructions': qd['instructions'], 'criteria': qd['criteria']}
+                    else:
+                        continue
+                    if lab not in labels:
+                        continue
+                    pr = g.get('probabilities') or {}
+                    soft = [float(pr.get(k, 0.0)) for k in labels]
+                    out.append({'id': f'{r["id"]}:{qid}', 'state': state, 'gold': lab, 'question': q, 'labels': labels,
+                                'qtype': t, 'task': f'{r["workflow"]}/{qid}', 'workflow': r['workflow'], 'split': tag,
+                                'soft_gold': soft if sum(soft) > 0 else None})
+            meta['decisions'][split] = sum(it['split'] == tag for it in out)
+        return out, meta
     raise SystemExit('unknown suite ' + suite)
 
 
