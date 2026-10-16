@@ -1,6 +1,6 @@
-# Status of the remaining Peekaboo experiments  (Fri Oct 16 23:09:59 2026)
+# Status of the remaining Peekaboo experiments  (Fri Oct 16 23:20:00 2026)
 
-done: 154 · pending: 57 · running: 4  (of 215 steps)
+done: 155 · pending: 56 · running: 4  (of 215 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
@@ -42,9 +42,8 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - **pending** `vega-4b/pooled/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite all --method pooled --seed 2`)
 - **running** `laya/pooled/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite all --method pooled --seed 2`)
 - **pending** `vega-4b/feedback_kl0/decisionbench/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method feedback_kl0 --seed 0`)
-- **running** `laya/feedback_kl0/decisionbench/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_kl0 --seed 0`)
 - **pending** `vega-4b/feedback_kl0/decisionbench/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method feedback_kl0 --seed 1`)
-- **pending** `laya/feedback_kl0/decisionbench/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_kl0 --seed 1`)
+- **running** `laya/feedback_kl0/decisionbench/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_kl0 --seed 1`)
 - **pending** `vega-4b/feedback_kl0/decisionbench/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method feedback_kl0 --seed 2`)
 - **pending** `laya/feedback_kl0/decisionbench/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_kl0 --seed 2`)
 - **pending** `vega-4b/feedback_kl0/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback_kl0 --seed 0`)
@@ -249,10 +248,10 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     laya/feedback_kl0/jevbench/s2 245s
 - done     vega-0.8b/feedback_kl0/decisionbench/s0 
 - pending  vega-4b/feedback_kl0/decisionbench/s0 
-- running  laya/feedback_kl0/decisionbench/s0 
+- done     laya/feedback_kl0/decisionbench/s0 675s
 - done     vega-0.8b/feedback_kl0/decisionbench/s1 
 - pending  vega-4b/feedback_kl0/decisionbench/s1 
-- pending  laya/feedback_kl0/decisionbench/s1 
+- running  laya/feedback_kl0/decisionbench/s1 
 - done     vega-0.8b/feedback_kl0/decisionbench/s2 
 - pending  vega-4b/feedback_kl0/decisionbench/s2 
 - pending  laya/feedback_kl0/decisionbench/s2 
