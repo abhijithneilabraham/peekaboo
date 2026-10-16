@@ -23,6 +23,7 @@ terminate() {
 for attempt in 1 2 3; do
   git -C "$REPO" pull -q --rebase --autostash && log "code at $(git -C "$REPO" log --oneline -1)"   # fixes pushed meanwhile
   left=$(( DEADLINE - $(date +%s) )); [ $left -le 60 ] && break
+  pgrep -f "^python run.py$" > /dev/null || rm -f output/RUNNING                          # a killed run leaves a stale heartbeat
   log "run.py, attempt $attempt, ${left}s left"
   timeout $left python run.py
   python run.py --check > /dev/null; code=$?

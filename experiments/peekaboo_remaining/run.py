@@ -40,6 +40,10 @@ def plan(out):
     every model; the main comparison (base, their answer-key improvement, Peekaboo); pooled Peekaboo; the ablations."""
     steps = []
     ex = lambda *p: (lambda: os.path.exists(os.path.join(out, *p)))
+    sfx = {'0.8b': '', '4b': '_4b', 'laya': '_laya', 'laya_td': '_laya_td'}
+    # a reading counts as done only while its feature file exists (a new machine has the results but not the features)
+    cached = lambda model, res, s: (lambda: os.path.exists(os.path.join(out, res, f'cache_{s}.done'))
+                                    and os.path.exists(os.path.join(out, f'bank_{s}{sfx[model]}.pt')))
     V = lambda size, n, a, d, g, needs: steps.append(Step(f'vega-{size}/{n}', VP, a, d, size, g, needs))
     Lm = lambda model, n, a, d, g, needs: steps.append(Step(f'{model}/{n}', HERE, ['laya_peekaboo.py'] + a, d, model, g, needs))
     rows_from = lambda s: 'laya/cache/decisionbench' if s == 'decisionbench' else f'vega-0.8b/cache/{s}'   # one writer per row list
@@ -47,10 +51,10 @@ def plan(out):
     for s in SUITES:
         for size, res, gc, _ in VEGA:
             needs = [] if (size == '0.8b' and s != 'decisionbench') else [rows_from(s)]
-            V(size, f'cache/{s}', ['suite_cache.py', '--suite', s], ex(res, f'cache_{s}.done'), gc, needs)
+            V(size, f'cache/{s}', ['suite_cache.py', '--suite', s], cached(size, res, s), gc, needs)
         for model in ('laya', 'laya_td'):
             needs = [] if (model == 'laya' and s == 'decisionbench') else [rows_from(s)]
-            Lm(model, f'cache/{s}', ['cache', '--suite', s], ex(f'results_{model}', f'cache_{s}.done'), 4, needs)
+            Lm(model, f'cache/{s}', ['cache', '--suite', s], cached(model, f'results_{model}', s), 4, needs)
     for s in SUITES:
         for size, res, _, gr in VEGA:
             V(size, f'replay/{s}', ['adapt.py', '--suite', s, '--method', 'replay'], ex(res, 'methods', s, 'replay_s0.json'), gr, [f'vega-{size}/cache/{s}'])
@@ -104,9 +108,14 @@ def heartbeat(out, state):
 
 
 def running(out):
+    """The live run's heartbeat, or None. A heartbeat whose process is gone (killed) is stale, however recent."""
     try:
         hb = json.load(open(os.path.join(out, 'RUNNING')))
-        return hb if time.time() - hb['beat'] < 120 else None
+        if time.time() - hb['beat'] >= 120:
+            return None
+        if os.name == 'posix':
+            os.kill(int(hb['pid']), 0)
+        return hb
     except Exception:
         return None
 
