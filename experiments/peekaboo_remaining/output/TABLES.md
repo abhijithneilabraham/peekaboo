@@ -21,12 +21,15 @@ Accuracy (mean ± s.d. over 3 seeds), then calibration error, then the paired ac
 | Vega 0.8B | pooled Peekaboo + switch | right / wrong | 0.568 ± 0.016 | 0.548 ± 0.011 | 0.606 ± 0.011 | 0.708 ± 0.031 | 0.567 ± 0.040 | 0.911 ± 0.005 |
 | Vega 0.8B | pooled Peekaboo without the honesty fix | right / wrong | 0.596 ± 0.006 | 0.548 ± 0.011 | 0.606 ± 0.011 | 0.720 ± 0.015 | 0.567 ± 0.040 | 0.911 ± 0.005 |
 | Vega 4B | base model | none | 0.715 | 0.667 | 0.631 | 0.730 | 0.579 | 0.927 |
-| Vega 4B | VegaML's TTT head | answer key | 0.677 | · | 0.639 | 0.753 | 0.651 | · |
+| Vega 4B | VegaML's TTT head | answer key | 0.677 | · | 0.639 | 0.753 | 0.651 | 0.919 |
 | Vega 4B | answer-key adapter (Laya: answer-key head) | answer key | 0.705 ± 0.005 | · | 0.683 ± 0.011 | 0.774 ± 0.006 | 0.592 ± 0.022 | 0.921 ± 0.003 |
 | Vega 4B | **Peekaboo** | right / wrong | 0.716 ± 0.007 | 0.711 ± 0.004 | 0.697 ± 0.006 | 0.764 ± 0.006 | 0.556 ± 0.009 | 0.928 ± 0.002 |
 | Vega 4B | Peekaboo + switch | right / wrong | 0.713 ± 0.003 | 0.675 ± 0.006 | 0.676 ± 0.032 | 0.764 ± 0.006 | 0.556 ± 0.009 | 0.927 ± 0.000 |
 | Vega 4B | Peekaboo without the honesty fix | right / wrong | 0.716 ± 0.007 | 0.711 ± 0.004 | 0.697 ± 0.006 | 0.764 ± 0.006 | 0.556 ± 0.009 | 0.928 ± 0.002 |
-| Vega 4B | Peekaboo without the leash (KL 0) | right / wrong | 0.707 ± 0.008 | 0.704 ± 0.011 | 0.681 ± 0.002 | 0.741 ± 0.007 | 0.521 ± 0.022 | · |
+| Vega 4B | Peekaboo without the leash (KL 0) | right / wrong | 0.707 ± 0.008 | 0.704 ± 0.011 | 0.681 ± 0.002 | 0.741 ± 0.007 | 0.521 ± 0.022 | 0.930 ± 0.002 |
+| Vega 4B | **pooled Peekaboo** (one add-on, all suites' feedback) | right / wrong | 0.720 ± 0.005 | 0.687 ± 0.002 | 0.682 ± 0.008 | 0.744 ± 0.018 | 0.544 ± 0.009 | 0.932 ± 0.003 |
+| Vega 4B | pooled Peekaboo + switch | right / wrong | 0.715 ± 0.000 | 0.687 ± 0.002 | 0.651 ± 0.029 | 0.741 ± 0.017 | 0.571 ± 0.011 | 0.927 ± 0.000 |
+| Vega 4B | pooled Peekaboo without the honesty fix | right / wrong | 0.720 ± 0.005 | 0.687 ± 0.002 | 0.682 ± 0.008 | 0.744 ± 0.018 | 0.544 ± 0.009 | 0.932 ± 0.003 |
 | Laya | base model | none | 0.542 | 0.589 | 0.401 | 0.361 | 0.597 | 0.930 |
 | Laya | answer-key adapter (Laya: answer-key head) | answer key | 0.535 ± 0.004 | · | 0.389 ± 0.009 | 0.544 ± 0.005 | 0.540 ± 0.032 | 0.930 ± 0.000 |
 | Laya | laya-typed-decisions (Laya's released fine-tune) | answer key (typed-decisions) | 0.551 | 0.537 | 0.438 | 0.762 | 0.604 | 0.930 |
@@ -53,12 +56,15 @@ Accuracy (mean ± s.d. over 3 seeds), then calibration error, then the paired ac
 | Vega 0.8B | pooled Peekaboo + switch | right / wrong | 0.157 ± 0.004 | 0.108 ± 0.034 | 0.066 ± 0.009 | 0.048 ± 0.011 | 0.068 ± 0.023 | 0.019 ± 0.005 |
 | Vega 0.8B | pooled Peekaboo without the honesty fix | right / wrong | 0.267 ± 0.038 | 0.308 ± 0.022 | 0.232 ± 0.051 | 0.154 ± 0.018 | 0.311 ± 0.110 | 0.073 ± 0.014 |
 | Vega 4B | base model | none | 0.141 | 0.158 | 0.099 | 0.050 | 0.054 | 0.027 |
-| Vega 4B | VegaML's TTT head | answer key | 0.173 | · | 0.112 | 0.119 | 0.043 | · |
+| Vega 4B | VegaML's TTT head | answer key | 0.173 | · | 0.112 | 0.119 | 0.043 | 0.041 |
 | Vega 4B | answer-key adapter (Laya: answer-key head) | answer key | 0.181 ± 0.006 | · | 0.051 ± 0.009 | 0.056 ± 0.007 | 0.038 ± 0.010 | 0.014 ± 0.001 |
 | Vega 4B | **Peekaboo** | right / wrong | 0.172 ± 0.003 | 0.098 ± 0.008 | 0.049 ± 0.009 | 0.044 ± 0.013 | 0.035 ± 0.012 | 0.018 ± 0.003 |
 | Vega 4B | Peekaboo + switch | right / wrong | 0.150 ± 0.013 | 0.128 ± 0.005 | 0.064 ± 0.026 | 0.044 ± 0.013 | 0.035 ± 0.012 | 0.027 ± 0.000 |
 | Vega 4B | Peekaboo without the honesty fix | right / wrong | 0.235 ± 0.003 | 0.167 ± 0.012 | 0.223 ± 0.009 | 0.171 ± 0.004 | 0.311 ± 0.026 | 0.049 ± 0.016 |
-| Vega 4B | Peekaboo without the leash (KL 0) | right / wrong | 0.182 ± 0.011 | 0.099 ± 0.005 | 0.075 ± 0.027 | 0.049 ± 0.016 | 0.052 ± 0.004 | · |
+| Vega 4B | Peekaboo without the leash (KL 0) | right / wrong | 0.182 ± 0.011 | 0.099 ± 0.005 | 0.075 ± 0.027 | 0.049 ± 0.016 | 0.052 ± 0.004 | 0.016 ± 0.002 |
+| Vega 4B | **pooled Peekaboo** (one add-on, all suites' feedback) | right / wrong | 0.176 ± 0.015 | 0.134 ± 0.038 | 0.057 ± 0.019 | 0.050 ± 0.005 | 0.044 ± 0.009 | 0.016 ± 0.006 |
+| Vega 4B | pooled Peekaboo + switch | right / wrong | 0.141 ± 0.000 | 0.134 ± 0.038 | 0.084 ± 0.021 | 0.052 ± 0.002 | 0.051 ± 0.004 | 0.027 ± 0.000 |
+| Vega 4B | pooled Peekaboo without the honesty fix | right / wrong | 0.227 ± 0.020 | 0.261 ± 0.024 | 0.253 ± 0.027 | 0.202 ± 0.013 | 0.321 ± 0.006 | 0.056 ± 0.005 |
 | Laya | base model | none | 0.212 | 0.113 | 0.174 | 0.183 | 0.306 | 0.012 |
 | Laya | answer-key adapter (Laya: answer-key head) | answer key | 0.143 ± 0.001 | · | 0.066 ± 0.006 | 0.035 ± 0.008 | 0.072 ± 0.016 | 0.010 ± 0.002 |
 | Laya | laya-typed-decisions (Laya's released fine-tune) | answer key (typed-decisions) | 0.166 | 0.101 | 0.045 | 0.206 | 0.185 | 0.106 |
@@ -85,12 +91,15 @@ Accuracy (mean ± s.d. over 3 seeds), then calibration error, then the paired ac
 | Vega 0.8B | pooled Peekaboo + switch | right / wrong | +1.2 [+0.6, +1.7] | -0.1 [-3.9, +3.6] | +9.7 [+7.5, +12.0] | +4.2 [+3.1, +5.4] | -0.2 [-2.4, +2.2] | +1.1 [+0.2, +2.0] |
 | Vega 0.8B | pooled Peekaboo without the honesty fix | right / wrong | +4.0 [+2.6, +5.4] | -0.1 [-3.9, +3.6] | +9.7 [+7.5, +12.0] | +5.4 [+3.8, +7.0] | -0.2 [-2.4, +2.2] | +1.1 [+0.2, +2.0] |
 | Vega 4B | base model | none | — | — | — | — | — | — |
-| Vega 4B | VegaML's TTT head | answer key | -3.9 [-5.7, -2.2] | · | +0.8 [-1.0, +2.7] | +2.4 [+0.4, +4.5] | +7.3 [+4.7, +10.0] | · |
+| Vega 4B | VegaML's TTT head | answer key | -3.9 [-5.7, -2.2] | · | +0.8 [-1.0, +2.7] | +2.4 [+0.4, +4.5] | +7.3 [+4.7, +10.0] | -0.8 [-1.9, +0.4] |
 | Vega 4B | answer-key adapter (Laya: answer-key head) | answer key | -1.0 [-2.5, +0.4] | · | +5.2 [+2.8, +7.9] | +4.5 [+3.1, +5.8] | +1.3 [-1.0, +3.5] | -0.5 [-1.5, +0.4] |
 | Vega 4B | **Peekaboo** | right / wrong | +0.1 [-1.3, +1.3] | +4.5 [+0.3, +9.0] | +6.7 [+4.6, +8.8] | +3.4 [+2.0, +4.9] | -2.3 [-4.1, -0.4] | +0.1 [-0.4, +0.5] |
 | Vega 4B | Peekaboo + switch | right / wrong | -0.2 [-0.7, +0.3] | +0.9 [-0.6, +2.3] | +4.5 [+3.1, +5.9] | +3.4 [+2.0, +4.9] | -2.3 [-4.1, -0.4] | +0.0 [+0.0, +0.0] |
 | Vega 4B | Peekaboo without the honesty fix | right / wrong | +0.1 [-1.3, +1.3] | +4.5 [+0.3, +9.0] | +6.7 [+4.6, +8.8] | +3.4 [+2.0, +4.9] | -2.3 [-4.1, -0.4] | +0.1 [-0.4, +0.5] |
-| Vega 4B | Peekaboo without the leash (KL 0) | right / wrong | -0.8 [-2.1, +0.4] | +3.8 [-0.7, +8.5] | +5.0 [+2.8, +7.3] | +1.1 [-0.4, +2.7] | -5.8 [-7.8, -3.7] | · |
+| Vega 4B | Peekaboo without the leash (KL 0) | right / wrong | -0.8 [-2.1, +0.4] | +3.8 [-0.7, +8.5] | +5.0 [+2.8, +7.3] | +1.1 [-0.4, +2.7] | -5.8 [-7.8, -3.7] | +0.3 [-0.1, +0.8] |
+| Vega 4B | **pooled Peekaboo** (one add-on, all suites' feedback) | right / wrong | +0.4 [-0.8, +1.6] | +2.0 [-1.9, +6.2] | +5.1 [+3.3, +7.0] | +1.4 [-0.2, +3.0] | -3.5 [-5.2, -1.8] | +0.5 [-0.1, +1.2] |
+| Vega 4B | pooled Peekaboo + switch | right / wrong | +0.0 [+0.0, +0.0] | +2.0 [-1.9, +6.2] | +2.1 [+1.3, +2.8] | +1.2 [+0.7, +1.8] | -0.8 [-1.3, -0.2] | +0.0 [+0.0, +0.0] |
+| Vega 4B | pooled Peekaboo without the honesty fix | right / wrong | +0.4 [-0.8, +1.6] | +2.0 [-1.9, +6.2] | +5.1 [+3.3, +7.0] | +1.4 [-0.2, +3.0] | -3.5 [-5.2, -1.8] | +0.5 [-0.1, +1.2] |
 | Laya | base model | none | — | — | — | — | — | — |
 | Laya | answer-key adapter (Laya: answer-key head) | answer key | -0.7 [-1.6, +0.2] | · | -1.2 [-3.4, +1.1] | +18.3 [+15.6, +20.8] | -5.6 [-7.1, -4.1] | +0.0 [-0.2, +0.3] |
 | Laya | laya-typed-decisions (Laya's released fine-tune) | answer key (typed-decisions) | +0.9 [-0.3, +2.2] | -5.2 [-10.0, +0.0] | +3.7 [+1.3, +6.2] | +40.2 [+37.5, +42.7] | +0.7 [-0.5, +1.9] | +0.0 [-0.6, +0.6] |
@@ -129,8 +138,8 @@ Accuracy (mean ± s.d. over 3 seeds), then calibration error, then the paired ac
 | macro F1 | 0.486 | 0.485 | 0.524 ± 0.012 | 0.649 | 0.648 | 0.655 ± 0.006 | 0.472 | 0.477 | 0.481 ± 0.008 | **0.796** |
 | expected calibration error | 0.151 | 0.154 | 0.203 ± 0.007 | 0.148 | 0.141 | 0.172 ± 0.003 | 0.212 | 0.166 | 0.157 ± 0.004 | **0.115** |
 | negative log likelihood | 1.099 | 1.100 | 1.156 ± 0.031 | **0.768** | **0.768** | 0.821 ± 0.012 | 1.651 | 1.170 | 1.118 ± 0.005 | 0.878 |
-| area under risk-coverage | 0.362 | 0.363 | 0.333 ± 0.019 | 0.169 | 0.169 | 0.177 ± 0.004 | 0.365 | 0.348 | 0.366 ± 0.004 | **0.077** |
-| latency per decision, p50 ms | 74 | 101 | 115 | 106 | **66** | 89 | 80 | 91 | 80 | 162 |
+| area under risk-coverage | 0.362 | 0.363 | 0.333 ± 0.018 | 0.169 | 0.169 | 0.177 ± 0.004 | 0.367 | 0.348 | 0.365 ± 0.004 | **0.077** |
+| latency per decision, p50 ms | 74 | 101 | 115 | 106 | **37** | 89 | 80 | 91 | 80 | 162 |
 | **JevBench, 231 items** | | | | | | | | | | |
 | accuracy | 0.545 | 0.550 | 0.517 ± 0.018 | 0.662 | 0.667 | 0.711 ± 0.004 | 0.589 | 0.537 | 0.584 ± 0.000 | **0.866** |
 | accuracy, hard tier | 0.414 | 0.414 | 0.390 ± 0.015 | 0.513 | 0.522 | 0.522 ± 0.000 | 0.351 | 0.270 | 0.351 ± 0.000 | **0.730** |
@@ -142,7 +151,7 @@ Accuracy (mean ± s.d. over 3 seeds), then calibration error, then the paired ac
 | negative log likelihood | 1.628 | 1.630 | 1.305 ± 0.029 | 1.420 | 1.422 | **1.101 ± 0.008** | 2.062 | 1.566 | 1.575 ± 0.008 | 3.196 |
 | KL to the gold distribution, 10 rows | 1.012 | 1.018 | 1.032 ± 0.089 | 0.854 | 0.852 | 0.850 ± 0.180 | 1.110 | 0.930 | **0.773 ± 0.009** | 6.099 |
 | coverage, rows answered | **1.000** | **1.000** | **1.000 ± 0.000** | **1.000** | **1.000** | **1.000 ± 0.000** | 0.954 | 0.990 | 0.954 ± 0.000 | 0.997 |
-| latency per decision, p50 ms | 85 | 104 | 83 | 245 | 79 | 101 | **33** | 36 | **33** | 163 |
+| latency per decision, p50 ms | 85 | 104 | 83 | 245 | 46 | 101 | **33** | 36 | **33** | 163 |
 
 Vega's DecisionBench rows: the finished runs in experiments/vega_policy/results*/compare (its latency is the README's). Laya is measured in this run on every row. laya-typed-decisions is Laya's released answer-key fine-tune (on typed-decisions).
 

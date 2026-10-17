@@ -1,40 +1,35 @@
-# Status of the remaining Peekaboo experiments  (Sat Oct 17 04:08:41 2026)
+# Status of the remaining Peekaboo experiments  (Sat Oct 17 04:15:35 2026)
 
-done: 210 · pending: 1 · running: 4  (of 215 steps)
+done: 214 · pending: 1  (of 215 steps)
 
-NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
-finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
+COMPLETE. The tables are in TABLES.md.
 
-- **running** `vega-4b/ttt/agnews`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method ttt`)
-- **running** `vega-4b/pooled/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite all --method pooled --seed 0`)
-- **running** `vega-4b/pooled/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite all --method pooled --seed 1`)
-- **running** `vega-4b/pooled/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite all --method pooled --seed 2`)
 - **pending** `tables`    (from `.`: `VEGA_OUT=<output> python table.py`)
 
 <details><summary>all steps</summary>
 
 - done     vega-0.8b/cache/public not selected (--only)
-- done     vega-4b/cache/public 440s
+- done     vega-4b/cache/public 
 - done     laya/cache/public not selected (--only)
 - done     laya_td/cache/public not selected (--only)
 - done     vega-0.8b/cache/jevbench not selected (--only)
-- done     vega-4b/cache/jevbench 30s
+- done     vega-4b/cache/jevbench 
 - done     laya/cache/jevbench not selected (--only)
 - done     laya_td/cache/jevbench not selected (--only)
 - done     vega-0.8b/cache/decisionbench not selected (--only)
-- done     vega-4b/cache/decisionbench 350s
+- done     vega-4b/cache/decisionbench 
 - done     laya/cache/decisionbench not selected (--only)
 - done     laya_td/cache/decisionbench not selected (--only)
 - done     vega-0.8b/cache/typed not selected (--only)
-- done     vega-4b/cache/typed 415s
+- done     vega-4b/cache/typed 
 - done     laya/cache/typed not selected (--only)
 - done     laya_td/cache/typed not selected (--only)
 - done     vega-0.8b/cache/emotion not selected (--only)
-- done     vega-4b/cache/emotion 220s
+- done     vega-4b/cache/emotion 
 - done     laya/cache/emotion not selected (--only)
 - done     laya_td/cache/emotion not selected (--only)
 - done     vega-0.8b/cache/agnews not selected (--only)
-- done     vega-4b/cache/agnews 235s
+- done     vega-4b/cache/agnews 
 - done     laya/cache/agnews not selected (--only)
 - done     laya_td/cache/agnews not selected (--only)
 - done     vega-0.8b/replay/public 
@@ -151,7 +146,7 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-0.8b/feedback/agnews/s0 
 - done     vega-0.8b/feedback/agnews/s1 
 - done     vega-0.8b/feedback/agnews/s2 
-- running  vega-4b/ttt/agnews 
+- done     vega-4b/ttt/agnews 
 - done     vega-4b/sup_ts/agnews/s0 
 - done     vega-4b/sup_ts/agnews/s1 
 - done     vega-4b/sup_ts/agnews/s2 
@@ -165,13 +160,13 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     laya/feedback/agnews/s1 
 - done     laya/feedback/agnews/s2 
 - done     vega-0.8b/pooled/s0 
-- running  vega-4b/pooled/s0 
+- done     vega-4b/pooled/s0 
 - done     laya/pooled/s0 
 - done     vega-0.8b/pooled/s1 
-- running  vega-4b/pooled/s1 
+- done     vega-4b/pooled/s1 
 - done     laya/pooled/s1 
 - done     vega-0.8b/pooled/s2 
-- running  vega-4b/pooled/s2 
+- done     vega-4b/pooled/s2 
 - done     laya/pooled/s2 
 - done     vega-0.8b/feedback_kl0/public/s0 
 - done     vega-4b/feedback_kl0/public/s0 
@@ -219,13 +214,13 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-4b/feedback_kl0/emotion/s2 
 - done     laya/feedback_kl0/emotion/s2 
 - done     vega-0.8b/feedback_kl0/agnews/s0 
-- done     vega-4b/feedback_kl0/agnews/s0 100s
+- done     vega-4b/feedback_kl0/agnews/s0 
 - done     laya/feedback_kl0/agnews/s0 
 - done     vega-0.8b/feedback_kl0/agnews/s1 
-- done     vega-4b/feedback_kl0/agnews/s1 100s
+- done     vega-4b/feedback_kl0/agnews/s1 
 - done     laya/feedback_kl0/agnews/s1 
 - done     vega-0.8b/feedback_kl0/agnews/s2 
-- done     vega-4b/feedback_kl0/agnews/s2 105s
+- done     vega-4b/feedback_kl0/agnews/s2 
 - done     laya/feedback_kl0/agnews/s2 
 - pending  tables 
 
