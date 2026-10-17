@@ -1,35 +1,36 @@
-# Status of the remaining Peekaboo experiments  (Sat Oct 17 09:34:15 2026)
+# Status of the remaining Peekaboo experiments  (Sat Oct 17 09:37:36 2026)
 
-done: 233  (of 233 steps)
+done: 232 · pending: 1  (of 233 steps)
 
 COMPLETE. The tables are in TABLES.md.
 
+- **pending** `tables`    (from `.`: `VEGA_OUT=<output> python table.py`)
 
 <details><summary>all steps</summary>
 
 - done     vega-0.8b/cache/public not selected (--only)
 - done     vega-4b/cache/public not selected (--only)
-- done     laya/cache/public 355s
+- done     laya/cache/public 
 - done     laya_td/cache/public not selected (--only)
 - done     vega-0.8b/cache/jevbench not selected (--only)
 - done     vega-4b/cache/jevbench not selected (--only)
-- done     laya/cache/jevbench 20s
+- done     laya/cache/jevbench 
 - done     laya_td/cache/jevbench not selected (--only)
 - done     vega-0.8b/cache/decisionbench not selected (--only)
 - done     vega-4b/cache/decisionbench not selected (--only)
-- done     laya/cache/decisionbench 250s
+- done     laya/cache/decisionbench 
 - done     laya_td/cache/decisionbench not selected (--only)
 - done     vega-0.8b/cache/typed not selected (--only)
 - done     vega-4b/cache/typed not selected (--only)
-- done     laya/cache/typed 450s
+- done     laya/cache/typed 
 - done     laya_td/cache/typed not selected (--only)
 - done     vega-0.8b/cache/emotion not selected (--only)
 - done     vega-4b/cache/emotion not selected (--only)
-- done     laya/cache/emotion 315s
+- done     laya/cache/emotion 
 - done     laya_td/cache/emotion not selected (--only)
 - done     vega-0.8b/cache/agnews not selected (--only)
 - done     vega-4b/cache/agnews not selected (--only)
-- done     laya/cache/agnews 335s
+- done     laya/cache/agnews 
 - done     laya_td/cache/agnews not selected (--only)
 - done     vega-0.8b/replay/public 
 - done     vega-4b/replay/public 
@@ -221,24 +222,24 @@ COMPLETE. The tables are in TABLES.md.
 - done     vega-0.8b/feedback_kl0/agnews/s2 
 - done     vega-4b/feedback_kl0/agnews/s2 
 - done     laya/feedback_kl0/agnews/s2 
-- done     laya/feedback_enc/public/s0 570s
-- done     laya/feedback_enc/public/s1 495s
-- done     laya/feedback_enc/public/s2 480s
-- done     laya/feedback_enc/jevbench/s0 335s
-- done     laya/feedback_enc/jevbench/s1 285s
-- done     laya/feedback_enc/jevbench/s2 245s
-- done     laya/feedback_enc/decisionbench/s0 890s
-- done     laya/feedback_enc/decisionbench/s1 885s
-- done     laya/feedback_enc/decisionbench/s2 900s
-- done     laya/feedback_enc/typed/s0 1600s
-- done     laya/feedback_enc/typed/s1 1545s
-- done     laya/feedback_enc/typed/s2 1365s
-- done     laya/feedback_enc/emotion/s0 510s
-- done     laya/feedback_enc/emotion/s1 415s
-- done     laya/feedback_enc/emotion/s2 410s
-- done     laya/feedback_enc/agnews/s0 490s
-- done     laya/feedback_enc/agnews/s1 480s
-- done     laya/feedback_enc/agnews/s2 315s
-- done     tables 191s
+- done     laya/feedback_enc/public/s0 
+- done     laya/feedback_enc/public/s1 
+- done     laya/feedback_enc/public/s2 
+- done     laya/feedback_enc/jevbench/s0 
+- done     laya/feedback_enc/jevbench/s1 
+- done     laya/feedback_enc/jevbench/s2 
+- done     laya/feedback_enc/decisionbench/s0 
+- done     laya/feedback_enc/decisionbench/s1 
+- done     laya/feedback_enc/decisionbench/s2 
+- done     laya/feedback_enc/typed/s0 
+- done     laya/feedback_enc/typed/s1 
+- done     laya/feedback_enc/typed/s2 
+- done     laya/feedback_enc/emotion/s0 
+- done     laya/feedback_enc/emotion/s1 
+- done     laya/feedback_enc/emotion/s2 
+- done     laya/feedback_enc/agnews/s0 
+- done     laya/feedback_enc/agnews/s1 
+- done     laya/feedback_enc/agnews/s2 
+- pending  tables 
 
 </details>
