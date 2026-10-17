@@ -1,23 +1,17 @@
-# Status of the remaining Peekaboo experiments  (Sat Oct 17 00:10:00 2026)
+# Status of the remaining Peekaboo experiments  (Sat Oct 17 00:21:00 2026)
 
-done: 175 · pending: 39 · running: 1  (of 215 steps)
+done: 181 · pending: 30 · running: 4  (of 215 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **running** `vega-4b/cache/typed`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite typed`)
-- **pending** `vega-4b/cache/emotion`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite emotion`)
+- **running** `vega-4b/cache/emotion`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite emotion`)
 - **pending** `vega-4b/cache/agnews`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite agnews`)
-- **pending** `vega-4b/replay/typed`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method replay`)
 - **pending** `vega-4b/replay/emotion`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method replay`)
 - **pending** `vega-4b/replay/agnews`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method replay`)
-- **pending** `vega-4b/ttt/typed`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method ttt`)
-- **pending** `vega-4b/sup_ts/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method sup_ts --seed 0`)
-- **pending** `vega-4b/sup_ts/typed/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method sup_ts --seed 1`)
-- **pending** `vega-4b/sup_ts/typed/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method sup_ts --seed 2`)
-- **pending** `vega-4b/feedback/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback --seed 0`)
-- **pending** `vega-4b/feedback/typed/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback --seed 1`)
-- **pending** `vega-4b/feedback/typed/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback --seed 2`)
+- **running** `vega-4b/feedback/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback --seed 0`)
+- **running** `vega-4b/feedback/typed/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback --seed 1`)
+- **running** `vega-4b/feedback/typed/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback --seed 2`)
 - **pending** `vega-4b/ttt/emotion`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method ttt`)
 - **pending** `vega-4b/sup_ts/emotion/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method sup_ts --seed 0`)
 - **pending** `vega-4b/sup_ts/emotion/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method sup_ts --seed 1`)
@@ -61,11 +55,11 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     laya/cache/decisionbench 180s
 - done     laya_td/cache/decisionbench 170s
 - done     vega-0.8b/cache/typed 720s
-- running  vega-4b/cache/typed 
+- done     vega-4b/cache/typed 685s
 - done     laya/cache/typed 685s
 - done     laya_td/cache/typed 685s
 - done     vega-0.8b/cache/emotion 400s
-- pending  vega-4b/cache/emotion 
+- running  vega-4b/cache/emotion 
 - done     laya/cache/emotion 290s
 - done     laya_td/cache/emotion 330s
 - done     vega-0.8b/cache/agnews 435s
@@ -82,7 +76,7 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-4b/replay/decisionbench 
 - done     laya/replay/decisionbench 
 - done     vega-0.8b/replay/typed 
-- pending  vega-4b/replay/typed 
+- done     vega-4b/replay/typed 65s
 - done     laya/replay/typed 
 - done     vega-0.8b/replay/emotion 
 - pending  vega-4b/replay/emotion 
@@ -146,13 +140,13 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-0.8b/feedback/typed/s0 
 - done     vega-0.8b/feedback/typed/s1 
 - done     vega-0.8b/feedback/typed/s2 
-- pending  vega-4b/ttt/typed 
-- pending  vega-4b/sup_ts/typed/s0 
-- pending  vega-4b/sup_ts/typed/s1 
-- pending  vega-4b/sup_ts/typed/s2 
-- pending  vega-4b/feedback/typed/s0 
-- pending  vega-4b/feedback/typed/s1 
-- pending  vega-4b/feedback/typed/s2 
+- done     vega-4b/ttt/typed 205s
+- done     vega-4b/sup_ts/typed/s0 190s
+- done     vega-4b/sup_ts/typed/s1 190s
+- done     vega-4b/sup_ts/typed/s2 175s
+- running  vega-4b/feedback/typed/s0 
+- running  vega-4b/feedback/typed/s1 
+- running  vega-4b/feedback/typed/s2 
 - done     laya/sup_ts/typed/s0 1455s
 - done     laya/sup_ts/typed/s1 1380s
 - done     laya/sup_ts/typed/s2 1335s
