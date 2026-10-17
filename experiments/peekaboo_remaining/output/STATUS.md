@@ -1,10 +1,10 @@
 # Status of the remaining Peekaboo experiments  (Sat Oct 17 09:37:36 2026)
 
-done: 232 · pending: 1  (of 233 steps)
+done: 233 of 233 steps (tables rebuilt from the final results)
 
 COMPLETE. The tables are in TABLES.md.
 
-- **pending** `tables`    (from `.`: `VEGA_OUT=<output> python table.py`)
+- done `tables`    (from `.`: `VEGA_OUT=<output> python table.py`)
 
 <details><summary>all steps</summary>
 
@@ -240,6 +240,6 @@ COMPLETE. The tables are in TABLES.md.
 - done     laya/feedback_enc/agnews/s0 
 - done     laya/feedback_enc/agnews/s1 
 - done     laya/feedback_enc/agnews/s2 
-- pending  tables 
+- done     tables 
 
 </details>
