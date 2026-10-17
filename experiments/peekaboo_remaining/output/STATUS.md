@@ -1,19 +1,11 @@
-# Status of the remaining Peekaboo experiments  (Sat Oct 17 00:31:00 2026)
+# Status of the remaining Peekaboo experiments  (Sat Oct 17 00:37:52 2026)
 
-done: 199 · pending: 15 · running: 1  (of 215 steps)
+done: 207 · pending: 8  (of 215 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **running** `vega-4b/cache/agnews`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite agnews`)
-- **pending** `vega-4b/replay/agnews`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method replay`)
 - **pending** `vega-4b/ttt/agnews`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method ttt`)
-- **pending** `vega-4b/sup_ts/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method sup_ts --seed 0`)
-- **pending** `vega-4b/sup_ts/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method sup_ts --seed 1`)
-- **pending** `vega-4b/sup_ts/agnews/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method sup_ts --seed 2`)
-- **pending** `vega-4b/feedback/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback --seed 0`)
-- **pending** `vega-4b/feedback/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback --seed 1`)
-- **pending** `vega-4b/feedback/agnews/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback --seed 2`)
 - **pending** `vega-4b/pooled/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite all --method pooled --seed 0`)
 - **pending** `vega-4b/pooled/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite all --method pooled --seed 1`)
 - **pending** `vega-4b/pooled/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite all --method pooled --seed 2`)
@@ -24,30 +16,30 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 
 <details><summary>all steps</summary>
 
-- done     vega-0.8b/cache/public 845s
-- done     vega-4b/cache/public 465s
-- done     laya/cache/public 385s
-- done     laya_td/cache/public 405s
-- done     vega-0.8b/cache/jevbench 55s
-- done     vega-4b/cache/jevbench 40s
-- done     laya/cache/jevbench 20s
-- done     laya_td/cache/jevbench 25s
-- done     vega-0.8b/cache/decisionbench 570s
-- done     vega-4b/cache/decisionbench 470s
-- done     laya/cache/decisionbench 180s
-- done     laya_td/cache/decisionbench 170s
-- done     vega-0.8b/cache/typed 720s
-- done     vega-4b/cache/typed 685s
-- done     laya/cache/typed 685s
-- done     laya_td/cache/typed 685s
-- done     vega-0.8b/cache/emotion 400s
-- done     vega-4b/cache/emotion 480s
-- done     laya/cache/emotion 290s
-- done     laya_td/cache/emotion 330s
-- done     vega-0.8b/cache/agnews 435s
-- running  vega-4b/cache/agnews 
-- done     laya/cache/agnews 360s
-- done     laya_td/cache/agnews 415s
+- done     vega-0.8b/cache/public 
+- done     vega-4b/cache/public 
+- done     laya/cache/public 
+- done     laya_td/cache/public 
+- done     vega-0.8b/cache/jevbench 
+- done     vega-4b/cache/jevbench 
+- done     laya/cache/jevbench 
+- done     laya_td/cache/jevbench 
+- done     vega-0.8b/cache/decisionbench 
+- done     vega-4b/cache/decisionbench 
+- done     laya/cache/decisionbench 
+- done     laya_td/cache/decisionbench 
+- done     vega-0.8b/cache/typed 
+- done     vega-4b/cache/typed 
+- done     laya/cache/typed 
+- done     laya_td/cache/typed 
+- done     vega-0.8b/cache/emotion 
+- done     vega-4b/cache/emotion 
+- done     laya/cache/emotion 
+- done     laya_td/cache/emotion 
+- done     vega-0.8b/cache/agnews 
+- done     vega-4b/cache/agnews 
+- done     laya/cache/agnews 
+- done     laya_td/cache/agnews 
 - done     vega-0.8b/replay/public 
 - done     vega-4b/replay/public 
 - done     laya/replay/public 
@@ -58,14 +50,14 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-4b/replay/decisionbench 
 - done     laya/replay/decisionbench 
 - done     vega-0.8b/replay/typed 
-- done     vega-4b/replay/typed 65s
+- done     vega-4b/replay/typed 
 - done     laya/replay/typed 
 - done     vega-0.8b/replay/emotion 
-- done     vega-4b/replay/emotion 50s
+- done     vega-4b/replay/emotion 
 - done     laya/replay/emotion 
-- done     vega-0.8b/replay/agnews 105s
-- pending  vega-4b/replay/agnews 
-- done     laya/replay/agnews 125s
+- done     vega-0.8b/replay/agnews 
+- done     vega-4b/replay/agnews 
+- done     laya/replay/agnews 
 - done     vega-0.8b/ttt/public 
 - done     vega-0.8b/sup_ts/public/s0 
 - done     vega-0.8b/sup_ts/public/s1 
@@ -80,12 +72,12 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-4b/feedback/public/s0 
 - done     vega-4b/feedback/public/s1 
 - done     vega-4b/feedback/public/s2 
-- done     laya/sup_ts/public/s0 610s
-- done     laya/sup_ts/public/s1 565s
-- done     laya/sup_ts/public/s2 530s
-- done     laya/feedback/public/s0 585s
-- done     laya/feedback/public/s1 570s
-- done     laya/feedback/public/s2 555s
+- done     laya/sup_ts/public/s0 
+- done     laya/sup_ts/public/s1 
+- done     laya/sup_ts/public/s2 
+- done     laya/feedback/public/s0 
+- done     laya/feedback/public/s1 
+- done     laya/feedback/public/s2 
 - done     vega-0.8b/feedback/jevbench/s0 
 - done     vega-0.8b/feedback/jevbench/s1 
 - done     vega-0.8b/feedback/jevbench/s2 
@@ -109,12 +101,12 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-4b/feedback/decisionbench/s0 
 - done     vega-4b/feedback/decisionbench/s1 
 - done     vega-4b/feedback/decisionbench/s2 
-- done     laya/sup_ts/decisionbench/s0 750s
-- done     laya/sup_ts/decisionbench/s1 745s
-- done     laya/sup_ts/decisionbench/s2 665s
-- done     laya/feedback/decisionbench/s0 865s
-- done     laya/feedback/decisionbench/s1 900s
-- done     laya/feedback/decisionbench/s2 920s
+- done     laya/sup_ts/decisionbench/s0 
+- done     laya/sup_ts/decisionbench/s1 
+- done     laya/sup_ts/decisionbench/s2 
+- done     laya/feedback/decisionbench/s0 
+- done     laya/feedback/decisionbench/s1 
+- done     laya/feedback/decisionbench/s2 
 - done     vega-0.8b/ttt/typed 
 - done     vega-0.8b/sup_ts/typed/s0 
 - done     vega-0.8b/sup_ts/typed/s1 
@@ -122,19 +114,19 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-0.8b/feedback/typed/s0 
 - done     vega-0.8b/feedback/typed/s1 
 - done     vega-0.8b/feedback/typed/s2 
-- done     vega-4b/ttt/typed 205s
-- done     vega-4b/sup_ts/typed/s0 190s
-- done     vega-4b/sup_ts/typed/s1 190s
-- done     vega-4b/sup_ts/typed/s2 175s
-- done     vega-4b/feedback/typed/s0 145s
-- done     vega-4b/feedback/typed/s1 140s
-- done     vega-4b/feedback/typed/s2 130s
-- done     laya/sup_ts/typed/s0 1455s
-- done     laya/sup_ts/typed/s1 1380s
-- done     laya/sup_ts/typed/s2 1335s
-- done     laya/feedback/typed/s0 1460s
-- done     laya/feedback/typed/s1 1030s
-- done     laya/feedback/typed/s2 945s
+- done     vega-4b/ttt/typed 
+- done     vega-4b/sup_ts/typed/s0 
+- done     vega-4b/sup_ts/typed/s1 
+- done     vega-4b/sup_ts/typed/s2 
+- done     vega-4b/feedback/typed/s0 
+- done     vega-4b/feedback/typed/s1 
+- done     vega-4b/feedback/typed/s2 
+- done     laya/sup_ts/typed/s0 
+- done     laya/sup_ts/typed/s1 
+- done     laya/sup_ts/typed/s2 
+- done     laya/feedback/typed/s0 
+- done     laya/feedback/typed/s1 
+- done     laya/feedback/typed/s2 
 - done     vega-0.8b/ttt/emotion 
 - done     vega-0.8b/sup_ts/emotion/s0 
 - done     vega-0.8b/sup_ts/emotion/s1 
@@ -142,102 +134,102 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-0.8b/feedback/emotion/s0 
 - done     vega-0.8b/feedback/emotion/s1 
 - done     vega-0.8b/feedback/emotion/s2 
-- done     vega-4b/ttt/emotion 245s
-- done     vega-4b/sup_ts/emotion/s0 120s
-- done     vega-4b/sup_ts/emotion/s1 125s
-- done     vega-4b/sup_ts/emotion/s2 130s
-- done     vega-4b/feedback/emotion/s0 130s
-- done     vega-4b/feedback/emotion/s1 130s
-- done     vega-4b/feedback/emotion/s2 110s
-- done     laya/sup_ts/emotion/s0 285s
-- done     laya/sup_ts/emotion/s1 285s
-- done     laya/sup_ts/emotion/s2 270s
-- done     laya/feedback/emotion/s0 230s
-- done     laya/feedback/emotion/s1 230s
-- done     laya/feedback/emotion/s2 245s
-- done     vega-0.8b/ttt/agnews 105s
-- done     vega-0.8b/sup_ts/agnews/s0 160s
-- done     vega-0.8b/sup_ts/agnews/s1 165s
-- done     vega-0.8b/sup_ts/agnews/s2 220s
-- done     vega-0.8b/feedback/agnews/s0 270s
-- done     vega-0.8b/feedback/agnews/s1 275s
-- done     vega-0.8b/feedback/agnews/s2 285s
+- done     vega-4b/ttt/emotion 
+- done     vega-4b/sup_ts/emotion/s0 
+- done     vega-4b/sup_ts/emotion/s1 
+- done     vega-4b/sup_ts/emotion/s2 
+- done     vega-4b/feedback/emotion/s0 
+- done     vega-4b/feedback/emotion/s1 
+- done     vega-4b/feedback/emotion/s2 
+- done     laya/sup_ts/emotion/s0 
+- done     laya/sup_ts/emotion/s1 
+- done     laya/sup_ts/emotion/s2 
+- done     laya/feedback/emotion/s0 
+- done     laya/feedback/emotion/s1 
+- done     laya/feedback/emotion/s2 
+- done     vega-0.8b/ttt/agnews 
+- done     vega-0.8b/sup_ts/agnews/s0 
+- done     vega-0.8b/sup_ts/agnews/s1 
+- done     vega-0.8b/sup_ts/agnews/s2 
+- done     vega-0.8b/feedback/agnews/s0 
+- done     vega-0.8b/feedback/agnews/s1 
+- done     vega-0.8b/feedback/agnews/s2 
 - pending  vega-4b/ttt/agnews 
-- pending  vega-4b/sup_ts/agnews/s0 
-- pending  vega-4b/sup_ts/agnews/s1 
-- pending  vega-4b/sup_ts/agnews/s2 
-- pending  vega-4b/feedback/agnews/s0 
-- pending  vega-4b/feedback/agnews/s1 
-- pending  vega-4b/feedback/agnews/s2 
-- done     laya/sup_ts/agnews/s0 230s
-- done     laya/sup_ts/agnews/s1 225s
-- done     laya/sup_ts/agnews/s2 215s
-- done     laya/feedback/agnews/s0 335s
-- done     laya/feedback/agnews/s1 335s
-- done     laya/feedback/agnews/s2 350s
-- done     vega-0.8b/pooled/s0 935s
+- done     vega-4b/sup_ts/agnews/s0 
+- done     vega-4b/sup_ts/agnews/s1 
+- done     vega-4b/sup_ts/agnews/s2 
+- done     vega-4b/feedback/agnews/s0 
+- done     vega-4b/feedback/agnews/s1 
+- done     vega-4b/feedback/agnews/s2 
+- done     laya/sup_ts/agnews/s0 
+- done     laya/sup_ts/agnews/s1 
+- done     laya/sup_ts/agnews/s2 
+- done     laya/feedback/agnews/s0 
+- done     laya/feedback/agnews/s1 
+- done     laya/feedback/agnews/s2 
+- done     vega-0.8b/pooled/s0 
 - pending  vega-4b/pooled/s0 
-- done     laya/pooled/s0 4365s
-- done     vega-0.8b/pooled/s1 1205s
+- done     laya/pooled/s0 
+- done     vega-0.8b/pooled/s1 
 - pending  vega-4b/pooled/s1 
-- done     laya/pooled/s1 4390s
-- done     vega-0.8b/pooled/s2 990s
+- done     laya/pooled/s1 
+- done     vega-0.8b/pooled/s2 
 - pending  vega-4b/pooled/s2 
-- done     laya/pooled/s2 4400s
+- done     laya/pooled/s2 
 - done     vega-0.8b/feedback_kl0/public/s0 
 - done     vega-4b/feedback_kl0/public/s0 
-- done     laya/feedback_kl0/public/s0 665s
+- done     laya/feedback_kl0/public/s0 
 - done     vega-0.8b/feedback_kl0/public/s1 
 - done     vega-4b/feedback_kl0/public/s1 
-- done     laya/feedback_kl0/public/s1 665s
+- done     laya/feedback_kl0/public/s1 
 - done     vega-0.8b/feedback_kl0/public/s2 
 - done     vega-4b/feedback_kl0/public/s2 
-- done     laya/feedback_kl0/public/s2 665s
+- done     laya/feedback_kl0/public/s2 
 - done     vega-0.8b/feedback_kl0/jevbench/s0 
 - done     vega-4b/feedback_kl0/jevbench/s0 
-- done     laya/feedback_kl0/jevbench/s0 245s
+- done     laya/feedback_kl0/jevbench/s0 
 - done     vega-0.8b/feedback_kl0/jevbench/s1 
 - done     vega-4b/feedback_kl0/jevbench/s1 
-- done     laya/feedback_kl0/jevbench/s1 245s
+- done     laya/feedback_kl0/jevbench/s1 
 - done     vega-0.8b/feedback_kl0/jevbench/s2 
 - done     vega-4b/feedback_kl0/jevbench/s2 
-- done     laya/feedback_kl0/jevbench/s2 245s
+- done     laya/feedback_kl0/jevbench/s2 
 - done     vega-0.8b/feedback_kl0/decisionbench/s0 
-- done     vega-4b/feedback_kl0/decisionbench/s0 95s
-- done     laya/feedback_kl0/decisionbench/s0 675s
+- done     vega-4b/feedback_kl0/decisionbench/s0 
+- done     laya/feedback_kl0/decisionbench/s0 
 - done     vega-0.8b/feedback_kl0/decisionbench/s1 
-- done     vega-4b/feedback_kl0/decisionbench/s1 95s
-- done     laya/feedback_kl0/decisionbench/s1 370s
+- done     vega-4b/feedback_kl0/decisionbench/s1 
+- done     laya/feedback_kl0/decisionbench/s1 
 - done     vega-0.8b/feedback_kl0/decisionbench/s2 
-- done     vega-4b/feedback_kl0/decisionbench/s2 95s
-- done     laya/feedback_kl0/decisionbench/s2 365s
+- done     vega-4b/feedback_kl0/decisionbench/s2 
+- done     laya/feedback_kl0/decisionbench/s2 
 - done     vega-0.8b/feedback_kl0/typed/s0 
-- done     vega-4b/feedback_kl0/typed/s0 105s
-- done     laya/feedback_kl0/typed/s0 1075s
+- done     vega-4b/feedback_kl0/typed/s0 
+- done     laya/feedback_kl0/typed/s0 
 - done     vega-0.8b/feedback_kl0/typed/s1 
-- done     vega-4b/feedback_kl0/typed/s1 110s
-- done     laya/feedback_kl0/typed/s1 1065s
+- done     vega-4b/feedback_kl0/typed/s1 
+- done     laya/feedback_kl0/typed/s1 
 - done     vega-0.8b/feedback_kl0/typed/s2 
-- done     vega-4b/feedback_kl0/typed/s2 90s
-- done     laya/feedback_kl0/typed/s2 985s
+- done     vega-4b/feedback_kl0/typed/s2 
+- done     laya/feedback_kl0/typed/s2 
 - done     vega-0.8b/feedback_kl0/emotion/s0 
-- done     vega-4b/feedback_kl0/emotion/s0 70s
-- done     laya/feedback_kl0/emotion/s0 420s
+- done     vega-4b/feedback_kl0/emotion/s0 
+- done     laya/feedback_kl0/emotion/s0 
 - done     vega-0.8b/feedback_kl0/emotion/s1 
-- done     vega-4b/feedback_kl0/emotion/s1 75s
-- done     laya/feedback_kl0/emotion/s1 325s
+- done     vega-4b/feedback_kl0/emotion/s1 
+- done     laya/feedback_kl0/emotion/s1 
 - done     vega-0.8b/feedback_kl0/emotion/s2 
-- done     vega-4b/feedback_kl0/emotion/s2 65s
-- done     laya/feedback_kl0/emotion/s2 220s
-- done     vega-0.8b/feedback_kl0/agnews/s0 240s
+- done     vega-4b/feedback_kl0/emotion/s2 
+- done     laya/feedback_kl0/emotion/s2 
+- done     vega-0.8b/feedback_kl0/agnews/s0 
 - pending  vega-4b/feedback_kl0/agnews/s0 
-- done     laya/feedback_kl0/agnews/s0 240s
-- done     vega-0.8b/feedback_kl0/agnews/s1 220s
+- done     laya/feedback_kl0/agnews/s0 
+- done     vega-0.8b/feedback_kl0/agnews/s1 
 - pending  vega-4b/feedback_kl0/agnews/s1 
-- done     laya/feedback_kl0/agnews/s1 220s
-- done     vega-0.8b/feedback_kl0/agnews/s2 185s
+- done     laya/feedback_kl0/agnews/s1 
+- done     vega-0.8b/feedback_kl0/agnews/s2 
 - pending  vega-4b/feedback_kl0/agnews/s2 
-- done     laya/feedback_kl0/agnews/s2 155s
+- done     laya/feedback_kl0/agnews/s2 
 - pending  tables 
 
 </details>
