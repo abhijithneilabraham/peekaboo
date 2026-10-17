@@ -1,0 +1,342 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{newtxtext,newtxmath}
+\usepackage{microtype}
+\usepackage{amsmath}
+\usepackage{booktabs,multirow,array}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{placeins}
+\usepackage{float}
+\renewcommand{\topfraction}{0.9}\renewcommand{\bottomfraction}{0.9}\renewcommand{\textfraction}{0.05}\renewcommand{\floatpagefraction}{0.75}
+\setcounter{topnumber}{3}\setcounter{bottomnumber}{3}\setcounter{totalnumber}{5}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[colorlinks,linkcolor={blue!60!black},citecolor={blue!60!black},urlcolor={blue!60!black}]{hyperref}
+\usepackage{url}
+\captionsetup{font=small,labelfont=bf}
+\setlist{nosep,leftmargin=*}
+\graphicspath{{figures/}}
+\newcommand{\pk}{Peekaboo}
+\newcommand{\KL}{\mathrm{KL}}
+\input{numbers.tex}
+% rows still being computed when this file was written: real values from numbers.tex take precedence
+\providecommand{\accLayaEncTyped}{?}\providecommand{\gainLayaEncTyped}{?}\providecommand{\ciLayaEncTyped}{[?]}
+\providecommand{\accLayaEncEmo}{?}\providecommand{\gainLayaEncEmo}{?}\providecommand{\ciLayaEncEmo}{[?]}
+\providecommand{\accLayaEncAg}{?}\providecommand{\gainLayaEncAg}{?}\providecommand{\ciLayaEncAg}{[?]}
+\providecommand{\gLayaEncVsTdTyped}{?}\providecommand{\ciLayaEncVsTdTyped}{[?]}
+\providecommand{\accLayaEncPub}{?}\providecommand{\gainLayaEncPub}{?}\providecommand{\ciLayaEncPub}{[?]}
+\providecommand{\accLayaEncJev}{?}\providecommand{\gainLayaEncJev}{?}\providecommand{\ciLayaEncJev}{[?]}
+\providecommand{\accLayaEncDb}{?}\providecommand{\gainLayaEncDb}{?}\providecommand{\ciLayaEncDb}{[?]}
+\providecommand{\gLayaEncVsTdPub}{?}\providecommand{\gLayaEncVsTdJev}{?}\providecommand{\gLayaEncVsTdDb}{?}\providecommand{\gLayaEncVsTdEmo}{?}\providecommand{\gLayaEncVsTdAg}{?}
+\providecommand{\eceLayaEncTyped}{?}\providecommand{\eceLayaEncDb}{?}
+
+\title{\pk{}: Improving Deployed Decision Models from\\Right / Wrong Feedback Alone}
+\author{Abhijith Neil Abraham \and Fariz Rahman \and Fadil Rahman}
+\date{October 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Small decision models such as Vega and Laya answer typed questions (pick one option, yes / no, a rating) with calibrated probabilities and run locally in milliseconds. Once deployed they are rarely given the answer key for the decisions they make, but they are constantly told whether a decision was right or wrong: a user accepts or cancels, an alert is confirmed or dismissed. We ask whether a deployed decision model can improve from that one bit per decision, and we answer on the benchmarks the models' own authors publish. \pk{} trains a small add-on (a gated LoRA adapter on Vega's decision engine; a copy of Laya's decision head, optionally with the encoder) by REINFORCE on right / wrong rewards with a running baseline, kept on a KL leash to the released model, and then restores calibration with a single temperature fitted from right / wrong feedback as well, using only the fact that a calibrated model's chosen answer is right with the probability it states. A feedback-checked switch keeps the add-on only where held-out feedback says it beats the base model. Across six benchmarks (Vega's 43 public tasks, JevBench and DecisionBench; Laya's typed-decisions; emotion and AG News), two Vega sizes, Laya, three seeds and every ablation, \pk{} beats VegaML's own test-time-training method, which trains on the answer key, on four of six benchmarks at both sizes (DecisionBench: $+10.4$ and $+6.7$ points over base against TTT's $+2.2$ and $+0.8$), lands within one to two points of an adapter trained on the full answer key, and is the only method that improves Vega 4B on JevBench ($+4.5$). On Laya, \pk{} on the head alone gives $+13.2$ points on typed-decisions where Laya's released answer-key fine-tune of the whole model gives $+40.2$; unfreezing the encoder under the same right / wrong signal gives $\gainLayaEncTyped$ on typed-decisions and overtakes Laya's own fine-tune on the public tasks ($\accLayaEncPub$ vs.\ $0.551$) and DecisionBench ($\accLayaEncDb$ vs.\ $0.438$). Removing the leash or the temperature step costs accuracy or multiplies calibration error two- to four-fold. Every base number reproduces its README value, all code and raw results are released, and one script reruns the whole grid.
+\end{abstract}
+
+\section{Introduction}
+
+A \emph{decision model} takes a situation and a typed question (which of these options? yes or no? how severe, on a scale?) and returns a probability for each option in one forward pass. Two recent open releases, VegaML's Vega~\citep{vegaml} and Convai's Laya~\citep{laya}, target the same deployment: thousands of small decisions a day inside agents, moderation pipelines and support systems, on local hardware, with probabilities that can be trusted enough to route the uncertain cases to a human.
+
+Both come with a way to improve on a user's task, and both ways need the answer key. Vega offers test-time training (TTT): a per-task classifier fitted to its frozen features from labelled rows, and adapters trained the same way. Laya's recipe is to fine-tune the whole model on labelled rows with its RLCD objective; its released \texttt{laya-typed-decisions} checkpoint is the result on its headline benchmark. But a deployed decision model seldom collects labels. What it collects is \emph{feedback on its own answers}: the suggested tool call was cancelled, the flagged message was not toxic after all, the escalated ticket really did need escalation. Each such event says whether the model was right, not what the right answer was. In the language of contextual bandits~\citep{langford2008epoch,li2010contextual}, the model observes the reward of the action it took and nothing about the others.
+
+This paper asks a narrow question and answers it on the benchmarks the models' authors use themselves: \textbf{can a deployed decision model improve from right / wrong feedback alone, and how does that compare with the model's own answer-key method?} Our method, \pk{}\footnote{The model only gets to \emph{peek} at whether it was right; it never sees the answer key.}, has four parts (Section~\ref{sec:method}):
+\begin{enumerate}
+\item an \textbf{add-on} rather than a change to the released model: a rank-8 gated LoRA adapter on the input layers of Vega's decision engine, or a trainable copy of Laya's two-layer decision head (optionally with a copy of the encoder);
+\item \textbf{REINFORCE}~\citep{williams1992reinforce} on the right / wrong reward of a sampled answer, with a running-mean baseline;
+\item a \textbf{KL leash} to the released model's probabilities, which stops the collapse that policy-gradient training from one bit per row otherwise produces;
+\item a \textbf{feedback-fitted temperature} (the ``honesty fix''): the single temperature under which the right / wrong record on held-out rows is most likely, using the fact that a calibrated model's sampled answer is right exactly with its stated probability.
+\end{enumerate}
+A fifth, optional part is a \textbf{feedback-checked switch} that keeps the add-on only where it beats the base model on held-out right / wrong feedback.
+
+We evaluate on six benchmarks: the three in Vega's README (43 public tasks, JevBench~\citep{jevbench}, DecisionBench~\citep{decisionbench}), the one in Laya's README (typed-decisions~\citep{typeddecisions}), and two standard text classification sets with large feedback pools (emotion~\citep{saravia2018emotion} and AG News~\citep{zhang2015agnews}). We run Vega 0.8B, Vega 4B and Laya, each with its own answer-key improvement, an answer-key version of our add-on as an upper bound, \pk{}, and every ablation (no leash, no honesty fix, switch on / off, one add-on per benchmark vs.\ one pooled add-on), three seeds each: 233 steps in all. The metrics are computed with VegaML's own vendored benchmark code, and every base model reproduces its published number.
+
+\paragraph{Findings.}
+(i)~Against Vega's own improvement, \pk{} wins on the public tasks, DecisionBench, typed-decisions and AG News at both sizes with the weaker signal; TTT wins on emotion. (ii)~\pk{} is within one to two points of training the same adapter on the full answer key. (iii)~It is the only method that improves Vega 4B on JevBench, and pooling the feedback of all benchmarks into one add-on removes the 0.8B's JevBench loss. (iv)~On Laya, \pk{} on the decision head is far behind Laya's whole-model answer-key fine-tune on typed-decisions ($+13.2$ vs.\ $+40.2$); with the encoder unfrozen it reaches $\gainLayaEncTyped$ there and overtakes the fine-tune on the public tasks ($\accLayaEncPub$ vs.\ $0.551$) and DecisionBench ($\accLayaEncDb$ vs.\ $0.438$), while the fine-tune loses $5.2$ points on JevBench. (v)~The leash and the temperature step are both necessary: without the leash accuracy drops on five of six benchmarks; without the temperature step accuracy is unchanged but calibration error is two to four times higher.
+
+\section{Related work}
+
+\paragraph{Learning from bandit feedback.}
+Learning a structured predictor from the reward of its own output goes back to bandit structured prediction~\citep{sokolov2016bandit} and was shown to work with real human ratings~\citep{kreutzer2018reliability}. Off-policy variants learn from logged feedback with importance weights~\citep{swaminathan2015crm,dudik2011doubly}. \pk{} is the on-policy case, REINFORCE with a baseline~\citep{williams1992reinforce}, applied to a model that already has a strong zero-shot policy; our no-engine control (Section~\ref{sec:results}) shows that this starting point, not the update rule, is what makes one bit per row enough.
+
+\paragraph{KL-regularised fine-tuning.}
+A KL penalty to a reference policy is standard in RLHF~\citep{christiano2017deep,ouyang2022instructgpt} and in offline RL for dialogue~\citep{jaques2019way}; DPO~\citep{rafailov2023dpo} and KTO~\citep{ethayarajh2024kto} fold it into a supervised objective, KTO from binary desirable / undesirable labels. Our leash plays the same role in a much smaller setting, and we measure what it buys: removing it costs accuracy on five of six benchmarks (Section~\ref{sec:ablation}).
+
+\paragraph{Calibration.}
+Temperature scaling~\citep{guo2017calibration,platt1999probabilistic} fits one scalar on labelled held-out data. Our honesty fix is temperature scaling whose likelihood is written over right / wrong outcomes of sampled answers instead of labels: for a calibrated model, $\Pr[\text{right}\mid a] = p(a)$ for any answer $a$, so each (answer, outcome) pair is a Bernoulli observation of $p_T(a)$. We measure calibration with the expected calibration error~\citep{naeini2015ece} as implemented in VegaML's benchmark code.
+
+\paragraph{Adapting small decision models.}
+Test-time training~\citep{sun2020ttt} fits a model to the test distribution; VegaML's \texttt{fit()} fits a per-task classifier (PCA then logistic regression) on labelled rows and keeps it when it beats chance in cross-validation. LoRA~\citep{hu2022lora} is the form our Vega add-on takes, using VegaML's own gated adapter mechanism. Laya's RLCD trains the whole encoder-plus-head on labels with a perturbation policy gradient on proper scoring rules.
+
+\section{The two decision models}
+\label{sec:models}
+
+\paragraph{Vega.}
+Vega~\citep{vegaml} reads the situation, question and options with a frozen Qwen3.5 backbone~\citep{qwen3} (0.8B or 4B parameters), pools hidden states from two intermediate layers, and hands them to a small ``physics engine'' (14.3M parameters at 0.8B, 30.9M at 4B): each option is an energy well in a 64-dimensional landscape, a particle is dropped and settles, and the probabilities are $P(a) = \mathrm{softmax}(-E_a/\tau(s))$ with a per-question temperature read off the particle's trajectory. Only the engine and its gated adapters were trained; the backbone never was. Vega's own ways to improve on a task are the TTT head and adapters, both trained from labelled rows.
+
+\paragraph{Laya.}
+Laya~\citep{laya} is a ModernBERT-large encoder~\citep{warner2024modernbert} (421M parameters, trained as part of Laya) whose input contains the situation, the question and every option, each option marked with a special token. A two-layer transformer decision head scores each marker position; the scores are divided by a temperature chosen per (question type, option-count bucket) and softmaxed. It was trained with RLCD. Laya's way to improve on a task is to fine-tune the whole model on labelled rows; \texttt{laya-typed-decisions} is that fine-tune on typed-decisions' training split.
+
+Both models expose the same interface (a typed question, a probability per option), which is what lets one method and one evaluation harness serve both.
+
+\section{\pk{}}
+\label{sec:method}
+
+\subsection{Setting}
+A decision model is a policy $\pi_0(a \mid s)$ over the options $a$ of a typed question $s$. During deployment the model answers a stream of questions. For each one it (or the system around it) commits to an answer $a$, and later a reward $r \in \{0, 1\}$ arrives: right or wrong. The correct option is never revealed. From a pool of such (question, answer, reward) records we want a better policy $\pi$ that keeps calibrated probabilities. In our experiments the reward is computed from the benchmark's gold answer and the answer is sampled from the current policy, so feedback is on-policy and noise-free; Section~\ref{sec:limitations} discusses this.
+
+\subsection{The add-on}
+We never change the released model. On Vega we attach one gated LoRA adapter~\citep{hu2022lora} of rank 8 to the input layers of the engine with VegaML's own \texttt{attach\_adapter}: 409k parameters at 0.8B, 857k at 4B, i.e.\ 2.9\% and 2.8\% of the engine; its gate starts open and the shipped adapters keep working. The policy is Vega's own calibrated output with the adapted energies and the shipped per-question temperature. On Laya we make a trainable copy of the decision head (the type embedding, the two transformer layers and the scorer); the encoder is frozen and run once per row. In the \emph{encoder-unfrozen} variant we also copy the encoder and train it at Laya's own encoder learning rate ($2.5\times10^{-5}$) in micro-batches of 8, so that \pk{} changes as much of Laya as Laya's own fine-tune does.
+
+\subsection{The update}
+For a batch of questions the policy samples one answer per question, $a \sim \pi(\cdot\mid s)$, receives $r = \mathbf{1}[a \text{ is right}]$, and minimises
+\begin{equation}
+\mathcal{L} \;=\; -\,(r - b)\,\log \pi(a \mid s) \;+\; \beta\,\KL\!\big(\pi(\cdot\mid s)\,\|\,\pi_0(\cdot\mid s)\big), \qquad \beta = 0.1,
+\label{eq:loss}
+\end{equation}
+where $b$ is an exponential running mean of recent rewards ($b \leftarrow 0.9\,b + 0.1\,\bar r$, initialised at $0.5$). The first term is REINFORCE with a baseline: an answer rewarded above the running average becomes more likely in similar situations, one rewarded below it less likely. The second term is the leash. Without it, one bit per row drives the policy to collapse onto a few options (NLL rose to 7.5 in our pilot runs; Section~\ref{sec:ablation} measures the cost on every benchmark). Training runs for 8 passes over the feedback rows in batches of 32 with Adam at learning rate $10^{-3}$ (Vega adapter) or $10^{-4}$ (Laya head; Laya's own head rate) and gradient-norm clipping at~1.
+
+\subsection{The honesty fix: a temperature from right / wrong}
+Policy-gradient training sharpens the probabilities: before correction the trained add-ons have ECE between 0.17 and 0.35 (Table~\ref{tab:ablation}). Standard temperature scaling~\citep{guo2017calibration} would fit a scalar $T$ on labelled rows. We have no labels, but we have the following: if a model is calibrated, the answer $a$ it samples is right with probability exactly $p(a)$. So on a held-out calibration split (20\% of the feedback rows of each task) we sample $a \sim \pi$, observe $r$, and choose
+\begin{equation}
+T^\star = \arg\max_T \sum_i \Big[r_i \log p_T(a_i \mid s_i) + (1 - r_i)\log\big(1 - p_T(a_i \mid s_i)\big)\Big],
+\qquad p_T = \mathrm{softmax}(\text{logits}/T),
+\end{equation}
+over a grid of 61 values of $T$ between $0.25$ and $32$. The fitted temperatures lie between about 3 and 9 (Figure~\ref{fig:switch_T}), confirming that the trained policy was far too sharp. The same identity holds for answers chosen by anyone, so $T^\star$ can also be fitted from logged feedback on the released model's answers.
+
+\subsection{The switch}
+\label{sec:switch}
+A deployment that cannot afford a regression wants an add-on that is on only where it helps. On the same calibration split we sample one answer from the adapted policy and one from the released model per row, rate both right / wrong, and keep the add-on only if it was right more often. This costs nothing beyond the feedback already collected. We report every \pk{} result with and without the switch.
+
+\subsection{Pooled \pk{}}
+The default trains one add-on per benchmark from that benchmark's feedback rows. \emph{Pooled} \pk{} trains one add-on per model from the feedback rows of all five benchmarks that have a training split and evaluates it on all six; JevBench, which has no training split, is pure transfer for the pooled add-on.
+
+\subsection{Cost}
+The backbone is untouched, so inference cost is unchanged apart from the add-on: on a laptop CPU, one row at a time, Vega's engine takes 6.3\,ms (p50) released and 6.5\,ms with the adapter at 0.8B, 11.4 vs.\ 12.3\,ms at 4B, against about 75 to 245\,ms for the backbone on a T4 GPU. Training on cached features takes one to fifteen minutes per benchmark and seed on one L40S GPU; the Laya encoder-unfrozen runs take 4 to 15 minutes each.
+
+\section{Experimental setup}
+\label{sec:setup}
+
+\subsection{Benchmarks}
+We use exactly the benchmarks the two READMEs report, plus two classification sets chosen for their large pools of feedback rows (Table~\ref{tab:bench}, Figure~\ref{fig:bench}). Rows are read, asked and scored with VegaML's benchmark harness, vendored unmodified (Apache-2.0), so every number is comparable with Vega's README.
+
+\begin{table}[t]\centering\small
+\caption{The six benchmarks. ``feedback rows'' are the rows whose right / wrong signal \pk{} may learn from (80\%) and calibrate on (20\%); no test row is ever used for learning. Question types: pick one (choice), yes / no, rating scale (score). JevBench has no training split, so \pk{} learns by 5-fold cross-fitting with paraphrase groups kept in one fold.}
+\label{tab:bench}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llrrp{5.6cm}l}
+\toprule
+benchmark & reported by & test rows & feedback rows & what it contains & types (test) \\
+\midrule
+43 public tasks & Vega & 2{,}535 & 2{,}134 & 43 public datasets as typed questions, up to 60 test rows each: intent (77 and 150 options), topic, safety, sentiment, entailment, science and medical QA, law, reading, code; macro-averaged over tasks & 1{,}709 / 707 / 119 \\
+JevBench & Vega & 231 & (5-fold) & rules, policies and judgment calls in 18 families; tiers hard 111 / original 72 / easy 48; paraphrase groups & 139 / 74 / 18 \\
+DecisionBench & Vega & 1{,}075 & 3{,}205 & 43 tasks in 28 domains (agent control, coding agents, finance, law, privacy, robotics, \dots); candidate selection 750, binary 225, ordinal 100 (asked as pick-one); up to 255 options & 913 / 162 / 0 \\
+typed-decisions & Laya & 2{,}000 & 6{,}000 & 400 test and 1{,}200 training JSON cases (tickets, invoices, agent traces, security alerts), five decisions each, four workflows of 500 test decisions & 600 / 600 / 800 \\
+emotion & (ours) & 1{,}503 & 4{,}000 & six emotions of a tweet & 1{,}503 / 0 / 0 \\
+AG News & (ours) & 1{,}912 & 4{,}000 & four news sections & 1{,}912 / 0 / 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]\centering
+\includegraphics[width=\linewidth]{benchmarks.pdf}
+\caption{Test-row distribution of the six benchmarks: question types (left) and number of options per question (right). DecisionBench and the public menu include questions with dozens to hundreds of options.}
+\label{fig:bench}
+\end{figure}
+
+For DecisionBench we use the README's 1{,}075-row slice (25 rows per task, the notebook's seed) as the test set and a 100-per-task superset of the same tasks for feedback, as in our earlier DecisionBench study. For the public menu we use the harness's 60 evaluation rows per task and its 50 training rows per task as the feedback pool, the same 50 rows VegaML's TTT trains on. For typed-decisions we use the public LocalLLaMA release, which is what Laya reports on; Vega's README also quotes a typed-decisions number on six unpublished workflows that cannot be rerun.
+
+\subsection{Protocol}
+Every method learns only from feedback (or label) rows and is scored on the test rows; on JevBench, 5-fold cross-fitting keeps all paraphrases of a question in the same fold. The feedback rows of each task are split 80 / 20 into training and calibration rows with a fixed hash. All stochastic methods are run with seeds 0, 1, 2; we report mean $\pm$ s.d.\ over seeds. Gains are paired: the per-row correctness of a method (averaged over its seeds) minus that of the base model on the same rows, with a 95\% bootstrap CI over rows~\citep{efron1979bootstrap}, resampled within task for the macro-averaged public menu. Accuracy, ECE (15 equal-width bins, as in the README), NLL, skill, macro-F1, the JevBench tiers and paraphrase consistency, DecisionBench's domain slices and typed-decisions' soft accuracy all come from the harness's \texttt{score\_metrics}.
+
+\subsection{Baselines}
+\begin{itemize}
+\item \textbf{Base model}: Vega 0.8B, Vega 4B, Laya, as released. Each is first \emph{replayed}: we re-run the frozen model on the cached inputs and check that its probabilities match the official prediction call (max absolute difference $\le 5\times10^{-5}$ for Laya, $0$ for Vega), and that its scores match the README.
+\item \textbf{Their improvement, answer key}: for Vega, VegaML's TTT head (\texttt{fit()}, default settings) trained on the labelled feedback rows of each task; for Laya, the released \texttt{laya-typed-decisions} checkpoint, Laya's whole-model fine-tune on typed-decisions' labelled training split, scored on every benchmark.
+\item \textbf{Answer-key add-on}: the same adapter (Vega) or head copy (Laya) trained with cross-entropy on the labels of the same rows and the same KL leash, then standard label-based temperature scaling on the same calibration rows. This is the upper bound \pk{} is measured against: same capacity, full information.
+\item \textbf{\pk{}} and its ablations: no leash ($\beta = 0$), no honesty fix (the trained add-on with $T = 1$), with the switch, pooled, and on Laya the encoder-unfrozen variant.
+\item \textbf{No-engine control} (DecisionBench study): a bilinear scorer on the same frozen features with the same feedback, leash and calibration, without Vega's engine.
+\end{itemize}
+
+\subsection{Compute and reproducibility}
+The grid (6 benchmarks $\times$ 3 models $\times$ methods $\times$ 3 seeds, 233 steps) ran on one NVIDIA L40S in about five GPU-hours, from cached backbone features. One script, \texttt{experiments/peekaboo\_remaining/run.py}, runs every step, skips finished ones, retries failures and writes the tables; the results, logs and the table in this paper are in the repository.\footnote{\url{https://github.com/abhijithneilabraham/peekaboo}} All of Section~\ref{sec:curve} ran on a laptop CPU and was reproduced independently on a second machine (Appendix~\ref{app:repro}).
+
+\section{Results}
+\label{sec:results}
+
+\subsection{Main comparison}
+
+\begin{figure}[t]\centering
+\includegraphics[width=\linewidth]{gains.pdf}
+\caption{Accuracy gain over each base model on the six benchmarks (points; error bars are paired 95\% bootstrap CIs). Orange: the model's own answer-key improvement (VegaML's TTT head; Laya's released typed-decisions fine-tune). Blue: our add-on trained on the answer key. Greens: \pk{}, from right / wrong only.}
+\label{fig:gains}
+\end{figure}
+
+\input{tables_main.tex}
+\input{tables_h2h.tex}
+
+Table~\ref{tab:gain} and Figure~\ref{fig:gains} give the headline comparison; Table~\ref{tab:acc} the absolute accuracies and Table~\ref{tab:ece} the calibration errors. Three things stand out.
+
+\paragraph{\pk{} beats Vega's own answer-key method on four of six benchmarks, at both sizes.}
+On DecisionBench, \pk{} gains $+10.4$ [$+8.0$, $+12.8$] at 0.8B and $+6.7$ [$+4.6$, $+8.8$] at 4B, where VegaML's TTT head gains $+2.2$ and $+0.8$ with the labels. On the public menu \pk{} gains $+3.4$ and $+0.1$ while TTT \emph{loses} $2.3$ and $3.9$ points: the per-task head is fitted to 50 labelled rows and overturns Vega's zero-shot answer on tasks where it should not. On typed-decisions \pk{} and TTT are close at 0.8B ($+5.9$ vs.\ $+5.5$) and \pk{} is ahead at 4B ($+3.4$ vs.\ $+2.4$); on AG News both are within a point of base. TTT wins clearly on emotion ($+7.0$ / $+7.3$ vs.\ $+2.5$ / $-2.3$): a six-way single-label task with 4{,}000 labelled rows is exactly where a logistic-regression head on good features shines, and one bit per row is a poor substitute for the full label there.
+
+\paragraph{\pk{} is within one to two points of training the same add-on on the answer key.}
+The answer-key adapter is the information-rich upper bound with identical capacity. The paired difference \pk{} $-$ adapter is $+0.7$ [$-0.9$, $+2.2$] (public), $-1.5$ [$-3.5$, $+0.5$] (DecisionBench), $-0.9$ [$-2.5$, $+0.6$] (typed-decisions) and $+0.1$ (AG News) at 0.8B, and $+1.1$, $+1.5$, $-1.1$, $+0.6$ at 4B (Table~\ref{tab:h2h}); only emotion shows a clear gap ($-3.6$ / $-3.6$). The cheap signal buys most of what the expensive one does.
+
+\paragraph{JevBench.}
+JevBench is small (231 rows), has no training split and asks for judgment under paraphrase. \pk{} is the only method defined on it besides the base model (TTT and the answer-key methods need labelled training rows; the cross-fitted \pk{} uses rewards on the other folds). At 4B it is the only improvement we found: $+4.5$ [$+0.3$, $+9.0$]. At 0.8B it loses $3.3$ points [$-7.1$, $+0.4$]; the switch (Section~\ref{sec:ablation}) reduces that to $-0.6$ and pooling (Section~\ref{sec:pooled}) to $-0.1$.
+
+\subsection{Calibration}
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.9\linewidth]{reliability.pdf}
+\caption{Reliability diagrams (10 bins on the confidence of the predicted option) on DecisionBench and typed-decisions. Grey: base model. Light green: the trained \pk{} add-on before the honesty fix, always over-confident. Dark green: \pk{}. The temperature fitted from right / wrong feedback puts the curves back on the diagonal.}
+\label{fig:rel}
+\end{figure}
+
+Table~\ref{tab:ece} and Figure~\ref{fig:rel} show the calibration side. Policy-gradient training over-sharpens: without the honesty fix the add-on's ECE is 0.24 (DecisionBench, 0.8B), 0.22 (4B), 0.20 and 0.17 (typed-decisions). The feedback-fitted temperature brings these to 0.055, 0.049, 0.077 and 0.044, below the base model's 0.105, 0.099, 0.063 and 0.050 on DecisionBench and comparable on typed-decisions, and below the answer-key adapter with label-based temperature scaling on DecisionBench (0.071, 0.051). The exception is the public menu, where every trained method, \pk{} included, is worse calibrated than base Vega (0.203 vs.\ 0.154 at 0.8B): one temperature per benchmark is too coarse for 43 heterogeneous tasks whose option counts range from 2 to 151. On Laya the honesty fix is what makes the trained head usable at all: base Laya is poorly calibrated on DecisionBench (0.174) and emotion (0.306), and \pk{} brings both to 0.07--0.09.
+
+\FloatBarrier
+\subsection{Ablations}
+\label{sec:ablation}
+\input{tables_ablation.tex}
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.9\linewidth]{ablation.pdf}
+\caption{Ablations on Vega 0.8B (left) and 4B (right): accuracy gain (top) and ECE (bottom; black ticks are the base model). Removing the leash (KL 0) costs accuracy on five of six benchmarks; removing the honesty fix leaves accuracy unchanged but multiplies ECE; the switch trades gains for safety.}
+\label{fig:ablation}
+\end{figure}
+
+Figure~\ref{fig:ablation} and Table~\ref{tab:ablation} isolate each part.
+
+\paragraph{The leash.}
+With $\beta = 0$ the gain drops on five of the six benchmarks at both sizes: at 0.8B from $+3.4$ to $+1.2$ (public), $-3.3$ to $-4.0$ (JevBench), $+5.9$ to $+3.3$ (typed-decisions) and $+2.5$ to $-3.9$ (emotion); at 4B from $+6.7$ to $+5.0$ (DecisionBench), $+3.4$ to $+1.1$ (typed-decisions) and $-2.3$ to $-5.8$ (emotion). Only AG News, where the base model is already at 0.90--0.93, is unaffected. The leash also keeps calibration closer to base on the public menu. In our earlier pilot a stronger leash ($\beta = 1$) was stable but kept only a third of the gain; $\beta = 0.1$ was chosen then and never retuned.
+
+\paragraph{The honesty fix.}
+By construction a temperature does not change the argmax, so accuracy is identical with and without it (Table~\ref{tab:ablation}); ECE is 1.6 to 4.4 times higher without it (public 0.203 $\to$ 0.328; DecisionBench 0.055 $\to$ 0.241; emotion 0.070 $\to$ 0.251 at 0.8B). Any system that uses the probabilities, for routing to a human or for conformal sets, needs this step.
+
+\paragraph{The switch.}
+The switch is a safety net, not a booster. It never turns a loss into a gain beyond base and sometimes removes a gain: at 4B it turns DecisionBench's $+6.7$ into $+4.5$ and JevBench's $+4.5$ into $+0.9$, because on a 42-row calibration fold a sampled comparison is noisy. Where \pk{} hurts, it helps: JevBench at 0.8B goes from $-3.3$ to $-0.6$ and the pooled add-on's emotion loss at 4B from $-3.5$ to $-0.8$. Figure~\ref{fig:switch_T} shows how often it fired; a deployment with more calibration rows than JevBench's 42 would get a more reliable switch.
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.9\linewidth]{switch_T.pdf}
+\caption{Left: the temperature fitted from right / wrong feedback, per model and benchmark (dashed line: $T = 1$). Values of 3 to 9 show how much the trained policy had to be softened. Right: the fraction of runs in which the feedback-checked switch kept the add-on.}
+\label{fig:switch_T}
+\end{figure}
+
+\subsection{Pooled \pk{}}
+\label{sec:pooled}
+
+\begin{figure}[t]\centering
+\includegraphics[width=\linewidth]{pooled.pdf}
+\caption{One add-on per benchmark (green) against one pooled add-on trained on the feedback of all five benchmarks with a training split (purple). For the pooled add-on JevBench is pure transfer.}
+\label{fig:pooled}
+\end{figure}
+
+One add-on trained on the feedback of every benchmark (Figure~\ref{fig:pooled}) is a mixed bag. At 0.8B it is slightly better on the public menu ($+4.0$ vs.\ $+3.4$) and AG News ($+1.1$ vs.\ $+0.7$), slightly worse on DecisionBench, typed-decisions and emotion, and it removes the JevBench loss ($-0.1$ vs.\ $-3.3$) although it never saw a JevBench row: feedback from 10{,}000 unrelated decisions teaches something general about how Vega mis-weighs options. At 4B, which already wins JevBench on its own, pooling is a little worse almost everywhere ($+2.0$ vs.\ $+4.5$ on JevBench, $+5.1$ vs.\ $+6.7$ on DecisionBench). On Laya's frozen-encoder head it is uniformly slightly worse. We therefore present pooling as an option for a model that must stay good on tasks it gets no feedback on, not as the default.
+
+\FloatBarrier
+\subsection{Laya: how much of the model \pk{} may change}
+\label{sec:laya}
+\input{tables_wf.tex}
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.85\linewidth]{laya.pdf}
+\caption{Laya accuracy on the six benchmarks: base, Laya's released answer-key fine-tune of the whole model, \pk{} on the decision head alone, and \pk{} with the encoder unfrozen.}
+\label{fig:laya}
+\end{figure}
+
+Laya's own improvement is a whole-model fine-tune on labels, and on its home benchmark it is very strong: typed-decisions goes from $0.361$ to $0.762$ ($+40.2$; the README says $0.766$). \pk{} on the frozen-encoder head gets $+13.2$ [$+11.0$, $+15.4$] from right / wrong alone, our answer-key head $+18.3$: the head is the bottleneck, not the signal. Unfreezing the encoder under the same right / wrong signal gives $\gainLayaEncTyped$ $\ciLayaEncTyped$ on typed-decisions (accuracy $\accLayaEncTyped$; Table~\ref{tab:h2h}, Figure~\ref{fig:laya}): more than the answer-key head, still short of the fine-tune's $+40.2$, which sees $\log_2 k$ bits per row where \pk{} sees one. Away from home the picture reverses. Laya's fine-tune loses $5.2$ points on JevBench and gains little elsewhere ($+0.9$ public, $+3.7$ DecisionBench), the classic cost of specialising a whole model; the head-only \pk{} changes nothing outside typed-decisions ($\pm 0.4$); and the encoder-unfrozen \pk{} gains $\gainLayaEncPub$ $\ciLayaEncPub$ on the public menu ($\accLayaEncPub$ vs.\ the fine-tune's $0.551$) and $\gainLayaEncDb$ $\ciLayaEncDb$ on DecisionBench ($\accLayaEncDb$ vs.\ $0.438$), with $\gainLayaEncJev$ on JevBench, $\gainLayaEncEmo$ on emotion and $\gainLayaEncAg$ on AG News. Against the fine-tune directly it is $\gLayaEncVsTdPub$ (public), $\gLayaEncVsTdJev$ (JevBench), $\gLayaEncVsTdDb$ (DecisionBench) and $\gLayaEncVsTdTyped$ (typed-decisions) points. Table~\ref{tab:wf} breaks typed-decisions down by workflow.
+
+\subsection{How much feedback, one pass, unseen tasks}
+\label{sec:curve}
+
+\begin{figure}[t]\centering
+\begin{subfigure}{0.49\linewidth}\includegraphics[width=\linewidth]{vega_feedback_curve.png}\caption{Vega 0.8B}\end{subfigure}\hfill
+\begin{subfigure}{0.49\linewidth}\includegraphics[width=\linewidth]{vega_feedback_curve_4b.png}\caption{Vega 4B}\end{subfigure}
+\caption{DecisionBench, 1{,}720 held-out rows: accuracy gain (left of each panel) and ECE (right) against the number of feedback rows per task. Dashed: base model.}
+\label{fig:curve}
+\end{figure}
+
+Our earlier DecisionBench study, which this grid extends, measured how the gain grows with feedback on a fixed 1{,}720-row test set (Figure~\ref{fig:curve}). At 0.8B the gain is $+3.1$, $+5.0$, $+8.4$ and $+11.3$ points with 5, 15, 30 and 60 feedback rows per task; at 4B, $+0.5$, $+3.0$, $+5.0$ and $+6.7$. From 15 rows per task on, feedback-only learning stays within about one point of label-supervised learning. Seeing each of the 2{,}560 rows exactly once, as in a live deployment, gives $+6.9$ (0.8B) and $+3.3$ (4B). Feedback on 33 tasks improves 10 tasks that gave none by $+4.2$ (0.8B) and $+4.6$ (4B) points. A no-engine control, the same feedback and leash on a bilinear scorer over the same frozen features, reaches only $0.26$ accuracy at either size: Vega's zero-shot energies are what make one bit per row enough.
+
+\subsection{Reward during training}
+Figure~\ref{fig:reward} shows the mean reward of the sampled answers over the eight passes. On Vega it rises steadily on every benchmark with a training split (DecisionBench 0.8B: 0.50 to 0.73); on Laya's frozen-encoder head it moves only on typed-decisions, consistent with the accuracy results. Since the sampled answer is right less often than the argmax, the reward curve also bounds the cost of exploration in a live system: on the first pass the policy is right about as often as the base model's samples, and better from the second pass on.
+
+\begin{figure}[t]\centering
+\includegraphics[width=\linewidth]{reward.pdf}
+\caption{Mean reward of the sampled answers in each of the eight passes over the feedback rows (mean over seeds).}
+\label{fig:reward}
+\end{figure}
+
+\FloatBarrier
+\section{Discussion}
+
+\paragraph{When \pk{} is the right tool.}
+A model that is already deployed, collects right / wrong events as a by-product of use, and must stay good at everything it already does. There, with the same capacity, right / wrong recovers most of what the answer key would give (Section~\ref{sec:results}), the leash protects the rest, the switch guards against regressions, and the honesty fix keeps the probabilities usable. The gains are largest where the base model already leans towards the right option and mis-weighs it (DecisionBench's online-safety, home-automation and web domains in our earlier study), and smallest or negative where the task needs reasoning the base model lacks (DecisionBench's logic domain; JevBench's temporal-numeric family at 0.8B).
+
+\paragraph{When it is not.}
+A fixed task with thousands of fully labelled rows and permission to retrain the whole model. Laya's typed-decisions fine-tune ($+40$) is the clearest case; TTT on emotion is another. The answer key carries $\log_2 k$ bits per row against \pk{}'s one, and when the task is a clean single-label classification with many rows, that difference shows.
+
+\paragraph{Why TTT loses on the public menu and DecisionBench.}
+A TTT head is a per-task classifier with a fixed label set. Many DecisionBench rows have their own option list (a scale with different words per row, a list of candidate records), so \texttt{fit()} kept heads for 20 of the 43 tasks covering 394 of 1{,}075 rows and left the rest to the engine; \pk{} changes the engine, which reads the option text, so it applies to every row. On the public menu, 50 labelled rows per task are enough for a logistic head to overturn Vega's zero-shot answer on tasks where the zero-shot answer was better.
+
+\section{Limitations}
+\label{sec:limitations}
+\begin{itemize}
+\item \textbf{Simulated feedback.} The rewards are computed from gold answers: never wrong, never missing, never biased towards complaints. The method needs only a 0/1 signal, but we have not measured it under noisy, sparse or selective feedback. Our code has these settings (flip probability, report probability by outcome, logged off-policy feedback with clipped importance weights) and we leave their study to future work.
+\item \textbf{Exploration has a cost.} During learning the model samples from its probabilities instead of taking the argmax; Figure~\ref{fig:reward} bounds the cost but we did not design a conservative exploration policy (e.g.\ exploring only inside Vega's conformal set).
+\item \textbf{Hyper-parameters.} $\beta = 0.1$ was chosen in a pilot on parts of DecisionBench's 1{,}075 rows and never retuned; rank 8, 8 passes and learning rate $10^{-3}$ were fixed before any result. We did not tune TTT (VegaML defaults) or the answer-key add-on separately. Everything is reported with the same settings on all six benchmarks.
+\item \textbf{One temperature per benchmark.} On the 43-task public menu this is too coarse; a per-task or per-option-count temperature, fitted the same way, is an obvious next step.
+\item \textbf{Small benchmarks.} JevBench has 231 rows and 42-row calibration folds; its CIs are wide, and the switch is unreliable there.
+\item \textbf{Vega's typed-decisions.} Vega's README reports typed-decisions on six unpublished workflows; we could only use Laya's public release, so Vega's own typed-decisions number is not directly compared.
+\end{itemize}
+
+\section{Conclusion}
+A deployed decision model can improve from the one bit of feedback it actually receives. On the benchmarks Vega's and Laya's authors chose, a small add-on trained by REINFORCE on right / wrong rewards, held on a KL leash and re-calibrated with a temperature fitted from the same feedback, beats VegaML's own answer-key method on four of six benchmarks at both model sizes, matches an answer-key adapter of the same capacity within one to two points, and keeps or improves calibration. On Laya it is far behind a whole-model answer-key fine-tune on that model's home benchmark but does not pay that fine-tune's price elsewhere, and with the encoder unfrozen it overtakes the fine-tune on the public tasks and DecisionBench. The leash and the feedback-fitted temperature are both necessary, and a feedback-checked switch makes the add-on safe to turn on. Everything is reproducible from one script.
+
+\paragraph{Acknowledgements.}
+We thank the authors of VegaML and Laya for releasing their models, benchmark code and training recipes, which made a like-for-like comparison possible.
+
+\FloatBarrier
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\appendix
+
+\section{Reproducing the results}
+\label{app:repro}
+\texttt{experiments/peekaboo\_remaining/run.py} runs the entire grid: it reads every benchmark once through every model and caches the backbone features and the official records, replays each base model against its official prediction call, then runs every method and seed and writes \texttt{output/TABLES.md}, which is the source of every table here (via \texttt{paper/make\_figures.py}). Finished steps are skipped, so the run is resumable; failed steps are retried and listed in \texttt{output/STATUS.md}. \texttt{experiments/vega\_policy/reproduce.py} runs the DecisionBench study of Section~\ref{sec:curve} (feedback amount, one pass, unseen tasks, latency, the no-engine control and the Kuhn-poker~\citep{kuhn1950poker} experiment that started this work). A second person reproduced the 0.8B DecisionBench gain ($+10.4$ vs.\ our $+10.2$) and the released 4B accuracy ($0.635$ vs.\ the README's $0.633$) on a different machine before the grid was run.
+
+\paragraph{Checks.} Replaying each frozen model on its cached inputs matches the official prediction call to $0$ (Vega) and $\le 5\times10^{-5}$ (Laya, one question per forward pass, as its own call runs, since padded batches move its probabilities by up to 0.02 under autocast). Base Vega 0.8B and 4B reproduce the README's public-menu accuracy ($0.556$ / $0.715$ vs.\ $0.556$ / $0.717$); base Laya and \texttt{laya-typed-decisions} reproduce the README's typed-decisions accuracy ($0.361$ / $0.762$ vs.\ $0.362$ / $0.766$).
+
+\section{Hyper-parameters}
+\begin{table}[H]\centering\small
+\begin{tabular}{lp{12.5cm}}
+\toprule
+add-on, Vega & gated LoRA, rank 8, on the engine's input layers (\texttt{vegaml.attach\_adapter}); 409k / 857k parameters \\
+add-on, Laya & trainable copy of type embedding, 2-layer decision head and scorer; encoder frozen, or a trained copy (``encoder unfrozen'') \\
+optimiser & Adam; lr $10^{-3}$ (Vega adapter), $10^{-4}$ (Laya head), $2.5\times10^{-5}$ (Laya encoder); grad-norm clip 1.0 \\
+schedule & 8 passes, batches of 32 (Laya encoder: micro-batches of 8, one update per 32 rows) \\
+reward & $r = \mathbf{1}[\text{sampled answer} = \text{gold}]$; baseline $b \leftarrow 0.9\,b + 0.1\,\bar r$, $b_0 = 0.5$ \\
+leash & $\beta = 0.1$ (ablation: 0) \\
+honesty fix & $T$ on a 61-point log grid in $[0.25, 32]$, maximising the Bernoulli likelihood of right / wrong on the calibration rows \\
+splits & feedback rows 80\,/\,20 train\,/\,calibration per task by a fixed hash; JevBench 5-fold by paraphrase group \\
+seeds & 0, 1, 2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}

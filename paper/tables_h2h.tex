@@ -1,0 +1,37 @@
+% ---- head to head
+\begin{table}[tbp]\centering\small
+\caption{Peekaboo head to head, in accuracy points with a paired 95\% bootstrap CI. Positive means Peekaboo is better. ``their improvement'' is VegaML's TTT head for Vega and the released laya-typed-decisions fine-tune for Laya, both trained with the answer key.}
+\label{tab:h2h}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llrrr}
+\toprule
+model & benchmark & vs. base & vs. their improvement & vs. answer-key adapter \\
+\midrule
+Vega 0.8B & 43 public tasks & +3.4 {\scriptsize[+1.7, +4.9]} & +5.7 {\scriptsize[+3.8, +7.5]} & +0.6 {\scriptsize[-0.6, +1.9]} \\
+ & JevBench & -3.3 {\scriptsize[-7.1, +0.4]} & -- & -- \\
+ & DecisionBench & +10.4 {\scriptsize[+8.0, +12.8]} & +8.2 {\scriptsize[+5.8, +10.7]} & -1.5 {\scriptsize[-3.4, +0.2]} \\
+ & typed-decisions & +5.9 {\scriptsize[+4.2, +7.7]} & +0.4 {\scriptsize[-1.5, +2.5]} & -0.9 {\scriptsize[-1.9, +0.1]} \\
+ & emotion & +2.5 {\scriptsize[+0.4, +4.6]} & -4.5 {\scriptsize[-6.6, -2.3]} & -3.7 {\scriptsize[-5.3, -2.1]} \\
+ & AG News & +0.7 {\scriptsize[-0.0, +1.4]} & +1.0 {\scriptsize[-0.1, +2.1]} & +0.0 {\scriptsize[-0.8, +0.8]} \\
+\addlinespace
+Vega 4B & 43 public tasks & +0.1 {\scriptsize[-1.3, +1.3]} & +3.9 {\scriptsize[+2.2, +5.6]} & +1.1 {\scriptsize[+0.0, +2.1]} \\
+ & JevBench & +4.5 {\scriptsize[+0.3, +9.0]} & -- & -- \\
+ & DecisionBench & +6.7 {\scriptsize[+4.6, +8.8]} & +5.8 {\scriptsize[+3.7, +7.8]} & +1.5 {\scriptsize[-0.2, +3.1]} \\
+ & typed-decisions & +3.4 {\scriptsize[+2.0, +4.9]} & +1.0 {\scriptsize[-0.7, +2.7]} & -1.1 {\scriptsize[-1.9, -0.2]} \\
+ & emotion & -2.3 {\scriptsize[-4.1, -0.4]} & -9.5 {\scriptsize[-11.6, -7.3]} & -3.5 {\scriptsize[-5.4, -1.7]} \\
+ & AG News & +0.1 {\scriptsize[-0.4, +0.5]} & +0.9 {\scriptsize[-0.1, +1.9]} & +0.6 {\scriptsize[-0.2, +1.4]} \\
+\addlinespace
+Laya, head only & 43 public tasks & +0.1 {\scriptsize[-0.3, +0.5]} & -0.8 {\scriptsize[-2.1, +0.5]} & +0.8 {\scriptsize[+0.0, +1.7]} \\
+ & JevBench & -0.4 {\scriptsize[-1.3, +0.0]} & +4.8 {\scriptsize[-0.4, +9.5]} & -- \\
+ & DecisionBench & +0.4 {\scriptsize[+0.0, +0.8]} & -3.3 {\scriptsize[-5.8, -0.9]} & +1.6 {\scriptsize[-0.6, +3.7]} \\
+ & typed-decisions & +13.2 {\scriptsize[+11.0, +15.4]} & -26.9 {\scriptsize[-28.9, -24.8]} & -5.1 {\scriptsize[-7.0, -3.4]} \\
+ & emotion & -0.1 {\scriptsize[-0.4, +0.2]} & -0.7 {\scriptsize[-1.9, +0.4]} & +5.6 {\scriptsize[+4.1, +7.0]} \\
+ & AG News & +0.0 {\scriptsize[-0.0, +0.1]} & +0.0 {\scriptsize[-0.6, +0.6]} & +0.0 {\scriptsize[-0.2, +0.2]} \\
+\addlinespace
+Laya, encoder unfrozen & 43 public tasks & +3.0 {\scriptsize[+1.7, +4.4]} & +2.1 {\scriptsize[+0.7, +3.6]} & -- \\
+ & JevBench & -3.0 {\scriptsize[-8.1, +2.2]} & +2.2 {\scriptsize[-3.3, +7.5]} & -- \\
+ & DecisionBench & +15.8 {\scriptsize[+13.2, +18.7]} & +12.1 {\scriptsize[+9.6, +14.8]} & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
