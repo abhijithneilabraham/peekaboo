@@ -1,24 +1,12 @@
-# Status of the remaining Peekaboo experiments  (Sat Oct 17 00:21:00 2026)
+# Status of the remaining Peekaboo experiments  (Sat Oct 17 00:31:00 2026)
 
-done: 181 · pending: 30 · running: 4  (of 215 steps)
+done: 199 · pending: 15 · running: 1  (of 215 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **running** `vega-4b/cache/emotion`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite emotion`)
-- **pending** `vega-4b/cache/agnews`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite agnews`)
-- **pending** `vega-4b/replay/emotion`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method replay`)
+- **running** `vega-4b/cache/agnews`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite agnews`)
 - **pending** `vega-4b/replay/agnews`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method replay`)
-- **running** `vega-4b/feedback/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback --seed 0`)
-- **running** `vega-4b/feedback/typed/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback --seed 1`)
-- **running** `vega-4b/feedback/typed/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback --seed 2`)
-- **pending** `vega-4b/ttt/emotion`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method ttt`)
-- **pending** `vega-4b/sup_ts/emotion/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method sup_ts --seed 0`)
-- **pending** `vega-4b/sup_ts/emotion/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method sup_ts --seed 1`)
-- **pending** `vega-4b/sup_ts/emotion/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method sup_ts --seed 2`)
-- **pending** `vega-4b/feedback/emotion/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method feedback --seed 0`)
-- **pending** `vega-4b/feedback/emotion/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method feedback --seed 1`)
-- **pending** `vega-4b/feedback/emotion/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method feedback --seed 2`)
 - **pending** `vega-4b/ttt/agnews`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method ttt`)
 - **pending** `vega-4b/sup_ts/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method sup_ts --seed 0`)
 - **pending** `vega-4b/sup_ts/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method sup_ts --seed 1`)
@@ -29,12 +17,6 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - **pending** `vega-4b/pooled/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite all --method pooled --seed 0`)
 - **pending** `vega-4b/pooled/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite all --method pooled --seed 1`)
 - **pending** `vega-4b/pooled/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite all --method pooled --seed 2`)
-- **pending** `vega-4b/feedback_kl0/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback_kl0 --seed 0`)
-- **pending** `vega-4b/feedback_kl0/typed/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback_kl0 --seed 1`)
-- **pending** `vega-4b/feedback_kl0/typed/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback_kl0 --seed 2`)
-- **pending** `vega-4b/feedback_kl0/emotion/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method feedback_kl0 --seed 0`)
-- **pending** `vega-4b/feedback_kl0/emotion/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method feedback_kl0 --seed 1`)
-- **pending** `vega-4b/feedback_kl0/emotion/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method feedback_kl0 --seed 2`)
 - **pending** `vega-4b/feedback_kl0/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback_kl0 --seed 0`)
 - **pending** `vega-4b/feedback_kl0/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback_kl0 --seed 1`)
 - **pending** `vega-4b/feedback_kl0/agnews/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback_kl0 --seed 2`)
@@ -59,11 +41,11 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     laya/cache/typed 685s
 - done     laya_td/cache/typed 685s
 - done     vega-0.8b/cache/emotion 400s
-- running  vega-4b/cache/emotion 
+- done     vega-4b/cache/emotion 480s
 - done     laya/cache/emotion 290s
 - done     laya_td/cache/emotion 330s
 - done     vega-0.8b/cache/agnews 435s
-- pending  vega-4b/cache/agnews 
+- running  vega-4b/cache/agnews 
 - done     laya/cache/agnews 360s
 - done     laya_td/cache/agnews 415s
 - done     vega-0.8b/replay/public 
@@ -79,7 +61,7 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-4b/replay/typed 65s
 - done     laya/replay/typed 
 - done     vega-0.8b/replay/emotion 
-- pending  vega-4b/replay/emotion 
+- done     vega-4b/replay/emotion 50s
 - done     laya/replay/emotion 
 - done     vega-0.8b/replay/agnews 105s
 - pending  vega-4b/replay/agnews 
@@ -144,9 +126,9 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-4b/sup_ts/typed/s0 190s
 - done     vega-4b/sup_ts/typed/s1 190s
 - done     vega-4b/sup_ts/typed/s2 175s
-- running  vega-4b/feedback/typed/s0 
-- running  vega-4b/feedback/typed/s1 
-- running  vega-4b/feedback/typed/s2 
+- done     vega-4b/feedback/typed/s0 145s
+- done     vega-4b/feedback/typed/s1 140s
+- done     vega-4b/feedback/typed/s2 130s
 - done     laya/sup_ts/typed/s0 1455s
 - done     laya/sup_ts/typed/s1 1380s
 - done     laya/sup_ts/typed/s2 1335s
@@ -160,13 +142,13 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-0.8b/feedback/emotion/s0 
 - done     vega-0.8b/feedback/emotion/s1 
 - done     vega-0.8b/feedback/emotion/s2 
-- pending  vega-4b/ttt/emotion 
-- pending  vega-4b/sup_ts/emotion/s0 
-- pending  vega-4b/sup_ts/emotion/s1 
-- pending  vega-4b/sup_ts/emotion/s2 
-- pending  vega-4b/feedback/emotion/s0 
-- pending  vega-4b/feedback/emotion/s1 
-- pending  vega-4b/feedback/emotion/s2 
+- done     vega-4b/ttt/emotion 245s
+- done     vega-4b/sup_ts/emotion/s0 120s
+- done     vega-4b/sup_ts/emotion/s1 125s
+- done     vega-4b/sup_ts/emotion/s2 130s
+- done     vega-4b/feedback/emotion/s0 130s
+- done     vega-4b/feedback/emotion/s1 130s
+- done     vega-4b/feedback/emotion/s2 110s
 - done     laya/sup_ts/emotion/s0 285s
 - done     laya/sup_ts/emotion/s1 285s
 - done     laya/sup_ts/emotion/s2 270s
@@ -230,22 +212,22 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-4b/feedback_kl0/decisionbench/s2 95s
 - done     laya/feedback_kl0/decisionbench/s2 365s
 - done     vega-0.8b/feedback_kl0/typed/s0 
-- pending  vega-4b/feedback_kl0/typed/s0 
+- done     vega-4b/feedback_kl0/typed/s0 105s
 - done     laya/feedback_kl0/typed/s0 1075s
 - done     vega-0.8b/feedback_kl0/typed/s1 
-- pending  vega-4b/feedback_kl0/typed/s1 
+- done     vega-4b/feedback_kl0/typed/s1 110s
 - done     laya/feedback_kl0/typed/s1 1065s
 - done     vega-0.8b/feedback_kl0/typed/s2 
-- pending  vega-4b/feedback_kl0/typed/s2 
+- done     vega-4b/feedback_kl0/typed/s2 90s
 - done     laya/feedback_kl0/typed/s2 985s
 - done     vega-0.8b/feedback_kl0/emotion/s0 
-- pending  vega-4b/feedback_kl0/emotion/s0 
+- done     vega-4b/feedback_kl0/emotion/s0 70s
 - done     laya/feedback_kl0/emotion/s0 420s
 - done     vega-0.8b/feedback_kl0/emotion/s1 
-- pending  vega-4b/feedback_kl0/emotion/s1 
+- done     vega-4b/feedback_kl0/emotion/s1 75s
 - done     laya/feedback_kl0/emotion/s1 325s
 - done     vega-0.8b/feedback_kl0/emotion/s2 
-- pending  vega-4b/feedback_kl0/emotion/s2 
+- done     vega-4b/feedback_kl0/emotion/s2 65s
 - done     laya/feedback_kl0/emotion/s2 220s
 - done     vega-0.8b/feedback_kl0/agnews/s0 240s
 - pending  vega-4b/feedback_kl0/agnews/s0 
