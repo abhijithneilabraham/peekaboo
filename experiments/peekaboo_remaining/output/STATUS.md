@@ -1,14 +1,12 @@
-# Status of the remaining Peekaboo experiments  (Sat Oct 17 09:13:59 2026)
+# Status of the remaining Peekaboo experiments  (Sat Oct 17 09:23:59 2026)
 
-done: 227 · pending: 4 · running: 2  (of 233 steps)
+done: 229 · pending: 2 · running: 2  (of 233 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **running** `laya/feedback_enc/emotion/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method feedback_enc --seed 1`)
-- **running** `laya/feedback_enc/emotion/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method feedback_enc --seed 2`)
-- **pending** `laya/feedback_enc/agnews/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite agnews --method feedback_enc --seed 0`)
-- **pending** `laya/feedback_enc/agnews/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite agnews --method feedback_enc --seed 1`)
+- **running** `laya/feedback_enc/agnews/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite agnews --method feedback_enc --seed 0`)
+- **running** `laya/feedback_enc/agnews/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite agnews --method feedback_enc --seed 1`)
 - **pending** `laya/feedback_enc/agnews/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite agnews --method feedback_enc --seed 2`)
 - **pending** `tables`    (from `.`: `VEGA_OUT=<output> python table.py`)
 
@@ -241,10 +239,10 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     laya/feedback_enc/typed/s1 1545s
 - done     laya/feedback_enc/typed/s2 1365s
 - done     laya/feedback_enc/emotion/s0 510s
-- running  laya/feedback_enc/emotion/s1 
-- running  laya/feedback_enc/emotion/s2 
-- pending  laya/feedback_enc/agnews/s0 
-- pending  laya/feedback_enc/agnews/s1 
+- done     laya/feedback_enc/emotion/s1 415s
+- done     laya/feedback_enc/emotion/s2 410s
+- running  laya/feedback_enc/agnews/s0 
+- running  laya/feedback_enc/agnews/s1 
 - pending  laya/feedback_enc/agnews/s2 
 - pending  tables 
 
