@@ -1,12 +1,11 @@
-# Status of the remaining Peekaboo experiments  (Sat Oct 17 00:00:00 2026)
+# Status of the remaining Peekaboo experiments  (Sat Oct 17 00:10:00 2026)
 
-done: 171 · pending: 43 · running: 1  (of 215 steps)
+done: 175 · pending: 39 · running: 1  (of 215 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **running** `vega-4b/cache/decisionbench`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite decisionbench`)
-- **pending** `vega-4b/cache/typed`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite typed`)
+- **running** `vega-4b/cache/typed`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite typed`)
 - **pending** `vega-4b/cache/emotion`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite emotion`)
 - **pending** `vega-4b/cache/agnews`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite agnews`)
 - **pending** `vega-4b/replay/typed`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method replay`)
@@ -36,9 +35,6 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - **pending** `vega-4b/pooled/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite all --method pooled --seed 0`)
 - **pending** `vega-4b/pooled/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite all --method pooled --seed 1`)
 - **pending** `vega-4b/pooled/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite all --method pooled --seed 2`)
-- **pending** `vega-4b/feedback_kl0/decisionbench/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method feedback_kl0 --seed 0`)
-- **pending** `vega-4b/feedback_kl0/decisionbench/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method feedback_kl0 --seed 1`)
-- **pending** `vega-4b/feedback_kl0/decisionbench/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method feedback_kl0 --seed 2`)
 - **pending** `vega-4b/feedback_kl0/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback_kl0 --seed 0`)
 - **pending** `vega-4b/feedback_kl0/typed/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback_kl0 --seed 1`)
 - **pending** `vega-4b/feedback_kl0/typed/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback_kl0 --seed 2`)
@@ -61,11 +57,11 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     laya/cache/jevbench 20s
 - done     laya_td/cache/jevbench 25s
 - done     vega-0.8b/cache/decisionbench 570s
-- running  vega-4b/cache/decisionbench 
+- done     vega-4b/cache/decisionbench 470s
 - done     laya/cache/decisionbench 180s
 - done     laya_td/cache/decisionbench 170s
 - done     vega-0.8b/cache/typed 720s
-- pending  vega-4b/cache/typed 
+- running  vega-4b/cache/typed 
 - done     laya/cache/typed 685s
 - done     laya_td/cache/typed 685s
 - done     vega-0.8b/cache/emotion 400s
@@ -231,13 +227,13 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-4b/feedback_kl0/jevbench/s2 
 - done     laya/feedback_kl0/jevbench/s2 245s
 - done     vega-0.8b/feedback_kl0/decisionbench/s0 
-- pending  vega-4b/feedback_kl0/decisionbench/s0 
+- done     vega-4b/feedback_kl0/decisionbench/s0 95s
 - done     laya/feedback_kl0/decisionbench/s0 675s
 - done     vega-0.8b/feedback_kl0/decisionbench/s1 
-- pending  vega-4b/feedback_kl0/decisionbench/s1 
+- done     vega-4b/feedback_kl0/decisionbench/s1 95s
 - done     laya/feedback_kl0/decisionbench/s1 370s
 - done     vega-0.8b/feedback_kl0/decisionbench/s2 
-- pending  vega-4b/feedback_kl0/decisionbench/s2 
+- done     vega-4b/feedback_kl0/decisionbench/s2 95s
 - done     laya/feedback_kl0/decisionbench/s2 365s
 - done     vega-0.8b/feedback_kl0/typed/s0 
 - pending  vega-4b/feedback_kl0/typed/s0 
