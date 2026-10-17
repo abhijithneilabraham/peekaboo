@@ -1,12 +1,11 @@
-# Status of the remaining Peekaboo experiments  (Sat Oct 17 03:47:41 2026)
+# Status of the remaining Peekaboo experiments  (Sat Oct 17 03:58:41 2026)
 
-done: 203 · pending: 11 · running: 1  (of 215 steps)
+done: 204 · pending: 10 · running: 1  (of 215 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **running** `vega-4b/cache/decisionbench`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite decisionbench`)
-- **pending** `vega-4b/cache/typed`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite typed`)
+- **running** `vega-4b/cache/typed`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite typed`)
 - **pending** `vega-4b/cache/emotion`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite emotion`)
 - **pending** `vega-4b/cache/agnews`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite agnews`)
 - **pending** `vega-4b/ttt/agnews`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method ttt`)
@@ -29,11 +28,11 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     laya/cache/jevbench not selected (--only)
 - done     laya_td/cache/jevbench not selected (--only)
 - done     vega-0.8b/cache/decisionbench not selected (--only)
-- running  vega-4b/cache/decisionbench 
+- done     vega-4b/cache/decisionbench 350s
 - done     laya/cache/decisionbench not selected (--only)
 - done     laya_td/cache/decisionbench not selected (--only)
 - done     vega-0.8b/cache/typed not selected (--only)
-- pending  vega-4b/cache/typed 
+- running  vega-4b/cache/typed 
 - done     laya/cache/typed not selected (--only)
 - done     laya_td/cache/typed not selected (--only)
 - done     vega-0.8b/cache/emotion not selected (--only)
