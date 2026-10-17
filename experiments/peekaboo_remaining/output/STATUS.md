@@ -1,13 +1,11 @@
-# Status of the remaining Peekaboo experiments  (Fri Oct 16 23:50:00 2026)
+# Status of the remaining Peekaboo experiments  (Sat Oct 17 00:00:00 2026)
 
-done: 169 · pending: 45 · running: 1  (of 215 steps)
+done: 171 · pending: 43 · running: 1  (of 215 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **running** `vega-4b/cache/public`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite public`)
-- **pending** `vega-4b/cache/jevbench`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite jevbench`)
-- **pending** `vega-4b/cache/decisionbench`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite decisionbench`)
+- **running** `vega-4b/cache/decisionbench`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite decisionbench`)
 - **pending** `vega-4b/cache/typed`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite typed`)
 - **pending** `vega-4b/cache/emotion`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite emotion`)
 - **pending** `vega-4b/cache/agnews`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite agnews`)
@@ -55,15 +53,15 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 <details><summary>all steps</summary>
 
 - done     vega-0.8b/cache/public 845s
-- running  vega-4b/cache/public 
+- done     vega-4b/cache/public 465s
 - done     laya/cache/public 385s
 - done     laya_td/cache/public 405s
 - done     vega-0.8b/cache/jevbench 55s
-- pending  vega-4b/cache/jevbench 
+- done     vega-4b/cache/jevbench 40s
 - done     laya/cache/jevbench 20s
 - done     laya_td/cache/jevbench 25s
 - done     vega-0.8b/cache/decisionbench 570s
-- pending  vega-4b/cache/decisionbench 
+- running  vega-4b/cache/decisionbench 
 - done     laya/cache/decisionbench 180s
 - done     laya_td/cache/decisionbench 170s
 - done     vega-0.8b/cache/typed 720s
