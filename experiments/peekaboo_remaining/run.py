@@ -88,6 +88,11 @@ def plan(out):
                     V(size, f'{m}/{s}/s{sd}', ['adapt.py', '--suite', s, '--method', m, '--seed', str(sd)], ex(res, 'methods', s, f'{m}_s{sd}.json'), gr, [f'vega-{size}/cache/{s}'])
                 Lm('laya', f'{m}/{s}/s{sd}', ['train', '--suite', s, '--method', m, '--seed', str(sd)],
                    ex('results_laya', 'methods', s, f'{m}_s{sd}.json'), 8, ['laya/cache/' + s])
+    # 5. Peekaboo on Laya with the encoder unfrozen too: changes as much of Laya as laya-typed-decisions' fine-tune did
+    for s in SUITES:
+        for sd in SEEDS:
+            Lm('laya', f'feedback_enc/{s}/s{sd}', ['train', '--suite', s, '--method', 'feedback_enc', '--seed', str(sd)],
+               ex('results_laya', 'methods', s, f'feedback_enc_s{sd}.json'), 14, ['laya/cache/' + s])
     steps.append(Step('tables', HERE, ['table.py'], lambda: False, None, 0))
     return steps
 

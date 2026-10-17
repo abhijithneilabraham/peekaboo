@@ -14,6 +14,8 @@ as Laya's own "noul" type, whose options are [false, true], the same order as Ve
   train   --method feedback (Peekaboo): a trainable copy of Laya's decision head (the encoder stays frozen), trained
           by REINFORCE on right/wrong only, KL anchor (0.1) to the released head, then one temperature fitted from
           feedback on held-out training rows. Head learning rate 1e-4, as in Laya's own recipe.
+          --method feedback_enc: the same, with a trainable copy of the encoder too (Laya's own encoder learning
+          rate, 2.5e-5), so Peekaboo changes as much of the model as laya-typed-decisions' fine-tune did
           --method replay: check that the frozen model on the captured input reproduces the official answer
 
     VEGA_SIZE=laya python laya_peekaboo.py cache --suite typed
@@ -31,6 +33,8 @@ import torch
 import paths
 import adapt as A
 
+ENC_LR = 2.5e-5    # Laya's own encoder learning rate (laya.train.TrainConfig.encoder_lr); its head rate is our 1e-4
+MICRO = 8          # rows per forward pass while the encoder trains (Laya's own micro-batch); one update per 32 rows
 CHECKPOINT = {'laya': 'convaiinnovations/laya', 'laya_td': 'convaiinnovations/laya-typed-decisions'}
 
 
@@ -141,9 +145,10 @@ class Laya:
         """The precision Laya's own prediction call runs the whole model in (the checkpoint's autocast dtype)."""
         return torch.autocast(self.dev.type, dtype=self.ag.dtype, enabled=bool(self.ag.amp_enabled))
 
-    def encode(self, ids, att):
-        with torch.no_grad(), self.amp():
-            return self.m.encoder(input_ids=ids, attention_mask=att).last_hidden_state
+    def encode(self, ids, att, enc=None):
+        """The released encoder (frozen), or a trainable copy of it (Peekaboo with the encoder unfrozen)."""
+        with torch.set_grad_enabled(enc is not None and torch.is_grad_enabled()), self.amp():
+            return (self.m.encoder if enc is None else enc)(input_ids=ids, attention_mask=att).last_hidden_state
 
     def head_logits(self, mods, h, att, mpos, mmask, qt):
         """DecisionModel.forward after the encoder, with any head (the released one or a trainable copy)."""
@@ -159,7 +164,7 @@ class Laya:
 
     def logp(self, bank, rows, mods, h=None):
         ids, att, mpos, mmask, qt, T = self.batch(bank, rows)
-        h = self.encode(ids, att) if h is None else h
+        h = self.encode(ids, att, mods.get('encoder')) if h is None else h
         with self.amp():
             lg = self.head_logits(mods, h, att, mpos, mmask, qt) / T[:, None]
         return torch.log_softmax(lg.masked_fill(~mmask, -1e4), -1), mmask, h
@@ -178,14 +183,20 @@ class Laya:
 def peekaboo(L, bank, train, cal, test, method, rng, epochs=8, lr=1e-4, batch=32):
     """Peekaboo on Laya: the same loop as Vega's (adapt.train_adapter), on a trainable copy of the decision head.
     method 'sup_ts' trains the same copy with cross-entropy on the answer key + temperature scaling (the answer-key
-    baseline); 'feedback_kl0' / 'feedback_kl1' are the leash ablations. Returns calibrated and raw test probabilities."""
+    baseline); 'feedback_kl0' / 'feedback_kl1' are the leash ablations; 'feedback_enc' also trains a copy of the
+    encoder. Returns calibrated and raw test probabilities."""
     spec, kl = A.FEEDBACK.get(method, A.CLEAN), A.KL.get(method, 0.1)
+    enc = method == 'feedback_enc'
     ref = L.released()
     mods = {k: copy.deepcopy(v).eval() for k, v in ref.items()}
-    params = [p for m in mods.values() for p in m.parameters()]
+    groups = [{'params': [p for m in mods.values() for p in m.parameters()], 'lr': lr}]
+    if enc:
+        mods['encoder'] = copy.deepcopy(L.m.encoder).eval()
+        groups.append({'params': list(mods['encoder'].parameters()), 'lr': ENC_LR})
+    params = [p for g_ in groups for p in g_['params']]
     for p in params:
         p.requires_grad_(True)
-    opt = torch.optim.Adam(params, lr=lr)
+    opt = torch.optim.Adam(groups, lr=lr)
     base, curve, log = 0.5, [], None
     if method == 'logged_ips':
         log = {}
@@ -196,6 +207,20 @@ def peekaboo(L, bank, train, cal, test, method, rng, epochs=8, lr=1e-4, batch=32
         order = rng.permutation(len(train)); rew = []
         for s in range(0, len(train), batch):
             rows = [train[i] for i in order[s:s + batch]]
+            if enc:      # the update below (clean feedback), in micro-batches; the KL anchor is the released model
+                opt.zero_grad(); rb = []
+                for c in range(0, len(rows), MICRO):
+                    sub = rows[c:c + MICRO]
+                    g = torch.tensor([A.gold(it) for it in sub], device=L.dev)
+                    lp, mask, _ = L.logp(bank, sub, mods); ar = torch.arange(len(sub), device=L.dev)
+                    with torch.no_grad():
+                        a = torch.multinomial(lp.exp(), 1).squeeze(1); r = (a == g).float()
+                        lq, _, _ = L.logp(bank, sub, ref)
+                    loss = -((r - base) * lp[ar, a]).sum() + kl * (lp.exp() * (lp - lq)).masked_fill(~mask, 0).sum()
+                    (loss / len(rows)).backward(); rb.append(r)
+                r = torch.cat(rb); base = 0.9 * base + 0.1 * float(r.mean()); rew.append(float(r.mean()))
+                torch.nn.utils.clip_grad_norm_(params, 1.0); opt.step()
+                continue
             g = torch.tensor([A.gold(it) for it in rows], device=L.dev)
             lp, mask, h = L.logp(bank, rows, mods)
             ar = torch.arange(len(rows), device=L.dev)

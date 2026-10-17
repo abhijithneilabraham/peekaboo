@@ -105,6 +105,9 @@ VARIANTS = [('released', 'records', 'base model', 'none'),
             ('feedback', 'records_switch', 'Peekaboo + switch', 'right / wrong'),
             ('feedback', 'records_raw', 'Peekaboo without the honesty fix', 'right / wrong'),
             ('feedback_kl0', 'records', 'Peekaboo without the leash (KL 0)', 'right / wrong'),
+            ('feedback_enc', 'records', '**Peekaboo, encoder unfrozen**', 'right / wrong'),
+            ('feedback_enc', 'records_switch', 'Peekaboo, encoder unfrozen + switch', 'right / wrong'),
+            ('feedback_enc', 'records_raw', 'Peekaboo, encoder unfrozen, without the honesty fix', 'right / wrong'),
             ('pooled', 'records', '**pooled Peekaboo** (one add-on, all suites\' feedback)', 'right / wrong'),
             ('pooled', 'records_switch', 'pooled Peekaboo + switch', 'right / wrong'),
             ('pooled', 'records_raw', 'pooled Peekaboo without the honesty fix', 'right / wrong')]
@@ -177,7 +180,8 @@ def main():
 
     # 2. Laya's README benchmark: typed-decisions
     T = [('laya', 'released', 'base Laya', 'none', 0.362), ('laya_td', 'released', "laya-typed-decisions (Laya's own fine-tune)", 'answer key', 0.766),
-         ('laya', 'feedback', '**Laya + Peekaboo**', 'right / wrong', None)]
+         ('laya', 'feedback', '**Laya + Peekaboo**', 'right / wrong', None),
+         ('laya', 'feedback_enc', '**Laya + Peekaboo, encoder unfrozen**', 'right / wrong', None)]
     for m, nm in (('0.8b', 'Vega 0.8B'), ('4b', 'Vega 4B')):
         T += [(m, 'released', f'base {nm}', 'none', None), (m, 'ttt', f"{nm} + VegaML's TTT head", 'answer key', None),
               (m, 'sup_ts', f'{nm} + answer-key adapter', 'answer key', None), (m, 'feedback', f'**{nm} + Peekaboo**', 'right / wrong', None)]
@@ -218,6 +222,11 @@ def main():
         pk = runs('laya', s_, 'feedback')
         L.append(f'| {s_} | Laya | {paired(s_, runs("laya", s_, "released"), pk)} | laya-typed-decisions: '
                  f'{paired(s_, runs("laya_td", s_, "released"), pk)} |')
+    for s_ in SUITES:
+        pk = runs('laya', s_, 'feedback_enc')
+        if pk:
+            L.append(f'| {s_} | Laya, encoder unfrozen | {paired(s_, runs("laya", s_, "released"), pk)} | laya-typed-decisions: '
+                     f'{paired(s_, runs("laya_td", s_, "released"), pk)} |')
     L += ['',
           'DecisionBench (Vega 0.8B / 4B) is in the paper: +10.2 / +6.0 over base, +8.0 / +5.8 over TTT, -1.6 / +1.2 against the '
           'answer-key adapter.', '']
