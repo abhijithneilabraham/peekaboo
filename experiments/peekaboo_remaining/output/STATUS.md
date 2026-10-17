@@ -1,13 +1,12 @@
-# Status of the remaining Peekaboo experiments  (Sat Oct 17 08:33:59 2026)
+# Status of the remaining Peekaboo experiments  (Sat Oct 17 08:43:59 2026)
 
-done: 222 · pending: 9 · running: 2  (of 233 steps)
+done: 223 · pending: 8 · running: 2  (of 233 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **running** `laya/feedback_enc/decisionbench/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_enc --seed 2`)
 - **running** `laya/feedback_enc/typed/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite typed --method feedback_enc --seed 0`)
-- **pending** `laya/feedback_enc/typed/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite typed --method feedback_enc --seed 1`)
+- **running** `laya/feedback_enc/typed/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite typed --method feedback_enc --seed 1`)
 - **pending** `laya/feedback_enc/typed/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite typed --method feedback_enc --seed 2`)
 - **pending** `laya/feedback_enc/emotion/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method feedback_enc --seed 0`)
 - **pending** `laya/feedback_enc/emotion/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method feedback_enc --seed 1`)
@@ -241,9 +240,9 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     laya/feedback_enc/jevbench/s2 245s
 - done     laya/feedback_enc/decisionbench/s0 890s
 - done     laya/feedback_enc/decisionbench/s1 885s
-- running  laya/feedback_enc/decisionbench/s2 
+- done     laya/feedback_enc/decisionbench/s2 900s
 - running  laya/feedback_enc/typed/s0 
-- pending  laya/feedback_enc/typed/s1 
+- running  laya/feedback_enc/typed/s1 
 - pending  laya/feedback_enc/typed/s2 
 - pending  laya/feedback_enc/emotion/s0 
 - pending  laya/feedback_enc/emotion/s1 
