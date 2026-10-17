@@ -1,10 +1,14 @@
-# Status of the remaining Peekaboo experiments  (Sat Oct 17 00:37:52 2026)
+# Status of the remaining Peekaboo experiments  (Sat Oct 17 03:47:41 2026)
 
-done: 207 · pending: 8  (of 215 steps)
+done: 203 · pending: 11 · running: 1  (of 215 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
+- **running** `vega-4b/cache/decisionbench`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite decisionbench`)
+- **pending** `vega-4b/cache/typed`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite typed`)
+- **pending** `vega-4b/cache/emotion`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite emotion`)
+- **pending** `vega-4b/cache/agnews`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite agnews`)
 - **pending** `vega-4b/ttt/agnews`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method ttt`)
 - **pending** `vega-4b/pooled/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite all --method pooled --seed 0`)
 - **pending** `vega-4b/pooled/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite all --method pooled --seed 1`)
@@ -16,30 +20,30 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 
 <details><summary>all steps</summary>
 
-- done     vega-0.8b/cache/public 
-- done     vega-4b/cache/public 
-- done     laya/cache/public 
-- done     laya_td/cache/public 
-- done     vega-0.8b/cache/jevbench 
-- done     vega-4b/cache/jevbench 
-- done     laya/cache/jevbench 
-- done     laya_td/cache/jevbench 
-- done     vega-0.8b/cache/decisionbench 
-- done     vega-4b/cache/decisionbench 
-- done     laya/cache/decisionbench 
-- done     laya_td/cache/decisionbench 
-- done     vega-0.8b/cache/typed 
-- done     vega-4b/cache/typed 
-- done     laya/cache/typed 
-- done     laya_td/cache/typed 
-- done     vega-0.8b/cache/emotion 
-- done     vega-4b/cache/emotion 
-- done     laya/cache/emotion 
-- done     laya_td/cache/emotion 
-- done     vega-0.8b/cache/agnews 
-- done     vega-4b/cache/agnews 
-- done     laya/cache/agnews 
-- done     laya_td/cache/agnews 
+- done     vega-0.8b/cache/public not selected (--only)
+- done     vega-4b/cache/public 440s
+- done     laya/cache/public not selected (--only)
+- done     laya_td/cache/public not selected (--only)
+- done     vega-0.8b/cache/jevbench not selected (--only)
+- done     vega-4b/cache/jevbench 30s
+- done     laya/cache/jevbench not selected (--only)
+- done     laya_td/cache/jevbench not selected (--only)
+- done     vega-0.8b/cache/decisionbench not selected (--only)
+- running  vega-4b/cache/decisionbench 
+- done     laya/cache/decisionbench not selected (--only)
+- done     laya_td/cache/decisionbench not selected (--only)
+- done     vega-0.8b/cache/typed not selected (--only)
+- pending  vega-4b/cache/typed 
+- done     laya/cache/typed not selected (--only)
+- done     laya_td/cache/typed not selected (--only)
+- done     vega-0.8b/cache/emotion not selected (--only)
+- pending  vega-4b/cache/emotion 
+- done     laya/cache/emotion not selected (--only)
+- done     laya_td/cache/emotion not selected (--only)
+- done     vega-0.8b/cache/agnews not selected (--only)
+- pending  vega-4b/cache/agnews 
+- done     laya/cache/agnews not selected (--only)
+- done     laya_td/cache/agnews not selected (--only)
 - done     vega-0.8b/replay/public 
 - done     vega-4b/replay/public 
 - done     laya/replay/public 
