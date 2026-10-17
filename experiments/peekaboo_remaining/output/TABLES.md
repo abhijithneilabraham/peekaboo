@@ -37,6 +37,9 @@ Accuracy (mean ± s.d. over 3 seeds), then calibration error, then the paired ac
 | Laya | Peekaboo + switch | right / wrong | 0.542 ± 0.000 | 0.586 ± 0.002 | 0.401 ± 0.000 | 0.493 ± 0.008 | 0.597 ± 0.000 | 0.930 ± 0.000 |
 | Laya | Peekaboo without the honesty fix | right / wrong | 0.543 ± 0.001 | 0.584 ± 0.000 | 0.405 ± 0.002 | 0.493 ± 0.008 | 0.596 ± 0.001 | 0.930 ± 0.000 |
 | Laya | Peekaboo without the leash (KL 0) | right / wrong | 0.539 ± 0.006 | 0.584 ± 0.000 | 0.403 ± 0.001 | 0.463 ± 0.009 | 0.586 ± 0.009 | 0.930 ± 0.001 |
+| Laya | **Peekaboo, encoder unfrozen** | right / wrong | 0.572 ± 0.007 | 0.558 ± 0.011 | 0.559 ± 0.005 | 0.684 ± 0.021 | 0.817 ± 0.003 | 0.923 ± 0.004 |
+| Laya | Peekaboo, encoder unfrozen + switch | right / wrong | 0.555 ± 0.019 | 0.579 ± 0.017 | 0.559 ± 0.005 | 0.684 ± 0.021 | 0.817 ± 0.003 | 0.930 ± 0.000 |
+| Laya | Peekaboo, encoder unfrozen, without the honesty fix | right / wrong | 0.572 ± 0.007 | 0.558 ± 0.011 | 0.559 ± 0.005 | 0.684 ± 0.021 | 0.817 ± 0.003 | 0.923 ± 0.004 |
 | Laya | **pooled Peekaboo** (one add-on, all suites' feedback) | right / wrong | 0.538 ± 0.002 | 0.569 ± 0.007 | 0.398 ± 0.006 | 0.475 ± 0.004 | 0.594 ± 0.002 | 0.930 ± 0.000 |
 | Laya | pooled Peekaboo + switch | right / wrong | 0.542 ± 0.000 | 0.569 ± 0.007 | 0.401 ± 0.000 | 0.475 ± 0.004 | 0.597 ± 0.000 | 0.930 ± 0.000 |
 | Laya | pooled Peekaboo without the honesty fix | right / wrong | 0.538 ± 0.002 | 0.569 ± 0.007 | 0.398 ± 0.006 | 0.475 ± 0.004 | 0.594 ± 0.002 | 0.930 ± 0.000 |
@@ -72,6 +75,9 @@ Accuracy (mean ± s.d. over 3 seeds), then calibration error, then the paired ac
 | Laya | Peekaboo + switch | right / wrong | 0.212 ± 0.000 | 0.084 ± 0.007 | 0.174 ± 0.000 | 0.052 ± 0.005 | 0.306 ± 0.000 | 0.015 ± 0.005 |
 | Laya | Peekaboo without the honesty fix | right / wrong | 0.319 ± 0.009 | 0.228 ± 0.002 | 0.329 ± 0.027 | 0.351 ± 0.014 | 0.347 ± 0.012 | 0.059 ± 0.000 |
 | Laya | Peekaboo without the leash (KL 0) | right / wrong | 0.178 ± 0.015 | 0.066 ± 0.015 | 0.065 ± 0.008 | 0.056 ± 0.013 | 0.088 ± 0.018 | 0.018 ± 0.002 |
+| Laya | **Peekaboo, encoder unfrozen** | right / wrong | 0.152 ± 0.006 | 0.087 ± 0.012 | 0.062 ± 0.009 | 0.062 ± 0.019 | 0.035 ± 0.007 | 0.030 ± 0.007 |
+| Laya | Peekaboo, encoder unfrozen + switch | right / wrong | 0.189 ± 0.033 | 0.092 ± 0.012 | 0.062 ± 0.009 | 0.062 ± 0.019 | 0.035 ± 0.007 | 0.012 ± 0.000 |
+| Laya | Peekaboo, encoder unfrozen, without the honesty fix | right / wrong | 0.318 ± 0.009 | 0.293 ± 0.008 | 0.244 ± 0.032 | 0.240 ± 0.005 | 0.114 ± 0.017 | 0.066 ± 0.007 |
 | Laya | **pooled Peekaboo** (one add-on, all suites' feedback) | right / wrong | 0.164 ± 0.007 | 0.096 ± 0.019 | 0.067 ± 0.015 | 0.052 ± 0.016 | 0.087 ± 0.006 | 0.016 ± 0.003 |
 | Laya | pooled Peekaboo + switch | right / wrong | 0.212 ± 0.000 | 0.096 ± 0.019 | 0.174 ± 0.000 | 0.052 ± 0.016 | 0.306 ± 0.000 | 0.012 ± 0.000 |
 | Laya | pooled Peekaboo without the honesty fix | right / wrong | 0.328 ± 0.033 | 0.271 ± 0.029 | 0.349 ± 0.054 | 0.328 ± 0.036 | 0.364 ± 0.019 | 0.056 ± 0.009 |
@@ -107,6 +113,9 @@ Accuracy (mean ± s.d. over 3 seeds), then calibration error, then the paired ac
 | Laya | Peekaboo + switch | right / wrong | +0.0 [+0.0, +0.0] | -0.3 [-0.9, +0.0] | +0.0 [+0.0, +0.0] | +13.2 [+11.0, +15.4] | +0.0 [+0.0, +0.0] | +0.0 [+0.0, +0.1] |
 | Laya | Peekaboo without the honesty fix | right / wrong | +0.1 [-0.3, +0.5] | -0.4 [-1.3, +0.0] | +0.4 [+0.0, +0.8] | +13.2 [+11.0, +15.4] | -0.1 [-0.4, +0.2] | +0.0 [-0.0, +0.1] |
 | Laya | Peekaboo without the leash (KL 0) | right / wrong | -0.3 [-0.9, +0.3] | -0.4 [-1.3, +0.0] | +0.2 [-0.2, +0.6] | +10.2 [+8.0, +12.4] | -1.1 [-1.7, -0.4] | +0.1 [-0.1, +0.2] |
+| Laya | **Peekaboo, encoder unfrozen** | right / wrong | +3.0 [+1.7, +4.4] | -3.0 [-8.1, +2.2] | +15.8 [+13.2, +18.7] | +32.3 [+29.8, +34.8] | +22.0 [+19.8, +24.3] | -0.7 [-1.5, +0.2] |
+| Laya | Peekaboo, encoder unfrozen + switch | right / wrong | +1.3 [+0.8, +1.9] | -1.0 [-3.3, +1.6] | +15.8 [+13.2, +18.7] | +32.3 [+29.8, +34.8] | +22.0 [+19.8, +24.3] | +0.0 [+0.0, +0.0] |
+| Laya | Peekaboo, encoder unfrozen, without the honesty fix | right / wrong | +3.0 [+1.7, +4.4] | -3.0 [-8.1, +2.2] | +15.8 [+13.2, +18.7] | +32.3 [+29.8, +34.8] | +22.0 [+19.8, +24.3] | -0.7 [-1.5, +0.2] |
 | Laya | **pooled Peekaboo** (one add-on, all suites' feedback) | right / wrong | -0.4 [-1.0, +0.2] | -2.0 [-4.9, +0.7] | -0.2 [-1.4, +0.9] | +11.4 [+9.4, +13.5] | -0.2 [-0.6, +0.1] | +0.0 [+0.0, +0.1] |
 | Laya | pooled Peekaboo + switch | right / wrong | +0.0 [+0.0, +0.0] | -2.0 [-4.9, +0.7] | +0.0 [+0.0, +0.0] | +11.4 [+9.4, +13.5] | +0.0 [+0.0, +0.0] | +0.0 [+0.0, +0.0] |
 | Laya | pooled Peekaboo without the honesty fix | right / wrong | -0.4 [-1.0, +0.2] | -2.0 [-4.9, +0.7] | -0.2 [-1.4, +0.9] | +11.4 [+9.4, +13.5] | -0.2 [-0.6, +0.1] | +0.0 [+0.0, +0.1] |
@@ -138,8 +147,8 @@ Accuracy (mean ± s.d. over 3 seeds), then calibration error, then the paired ac
 | macro F1 | 0.486 | 0.485 | 0.524 ± 0.012 | 0.649 | 0.648 | 0.655 ± 0.006 | 0.472 | 0.477 | 0.481 ± 0.008 | **0.796** |
 | expected calibration error | 0.151 | 0.154 | 0.203 ± 0.007 | 0.148 | 0.141 | 0.172 ± 0.003 | 0.212 | 0.166 | 0.157 ± 0.004 | **0.115** |
 | negative log likelihood | 1.099 | 1.100 | 1.156 ± 0.031 | **0.768** | **0.768** | 0.821 ± 0.012 | 1.651 | 1.170 | 1.118 ± 0.005 | 0.878 |
-| area under risk-coverage | 0.362 | 0.363 | 0.333 ± 0.019 | 0.169 | 0.169 | 0.177 ± 0.004 | 0.365 | 0.348 | 0.366 ± 0.004 | **0.077** |
-| latency per decision, p50 ms | 74 | 101 | 115 | 106 | **37** | 89 | 80 | 91 | 80 | 162 |
+| area under risk-coverage | 0.362 | 0.363 | 0.333 ± 0.018 | 0.169 | 0.169 | 0.177 ± 0.004 | 0.367 | 0.348 | 0.365 ± 0.004 | **0.077** |
+| latency per decision, p50 ms | 74 | 101 | 115 | 106 | **37** | 89 | 60 | 91 | 80 | 162 |
 | **JevBench, 231 items** | | | | | | | | | | |
 | accuracy | 0.545 | 0.550 | 0.517 ± 0.018 | 0.662 | 0.667 | 0.711 ± 0.004 | 0.589 | 0.537 | 0.584 ± 0.000 | **0.866** |
 | accuracy, hard tier | 0.414 | 0.414 | 0.390 ± 0.015 | 0.513 | 0.522 | 0.522 ± 0.000 | 0.351 | 0.270 | 0.351 ± 0.000 | **0.730** |
@@ -151,7 +160,7 @@ Accuracy (mean ± s.d. over 3 seeds), then calibration error, then the paired ac
 | negative log likelihood | 1.628 | 1.630 | 1.305 ± 0.029 | 1.420 | 1.422 | **1.101 ± 0.008** | 2.062 | 1.566 | 1.575 ± 0.008 | 3.196 |
 | KL to the gold distribution, 10 rows | 1.012 | 1.018 | 1.032 ± 0.089 | 0.854 | 0.852 | 0.850 ± 0.180 | 1.110 | 0.930 | **0.773 ± 0.009** | 6.099 |
 | coverage, rows answered | **1.000** | **1.000** | **1.000 ± 0.000** | **1.000** | **1.000** | **1.000 ± 0.000** | 0.954 | 0.990 | 0.954 ± 0.000 | 0.997 |
-| latency per decision, p50 ms | 85 | 104 | 83 | 245 | 46 | 101 | **33** | 36 | **33** | 163 |
+| latency per decision, p50 ms | 85 | 104 | 83 | 245 | 46 | 101 | 59 | 36 | **33** | 163 |
 
 Vega's DecisionBench rows: the finished runs in experiments/vega_policy/results*/compare (its latency is the README's). Laya is measured in this run on every row. laya-typed-decisions is Laya's released answer-key fine-tune (on typed-decisions).
 
@@ -162,6 +171,7 @@ Vega's DecisionBench rows: the finished runs in experiments/vega_policy/results*
 | base Laya | none | 0.362 | 0.361 | 0.326 | 0.183 | 1.361 | — |
 | laya-typed-decisions (Laya's own fine-tune) | answer key | 0.766 | 0.762 | 0.471 | 0.206 | 0.706 | +40.2 [+37.5, +42.7] |
 | **Laya + Peekaboo** | right / wrong |  | 0.493 ± 0.008 | 0.368 ± 0.002 | 0.052 ± 0.005 | 1.124 ± 0.012 | +13.2 [+11.0, +15.4] |
+| **Laya + Peekaboo, encoder unfrozen** | right / wrong |  | 0.684 ± 0.021 | 0.473 ± 0.021 | 0.062 ± 0.019 | 0.849 ± 0.051 | +32.3 [+29.8, +34.8] |
 | base Vega 0.8B | none |  | 0.665 | 0.501 | 0.063 | 0.754 | — |
 | Vega 0.8B + VegaML's TTT head | answer key |  | 0.721 | 0.559 | 0.139 | 0.908 | +5.5 [+3.1, +7.9] |
 | Vega 0.8B + answer-key adapter | answer key |  | 0.734 ± 0.000 | 0.559 ± 0.001 | 0.079 ± 0.008 | 0.693 ± 0.037 | +6.9 [+5.0, +8.9] |
@@ -201,6 +211,12 @@ Vega's README also reports typed-decisions (0.763 / 0.803 with its task adapter)
 | jevbench | Laya | -0.4 [-1.3, +0.0] | laya-typed-decisions: +4.8 [-0.4, +9.5] |
 | decisionbench | Laya | +0.4 [+0.0, +0.8] | laya-typed-decisions: -3.3 [-5.8, -0.9] |
 | typed | Laya | +13.2 [+11.0, +15.4] | laya-typed-decisions: -26.9 [-28.9, -24.8] |
+| public | Laya, encoder unfrozen | +3.0 [+1.7, +4.4] | laya-typed-decisions: +2.1 [+0.7, +3.6] |
+| jevbench | Laya, encoder unfrozen | -3.0 [-8.1, +2.2] | laya-typed-decisions: +2.2 [-3.3, +7.5] |
+| decisionbench | Laya, encoder unfrozen | +15.8 [+13.2, +18.7] | laya-typed-decisions: +12.1 [+9.6, +14.8] |
+| typed | Laya, encoder unfrozen | +32.3 [+29.8, +34.8] | laya-typed-decisions: -7.9 [-9.4, -6.3] |
+| emotion | Laya, encoder unfrozen | +22.0 [+19.8, +24.3] | laya-typed-decisions: +21.3 [+19.1, +23.6] |
+| agnews | Laya, encoder unfrozen | -0.7 [-1.5, +0.2] | laya-typed-decisions: -0.7 [-1.4, +0.1] |
 
 DecisionBench (Vega 0.8B / 4B) is in the paper: +10.2 / +6.0 over base, +8.0 / +5.8 over TTT, -1.6 / +1.2 against the answer-key adapter.
 

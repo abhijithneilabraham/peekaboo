@@ -1,14 +1,9 @@
-# Status of the remaining Peekaboo experiments  (Sat Oct 17 09:23:59 2026)
+# Status of the remaining Peekaboo experiments  (Sat Oct 17 09:34:15 2026)
 
-done: 229 · pending: 2 · running: 2  (of 233 steps)
+done: 233  (of 233 steps)
 
-NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
-finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
+COMPLETE. The tables are in TABLES.md.
 
-- **running** `laya/feedback_enc/agnews/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite agnews --method feedback_enc --seed 0`)
-- **running** `laya/feedback_enc/agnews/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite agnews --method feedback_enc --seed 1`)
-- **pending** `laya/feedback_enc/agnews/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite agnews --method feedback_enc --seed 2`)
-- **pending** `tables`    (from `.`: `VEGA_OUT=<output> python table.py`)
 
 <details><summary>all steps</summary>
 
@@ -241,9 +236,9 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     laya/feedback_enc/emotion/s0 510s
 - done     laya/feedback_enc/emotion/s1 415s
 - done     laya/feedback_enc/emotion/s2 410s
-- running  laya/feedback_enc/agnews/s0 
-- running  laya/feedback_enc/agnews/s1 
-- pending  laya/feedback_enc/agnews/s2 
-- pending  tables 
+- done     laya/feedback_enc/agnews/s0 490s
+- done     laya/feedback_enc/agnews/s1 480s
+- done     laya/feedback_enc/agnews/s2 315s
+- done     tables 191s
 
 </details>
