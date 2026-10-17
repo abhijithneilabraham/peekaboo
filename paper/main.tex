@@ -146,7 +146,7 @@ AG News & (ours) & 1{,}912 & 4{,}000 & four news sections & 1{,}912 / 0 / 0 \\
 
 \begin{figure}[t]\centering
 \includegraphics[width=\linewidth]{benchmarks.pdf}
-\caption{Test rows of the six benchmarks by question type (left) and by number of options (right). DecisionBench and the public menu contain questions with dozens to hundreds of options.}
+\caption{The six benchmarks' test rows, by question type (left) and by the number of options a question offers (right, as a share of that benchmark's rows). Emotion and AG News always offer the same number of options, six and four; the public menu and DecisionBench include questions with dozens to hundreds.}
 \label{fig:bench}
 \end{figure}
 
@@ -174,7 +174,7 @@ The grid, 6 benchmarks $\times$ 3 models $\times$ methods $\times$ 3 seeds for 2
 
 \begin{figure}[t]\centering
 \includegraphics[width=\linewidth]{gains.pdf}
-\caption{Accuracy gain over each base model on the six benchmarks, in points, with paired 95\% bootstrap intervals. Orange is the model's own answer-key improvement (VegaML's TTT head; Laya's released typed-decisions fine-tune); blue is our add-on trained on the answer key; the greens are \pk{}, from right / wrong only.}
+\caption{How much each method improves on the base model. Each row is a benchmark, each marker a method's accuracy gain over the base model on that benchmark in points, with its paired 95\% bootstrap interval; a marker to the right of the vertical line is an improvement. Orange diamonds: the model's own answer-key method (VegaML's TTT head for Vega, the released typed-decisions fine-tune for Laya). Blue squares: our add-on trained on the answer key. Green circles: \pk{}, from right / wrong only; dark green, on Laya, with the encoder unfrozen. JevBench has no training split, so only \pk{} is defined there.}
 \label{fig:gains}
 \end{figure}
 
@@ -235,7 +235,7 @@ The switch never turns a loss into a gain beyond base, and it sometimes removes 
 
 \begin{figure}[t]\centering
 \includegraphics[width=\linewidth]{pooled.pdf}
-\caption{One add-on per benchmark (green) against one pooled add-on trained on the feedback of all five benchmarks that have a training split (purple). For the pooled add-on JevBench is pure transfer.}
+\caption{One add-on per benchmark (green circles) against a single pooled add-on trained on the feedback of all five benchmarks that have a training split (purple squares). Gain over the base model in points with paired 95\% intervals, as in Figure~\ref{fig:gains}. The pooled add-on never saw a JevBench row.}
 \label{fig:pooled}
 \end{figure}
 
@@ -260,13 +260,12 @@ Away from typed-decisions the comparison turns around. The fine-tune loses $5.2$
 \label{sec:curve}
 
 \begin{figure}[t]\centering
-\begin{subfigure}{0.49\linewidth}\includegraphics[width=\linewidth]{vega_feedback_curve.png}\caption{Vega 0.8B}\end{subfigure}\hfill
-\begin{subfigure}{0.49\linewidth}\includegraphics[width=\linewidth]{vega_feedback_curve_4b.png}\caption{Vega 4B}\end{subfigure}
-\caption{DecisionBench, 1{,}720 held-out rows: accuracy gain (left of each panel) and ECE (right) against the number of feedback rows per task. Dashed line: base model.}
+\includegraphics[width=0.9\linewidth]{curve.pdf}
+\caption{How the gain grows with feedback. DecisionBench, fixed 1{,}720-row test set: accuracy gain over the base model (left) and ECE (right) against the number of feedback rows per task, for Vega 0.8B (top) and 4B (bottom). Green: \pk{}. Light green: the same with a stronger KL term ($\beta = 1$). Blue: the adapter trained on the answer key, which in this earlier study had no temperature step, hence its ECE. Dashed grey: the base model's ECE. Error bars are s.d.\ over three seeds.}
 \label{fig:curve}
 \end{figure}
 
-The grid grew out of an earlier DecisionBench study, which measured how the gain grows with the amount of feedback on a fixed 1{,}720-row test set (Figure~\ref{fig:curve}). At 0.8B the gain is $+3.1$, $+5.0$, $+8.4$ and $+11.3$ points with 5, 15, 30 and 60 feedback rows per task; at 4B, $+0.5$, $+3.0$, $+5.0$ and $+6.7$. From 15 rows per task upward the feedback-only curve stays within about a point of the label-supervised one. Seeing each of the 2{,}560 rows exactly once, as a live system would, gives $+6.9$ at 0.8B and $+3.3$ at 4B. Feedback on 33 tasks improves 10 tasks that contributed none by $+4.2$ and $+4.6$ points. The no-engine control, the same feedback and the same KL term on a bilinear scorer over the same frozen features, reaches an accuracy of $0.26$ at either size. Whatever one bit per row is doing, it is doing it by nudging Vega's zero-shot energies rather than by learning the task from scratch.
+The grid grew out of an earlier DecisionBench study, which measured how the gain grows with the amount of feedback on a fixed 1{,}720-row test set (Figure~\ref{fig:curve}). At 0.8B the gain is $+3.1$, $+5.0$, $+8.4$ and $+11.3$ points with 5, 15, 30 and 60 feedback rows per task; at 4B, $+0.5$, $+3.0$, $+5.0$ and $+6.7$. From 15 rows per task upward the feedback-only curve tracks the answer-key one, and at 4B runs a little above it. The stronger KL term ($\beta = 1$) is stable but keeps only about a third of the gain at 60 rows, which is why we settled on $0.1$. Seeing each of the 2{,}560 rows exactly once, as a live system would, gives $+6.9$ at 0.8B and $+3.3$ at 4B. Feedback on 33 tasks improves 10 tasks that contributed none by $+4.2$ and $+4.6$ points. The no-engine control, the same feedback and the same KL term on a bilinear scorer over the same frozen features, reaches an accuracy of $0.26$ at either size. Whatever one bit per row is doing, it is doing it by nudging Vega's zero-shot energies rather than by learning the task from scratch.
 
 \subsection{Reward during training}
 Figure~\ref{fig:reward} shows the mean reward of the sampled answers over the eight passes. On Vega it climbs on every benchmark with a training split (DecisionBench at 0.8B: 0.50 to 0.73). On Laya's frozen-encoder head it moves on typed-decisions and nowhere else, which agrees with the accuracy results. Because a sampled answer is right less often than the argmax, this curve also bounds what exploration would cost a live system: on the first pass the policy is right about as often as the base model's own samples, and more often from the second pass on.

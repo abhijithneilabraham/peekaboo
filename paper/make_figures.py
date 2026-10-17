@@ -14,7 +14,7 @@ PR = os.path.join(REPO, 'experiments', 'peekaboo_remaining')
 os.environ.setdefault('VEGA_OUT', os.path.join(PR, 'output'))
 sys.path.insert(0, PR)
 import numpy as np
-import matplotlib
+import matplotlib, matplotlib.ticker
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import table as T          # experiments/peekaboo_remaining/table.py (loads VegaML's metrics)
@@ -56,6 +56,7 @@ def metric(model, suite, method, what, key='records'):
 
 VARIANTS = [(m, k) for m, k, _, _ in T.VARIANTS]        # (method, record key) as TABLES.md lists them
 NAMES = {(m, k): n.replace('**', '') for m, k, n, _ in T.VARIANTS}
+NAMES[('feedback_kl0', 'records')] = 'Peekaboo without the KL term ($\\beta = 0$)'
 NAMES[('feedback_enc', 'records')] = 'Peekaboo, encoder unfrozen'
 NAMES[('feedback_enc', 'records_switch')] = 'Peekaboo, encoder unfrozen + switch'
 NAMES[('feedback_enc', 'records_raw')] = 'Peekaboo, encoder unfrozen, no honesty fix'
@@ -149,26 +150,6 @@ def G(N, model, method, s, key='records'):
     return N['grid'].get(f'{model}|{method}|{key}|{s}')
 
 
-def fig_gains(N):
-    fig, axes = plt.subplots(1, 3, figsize=(11, 3.1), sharey=False)
-    for ax, (model, mname) in zip(axes, MODELS):
-        bars = ([('laya_td', "their own method, answer key (VegaML's TTT head / Laya's fine-tune)", C['theirs']), ('sup_ts', 'our add-on trained on the answer key', C['sup']),
-                 ('feedback', 'Peekaboo, right / wrong only', C['pk']), ('feedback_enc', 'Peekaboo, encoder unfrozen, right / wrong only', C['enc'])] if model == 'laya' else
-                [('ttt', 'their own method', C['theirs']), ('sup_ts', 'answer-key add-on', C['sup']), ('feedback', 'Peekaboo', C['pk'])])
-        w = 0.8 / len(bars); x = np.arange(len(SUITES))
-        for i, (method, label, col) in enumerate(bars):
-            g = [G(N, model, method, s) for s in SUITES]
-            y = [v['gain']['gain'] if v and v['gain'] else np.nan for v in g]
-            err = [[v['gain']['gain'] - v['gain']['lo'] if v and v['gain'] else 0 for v in g], [v['gain']['hi'] - v['gain']['gain'] if v and v['gain'] else 0 for v in g]]
-            ax.bar(x + (i - (len(bars) - 1) / 2) * w, y, w, yerr=err, color=col, label=label, error_kw={'lw': 0.7, 'capsize': 1.5})
-        ax.axhline(0, color='k', lw=0.6); ax.set_xticks(x); ax.set_xticklabels([SSHORT[s] for s in SUITES], rotation=25, ha='right')
-        ax.set_title(mname)
-        if model == 'laya':
-            ax.set_ylim(top=min(ax.get_ylim()[1], 45))
-    axes[0].set_ylabel('gain over base (points)')
-    h, l = axes[2].get_legend_handles_labels()
-    fig.legend(h, l, frameon=False, ncol=2, loc='lower center', bbox_to_anchor=(0.5, -0.02))
-    fig.tight_layout(rect=(0, 0.14, 1, 1)); fig.savefig(os.path.join(FIG, 'gains.pdf'), bbox_inches='tight'); plt.close(fig)
 
 
 def fig_reliability(N):
@@ -194,7 +175,7 @@ def fig_reliability(N):
 def fig_ablation(N):
     fig, axes = plt.subplots(2, 2, figsize=(9, 5.4))
     var = [('feedback', 'records', 'Peekaboo', C['pk']), ('feedback', 'records_switch', '+ switch', C['pk_sw']),
-           ('feedback', 'records_raw', 'no honesty fix', C['raw']), ('feedback_kl0', 'records', 'no leash (KL 0)', C['kl0'])]
+           ('feedback', 'records_raw', 'no honesty fix', C['raw']), ('feedback_kl0', 'records', 'no KL term ($\\beta = 0$)', C['kl0'])]
     w = 0.8 / len(var); x = np.arange(len(SUITES))
     for col_i, (model, mname) in enumerate(MODELS[:2]):
         for row, what in enumerate(('gain', 'ece')):
@@ -219,19 +200,6 @@ def fig_ablation(N):
     fig.tight_layout(rect=(0, 0.05, 1, 1)); fig.savefig(os.path.join(FIG, 'ablation.pdf')); plt.close(fig)
 
 
-def fig_pooled(N):
-    fig, axes = plt.subplots(1, 3, figsize=(11, 3.0))
-    w = 0.38; x = np.arange(len(SUITES))
-    for ax, (model, mname) in zip(axes, MODELS):
-        for i, (method, label, col) in enumerate((('feedback', 'Peekaboo, one add-on per benchmark', C['pk']), ('pooled', 'pooled Peekaboo, one add-on for all', C['pooled']))):
-            g = [G(N, model, method, s) for s in SUITES]
-            y = [v['gain']['gain'] if v and v['gain'] else np.nan for v in g]
-            err = [[v['gain']['gain'] - v['gain']['lo'] if v and v['gain'] else 0 for v in g], [v['gain']['hi'] - v['gain']['gain'] if v and v['gain'] else 0 for v in g]]
-            ax.bar(x + (i - 0.5) * w, y, w, yerr=err, color=col, label=label, error_kw={'lw': 0.7, 'capsize': 1.5})
-        ax.axhline(0, color='k', lw=0.6); ax.set_xticks(x); ax.set_xticklabels([SSHORT[s] for s in SUITES], rotation=25, ha='right'); ax.set_title(mname)
-    axes[0].set_ylabel('accuracy gain (points)')
-    h, l = axes[0].get_legend_handles_labels(); fig.legend(h, l, frameon=False, ncol=2, loc='lower center', bbox_to_anchor=(0.5, -0.01))
-    fig.tight_layout(rect=(0, 0.07, 1, 1)); fig.savefig(os.path.join(FIG, 'pooled.pdf')); plt.close(fig)
 
 
 def fig_reward(N):
@@ -262,26 +230,6 @@ def fig_laya(N):
     fig.tight_layout(); fig.savefig(os.path.join(FIG, 'laya.pdf'), bbox_inches='tight'); plt.close(fig)
 
 
-def fig_benchmarks():
-    import collections
-    fig, axes = plt.subplots(1, 2, figsize=(9, 2.9))
-    types = ['choice', 'boolean', 'score']; tn = {'choice': 'pick one', 'boolean': 'yes / no', 'score': 'rating scale'}
-    counts = {s: collections.Counter(it['question'].get('type') for it in T.VT.items(s)) for s in SUITES}
-    bottom = np.zeros(len(SUITES))
-    for t, col in zip(types, ('#4c72b0', '#55a868', '#c44e52')):
-        y = np.array([counts[s].get(t, 0) for s in SUITES])
-        axes[0].bar(range(len(SUITES)), y, bottom=bottom, color=col, label=tn[t]); bottom += y
-    axes[0].set_xticks(range(len(SUITES))); axes[0].set_xticklabels([SSHORT[s] for s in SUITES], rotation=25, ha='right')
-    axes[0].set_ylabel('test rows'); axes[0].set_title('test rows by question type')
-    axes[0].legend(frameon=False, ncol=3, loc='upper center', bbox_to_anchor=(0.5, -0.32))
-    for s, col in zip(SUITES, plt.cm.tab10(np.linspace(0, 1, 10))):
-        k = [len(it['labels']) for it in T.VT.items(s)]
-        vals, cnt = np.unique(np.minimum(k, 9), return_counts=True)
-        axes[1].plot(vals, cnt / cnt.sum(), 'o-', ms=3, color=col, label=SNAME[s])
-    axes[1].set_xticks(range(2, 10)); axes[1].set_xticklabels([str(i) for i in range(2, 9)] + ['9+'])
-    axes[1].set_xlabel('options per question'); axes[1].set_ylabel('fraction of test rows'); axes[1].set_title('how many options a question has')
-    axes[1].legend(frameon=False, fontsize=7, ncol=3, loc='upper center', bbox_to_anchor=(0.5, -0.25))
-    fig.tight_layout(); fig.savefig(os.path.join(FIG, 'benchmarks.pdf'), bbox_inches='tight'); plt.close(fig)
 
 
 def fig_switch_T(N):
@@ -299,6 +247,124 @@ def fig_switch_T(N):
     h, l = axes[0].get_legend_handles_labels()
     fig.legend(h, l, frameon=False, ncol=3, loc='lower center', bbox_to_anchor=(0.5, -0.02))
     fig.tight_layout(rect=(0, 0.08, 1, 1)); fig.savefig(os.path.join(FIG, 'switch_T.pdf'), bbox_inches='tight'); plt.close(fig)
+
+
+MARK = {'theirs': ('D', C['theirs']), 'sup': ('s', C['sup']), 'pk': ('o', C['pk']), 'enc': ('o', C['enc']), 'pooled': ('s', C['pooled'])}
+
+
+def forest(ax, N, model, series, title):
+    """One panel of a forest plot: benchmarks on the y axis, gain over the base model on the x axis, one marker per
+    method with its paired 95% bootstrap interval as a horizontal bar."""
+    y = np.arange(len(SUITES))[::-1]
+    k = len(series); off = np.linspace(0.3, -0.3, k) if k > 1 else [0.0]
+    for (method, label, style), dy in zip(series, off):
+        mk, col = MARK[style]
+        for yi, s in zip(y, SUITES):
+            g = G(N, model, method, s)
+            if not g or not g['gain']:
+                continue
+            v = g['gain']
+            ax.errorbar(v['gain'], yi + dy, xerr=[[v['gain'] - v['lo']], [v['hi'] - v['gain']]], fmt=mk, ms=4.5, color=col,
+                        ecolor=col, elinewidth=1.0, capsize=2, label=label if yi == y[0] else None)
+    ax.axvline(0, color='k', lw=0.7); ax.set_yticks(y); ax.set_yticklabels([SNAME[s] for s in SUITES]); ax.set_title(title)
+    ax.set_ylim(-0.6, len(SUITES) - 0.4); ax.grid(axis='x', lw=0.4, alpha=0.5); ax.spines['left'].set_visible(False); ax.tick_params(axis='y', length=0)
+    for yi in y[1:]:
+        ax.axhline(yi + 0.5, color='#dddddd', lw=0.5)
+
+
+def fig_gains(N):
+    fig, axes = plt.subplots(1, 3, figsize=(11, 3.4), sharey=True)
+    forest(axes[0], N, '0.8b', [('ttt', 'their own method, answer key (TTT head / Laya fine-tune)', 'theirs'), ('sup_ts', 'our add-on trained on the answer key', 'sup'),
+                                ('feedback', 'Peekaboo, right / wrong only', 'pk')], 'Vega 0.8B')
+    forest(axes[1], N, '4b', [('ttt', '', 'theirs'), ('sup_ts', '', 'sup'), ('feedback', '', 'pk')], 'Vega 4B')
+    forest(axes[2], N, 'laya', [('laya_td', '', 'theirs'), ('sup_ts', '', 'sup'), ('feedback', '', 'pk'),
+                                ('feedback_enc', 'Peekaboo, encoder unfrozen, right / wrong only', 'enc')], 'Laya')
+    axes[2].set_xlim(-12, 45)
+    for ax in axes:
+        ax.set_xlabel('accuracy gain over the base model (points)')
+    h, l = axes[0].get_legend_handles_labels(); h2, l2 = axes[2].get_legend_handles_labels()
+    h += [x for x, lab in zip(h2, l2) if lab]; l += [lab for lab in l2 if lab]
+    fig.legend(h, l, frameon=False, ncol=2, loc='lower center', bbox_to_anchor=(0.5, -0.02))
+    fig.tight_layout(rect=(0, 0.14, 1, 1)); fig.savefig(os.path.join(FIG, 'gains.pdf'), bbox_inches='tight'); plt.close(fig)
+
+
+def fig_pooled(N):
+    fig, axes = plt.subplots(1, 3, figsize=(11, 3.2), sharey=True)
+    for ax, (model, mname) in zip(axes, MODELS):
+        forest(ax, N, model, [('feedback', 'Peekaboo, one add-on per benchmark', 'pk'), ('pooled', 'pooled Peekaboo, one add-on for all benchmarks', 'pooled')], mname)
+        ax.set_xlabel('accuracy gain over the base model (points)')
+    h, l = axes[0].get_legend_handles_labels()
+    fig.legend(h, l, frameon=False, ncol=2, loc='lower center', bbox_to_anchor=(0.5, -0.02))
+    fig.tight_layout(rect=(0, 0.1, 1, 1)); fig.savefig(os.path.join(FIG, 'pooled.pdf'), bbox_inches='tight'); plt.close(fig)
+
+
+def fig_benchmarks():
+    import collections
+    fig, axes = plt.subplots(1, 2, figsize=(10, 3.0), gridspec_kw={'width_ratios': [1, 1.3]})
+    y = np.arange(len(SUITES))[::-1]
+    # left: test rows by question type
+    types = ['choice', 'boolean', 'score']; tn = {'choice': 'pick one', 'boolean': 'yes / no', 'score': 'rating scale'}
+    counts = {s: collections.Counter(it['question'].get('type') for it in T.VT.items(s)) for s in SUITES}
+    left = np.zeros(len(SUITES))
+    for t, col in zip(types, ('#4c72b0', '#55a868', '#c44e52')):
+        v = np.array([counts[s].get(t, 0) for s in SUITES])
+        axes[0].barh(y, v, left=left, color=col, label=tn[t], height=0.7); left += v
+    axes[0].set_yticks(y); axes[0].set_yticklabels([SNAME[s] for s in SUITES]); axes[0].set_xlabel('test rows'); axes[0].set_title('test rows by question type')
+    axes[0].legend(frameon=False, ncol=3, loc='upper center', bbox_to_anchor=(0.5, -0.22))
+    # right: share of test rows by number of options, one stacked bar per benchmark
+    bins = [(2, 2, '2'), (3, 3, '3'), (4, 4, '4'), (5, 5, '5'), (6, 8, '6 to 8'), (9, 10**9, '9 or more')]
+    shades = plt.cm.Blues(np.linspace(0.3, 0.95, len(bins)))
+    left = np.zeros(len(SUITES))
+    for (lo, hi, lab), col in zip(bins, shades):
+        v = []
+        for s in SUITES:
+            k = np.array([len(it['labels']) for it in T.VT.items(s)])
+            v.append(((k >= lo) & (k <= hi)).mean())
+        v = np.array(v)
+        axes[1].barh(y, v, left=left, color=col, label=lab, height=0.7, edgecolor='white', lw=0.5)
+        for yi, vi, li in zip(y, v, left):
+            if vi >= 0.12:
+                axes[1].text(li + vi / 2, yi, f'{100 * vi:.0f}%', ha='center', va='center', fontsize=7, color='white' if col[2] < 0.8 else 'black')
+        left += v
+    axes[1].set_yticks(y); axes[1].set_yticklabels([]); axes[1].set_xlim(0, 1); axes[1].set_xlabel('share of test rows')
+    axes[1].set_title('number of options per question'); axes[1].tick_params(axis='y', length=0)
+    axes[1].legend(frameon=False, ncol=6, loc='upper center', bbox_to_anchor=(0.5, -0.22), title='options', title_fontsize=8, handlelength=1.2)
+    fig.tight_layout(); fig.savefig(os.path.join(FIG, 'benchmarks.pdf'), bbox_inches='tight'); plt.close(fig)
+
+
+def fig_curve():
+    """Learning curve from the earlier DecisionBench study (experiments/vega_policy/results, results_4b): gain and ECE
+    on the fixed 1,720-row test set against the number of feedback rows per task."""
+    import glob
+    VP = os.path.join(REPO, 'experiments', 'vega_policy')
+    fig, axes = plt.subplots(2, 2, figsize=(9, 5.6))
+    series = [('kl0.1', 'Peekaboo, right / wrong only', C['pk']), ('kl1', 'right / wrong only, stronger KL term ($\\beta = 1$)', C['pk_sw']),
+              ('sup', 'answer-key adapter, no temperature step', C['sup'])]
+    for row, (d, mname) in enumerate((('results', 'Vega 0.8B'), ('results_4b', 'Vega 4B'))):
+        R = os.path.join(VP, d)
+        Z = [json.load(open(f))['final']['test'] for f in glob.glob(os.path.join(R, 'db_zero_rows_s*_big.json'))]
+        z, ze = np.mean([x['acc'] for x in Z]), np.mean([x['ece'] for x in Z])
+        for tag, label, col in series:
+            xs, g, gs, e = [], [], [], []
+            for n in (5, 15, 30, 60):
+                fs = glob.glob(os.path.join(R, f'db_*_rows_s*_big_n{n}_{tag}.json'))
+                if not fs:
+                    continue
+                key = 'test' if tag == 'sup' else 'test_recal'
+                acc = [json.load(open(f))['final'][key]['acc'] for f in fs]; ece = [json.load(open(f))['final'][key]['ece'] for f in fs]
+                xs.append(n); g.append(100 * (np.mean(acc) - z)); gs.append(100 * np.std(acc)); e.append(np.mean(ece))
+            axes[row][0].errorbar(xs, g, gs, marker='o', ms=4, color=col, label=label, capsize=2, lw=1.2)
+            axes[row][1].plot(xs, e, marker='o', ms=4, color=col, lw=1.2)
+        axes[row][0].axhline(0, color='k', lw=0.6); axes[row][1].axhline(ze, color=C['base'], lw=1.0, ls='--', label='base model')
+        for ax in axes[row]:
+            ax.set_xscale('log'); ax.set_xticks([5, 15, 30, 60]); ax.set_xticklabels(['5', '15', '30', '60']); ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+        axes[row][0].set_ylabel(f'{mname}\ngain over base (points)'); axes[row][1].set_ylabel('ECE (lower is better)')
+    for ax in axes[1]:
+        ax.set_xlabel('feedback rows per task (43 tasks)')
+    axes[0][0].set_title('accuracy'); axes[0][1].set_title('calibration')
+    h, l = axes[0][0].get_legend_handles_labels(); h2, l2 = axes[0][1].get_legend_handles_labels()
+    fig.legend(h + h2, l + l2, frameon=False, ncol=4, loc='lower center', bbox_to_anchor=(0.5, -0.01))
+    fig.tight_layout(rect=(0, 0.06, 1, 1)); fig.savefig(os.path.join(FIG, 'curve.pdf'), bbox_inches='tight'); plt.close(fig)
 
 
 # ───────────────────────────── LaTeX ─────────────────────────────
@@ -349,7 +415,7 @@ def tex_tables(N):
     OUT['tables_main.tex'] = L; L = []
     # ablations: accuracy and ECE for every variant
     L += ['% ---- ablations', '\\begin{table}[tbp]\\centering\\scriptsize', '\\caption{Every variant and ablation: accuracy (top) and expected calibration error (bottom), mean over 3 seeds. '
-          '``switch\'\': the add-on is used only where held-out right / wrong feedback says it beats the base model. ``no honesty fix\'\': the trained add-on without the feedback-fitted temperature. ``KL 0\'\': no leash.}',
+          '``switch\'\': the add-on is used only where held-out right / wrong feedback says it beats the base model. ``no honesty fix\'\': the trained add-on without the feedback-fitted temperature. ``no KL term\'\': $\\beta = 0$.}',
           '\\label{tab:ablation}', '\\setlength{\\tabcolsep}{3pt}', '\\resizebox{\\linewidth}{!}{\\begin{tabular}{ll' + 'r' * len(SUITES) + '}', '\\toprule',
           'model & variant & ' + ' & '.join(SSHORT[s] for s in SUITES) + ' \\\\']
     for what in ('acc', 'ece'):
@@ -453,8 +519,9 @@ def tex_numbers(N):
 
 if __name__ == '__main__':
     N = json.load(open(os.path.join(HERE, 'numbers.json'))) if '--tables-only' in sys.argv else compute()
-    fig_gains(N); fig_reliability(N); fig_ablation(N); fig_pooled(N); fig_reward(N); fig_laya(N); fig_benchmarks(); fig_switch_T(N)
+    fig_gains(N); fig_reliability(N); fig_ablation(N); fig_pooled(N); fig_reward(N); fig_laya(N); fig_benchmarks(); fig_switch_T(N); fig_curve()
     for f in ('vega_feedback_curve.png', 'vega_feedback_curve_4b.png'):
-        shutil.copy(os.path.join(REPO, 'reports', 'figures', f), os.path.join(FIG, f))
+        if os.path.exists(os.path.join(FIG, f)):
+            os.remove(os.path.join(FIG, f))
     tex_tables(N); tex_numbers(N)
     print('wrote', FIG, 'tables.tex numbers.tex numbers.json')
