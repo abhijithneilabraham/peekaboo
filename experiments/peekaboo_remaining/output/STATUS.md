@@ -1,36 +1,54 @@
-# Status of the remaining Peekaboo experiments  (Sat Oct 17 04:15:35 2026)
+# Status of the remaining Peekaboo experiments  (Sat Oct 17 07:52:59 2026)
 
-done: 215 of 215 steps (tables rebuilt from the final results)
+done: 215 · pending: 16 · running: 2  (of 233 steps)
 
-COMPLETE. The tables are in TABLES.md.
+NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
+finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- done `tables`    (from `.`: `VEGA_OUT=<output> python table.py`)
+- **running** `laya/feedback_enc/public/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method feedback_enc --seed 0`)
+- **pending** `laya/feedback_enc/public/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method feedback_enc --seed 1`)
+- **pending** `laya/feedback_enc/public/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method feedback_enc --seed 2`)
+- **running** `laya/feedback_enc/jevbench/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite jevbench --method feedback_enc --seed 1`)
+- **pending** `laya/feedback_enc/jevbench/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite jevbench --method feedback_enc --seed 2`)
+- **pending** `laya/feedback_enc/decisionbench/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_enc --seed 0`)
+- **pending** `laya/feedback_enc/decisionbench/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_enc --seed 1`)
+- **pending** `laya/feedback_enc/decisionbench/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_enc --seed 2`)
+- **pending** `laya/feedback_enc/typed/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite typed --method feedback_enc --seed 0`)
+- **pending** `laya/feedback_enc/typed/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite typed --method feedback_enc --seed 1`)
+- **pending** `laya/feedback_enc/typed/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite typed --method feedback_enc --seed 2`)
+- **pending** `laya/feedback_enc/emotion/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method feedback_enc --seed 0`)
+- **pending** `laya/feedback_enc/emotion/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method feedback_enc --seed 1`)
+- **pending** `laya/feedback_enc/emotion/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method feedback_enc --seed 2`)
+- **pending** `laya/feedback_enc/agnews/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite agnews --method feedback_enc --seed 0`)
+- **pending** `laya/feedback_enc/agnews/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite agnews --method feedback_enc --seed 1`)
+- **pending** `laya/feedback_enc/agnews/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite agnews --method feedback_enc --seed 2`)
+- **pending** `tables`    (from `.`: `VEGA_OUT=<output> python table.py`)
 
 <details><summary>all steps</summary>
 
 - done     vega-0.8b/cache/public not selected (--only)
-- done     vega-4b/cache/public 
-- done     laya/cache/public not selected (--only)
+- done     vega-4b/cache/public not selected (--only)
+- done     laya/cache/public 355s
 - done     laya_td/cache/public not selected (--only)
 - done     vega-0.8b/cache/jevbench not selected (--only)
-- done     vega-4b/cache/jevbench 
-- done     laya/cache/jevbench not selected (--only)
+- done     vega-4b/cache/jevbench not selected (--only)
+- done     laya/cache/jevbench 20s
 - done     laya_td/cache/jevbench not selected (--only)
 - done     vega-0.8b/cache/decisionbench not selected (--only)
-- done     vega-4b/cache/decisionbench 
-- done     laya/cache/decisionbench not selected (--only)
+- done     vega-4b/cache/decisionbench not selected (--only)
+- done     laya/cache/decisionbench 250s
 - done     laya_td/cache/decisionbench not selected (--only)
 - done     vega-0.8b/cache/typed not selected (--only)
-- done     vega-4b/cache/typed 
-- done     laya/cache/typed not selected (--only)
+- done     vega-4b/cache/typed not selected (--only)
+- done     laya/cache/typed 450s
 - done     laya_td/cache/typed not selected (--only)
 - done     vega-0.8b/cache/emotion not selected (--only)
-- done     vega-4b/cache/emotion 
-- done     laya/cache/emotion not selected (--only)
+- done     vega-4b/cache/emotion not selected (--only)
+- done     laya/cache/emotion 315s
 - done     laya_td/cache/emotion not selected (--only)
 - done     vega-0.8b/cache/agnews not selected (--only)
-- done     vega-4b/cache/agnews 
-- done     laya/cache/agnews not selected (--only)
+- done     vega-4b/cache/agnews not selected (--only)
+- done     laya/cache/agnews 335s
 - done     laya_td/cache/agnews not selected (--only)
 - done     vega-0.8b/replay/public 
 - done     vega-4b/replay/public 
@@ -222,6 +240,24 @@ COMPLETE. The tables are in TABLES.md.
 - done     vega-0.8b/feedback_kl0/agnews/s2 
 - done     vega-4b/feedback_kl0/agnews/s2 
 - done     laya/feedback_kl0/agnews/s2 
+- running  laya/feedback_enc/public/s0 
+- pending  laya/feedback_enc/public/s1 
+- pending  laya/feedback_enc/public/s2 
+- done     laya/feedback_enc/jevbench/s0 335s
+- running  laya/feedback_enc/jevbench/s1 
+- pending  laya/feedback_enc/jevbench/s2 
+- pending  laya/feedback_enc/decisionbench/s0 
+- pending  laya/feedback_enc/decisionbench/s1 
+- pending  laya/feedback_enc/decisionbench/s2 
+- pending  laya/feedback_enc/typed/s0 
+- pending  laya/feedback_enc/typed/s1 
+- pending  laya/feedback_enc/typed/s2 
+- pending  laya/feedback_enc/emotion/s0 
+- pending  laya/feedback_enc/emotion/s1 
+- pending  laya/feedback_enc/emotion/s2 
+- pending  laya/feedback_enc/agnews/s0 
+- pending  laya/feedback_enc/agnews/s1 
+- pending  laya/feedback_enc/agnews/s2 
 - pending  tables 
 
 </details>
