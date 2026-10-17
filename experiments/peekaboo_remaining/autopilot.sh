@@ -26,7 +26,7 @@ for attempt in 1 2 3; do
   pgrep -f "^python run.py$" > /dev/null || rm -f output/RUNNING                          # a killed run leaves a stale heartbeat
   log "run.py, attempt $attempt, ${left}s left"
   timeout $left python run.py
-  python run.py --check > /dev/null; code=$?
+  python run.py --check > /dev/null; code=$?                     # ONLY (if set) restricts both to some steps
   log "check exit $code"; [ $code -eq 0 ] && break
 done
 python table.py > /dev/null 2>&1

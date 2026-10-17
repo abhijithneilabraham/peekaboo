@@ -182,14 +182,19 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--check', action='store_true'); ap.add_argument('--plan', action='store_true')
     ap.add_argument('--jobs', type=int, default=None); ap.add_argument('--out', default=None)
+    ap.add_argument('--only', default=os.environ.get('ONLY', ''),
+                    help='comma-separated step-name prefixes (e.g. vega-4b/); other steps are left alone and treated as satisfied')
     a = ap.parse_args()
     out = os.path.abspath(a.out or os.environ.get('VEGA_OUT') or os.path.join(HERE, 'output'))
     os.makedirs(os.path.join(out, 'logs'), exist_ok=True)
     steps = plan(out)
     names = {st.name: st for st in steps}
+    only = [p for p in a.only.split(',') if p]
     for st in steps:
         if st.name != 'tables' and st.done():
             st.state = 'done'
+        elif only and st.name != 'tables' and not any(st.name.startswith(p) for p in only):
+            st.state, st.note = 'done', 'not selected (--only)'
     if a.plan:
         for st in steps:
             print(f'{st.state:8s} {st.name:45s} gpu~{st.gpu:2d}GB  {model_env(st)} python {" ".join(st.args)}')
