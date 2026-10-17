@@ -322,6 +322,12 @@ We thank the authors of VegaML and Laya for releasing their models, benchmark co
 
 \paragraph{Checks.} Replaying each frozen model on its cached inputs matches the official prediction call to $0$ (Vega) and $\le 5\times10^{-5}$ (Laya, one question per forward pass, as its own call runs, since padded batches move its probabilities by up to 0.02 under autocast). Base Vega 0.8B and 4B reproduce the README's public-menu accuracy ($0.556$ / $0.715$ vs.\ $0.556$ / $0.717$); base Laya and \texttt{laya-typed-decisions} reproduce the README's typed-decisions accuracy ($0.361$ / $0.762$ vs.\ $0.362$ / $0.766$).
 
+\section{Per-task results on the public menu}
+\label{app:tasks}
+Table~\ref{tab:tasks} lists every public task. \pk{}'s largest gains over base Vega 0.8B are on prompt\_injections ($0.75 \to 0.87$), superglue\_cb ($0.67 \to 0.77$) and tweet\_sentiment ($0.44 \to 0.54$); its losses are on tasks where the TTT head also loses (unfair\_tos $0.74 \to 0.53$, TTT $0.63$; arc\_easy $0.60 \to 0.57$, TTT $0.35$). On Laya, the head-only add-on barely moves any task; the encoder-unfrozen variant lifts the safety tasks (aegis\_prompt\_safety $0.37 \to 0.69$, prompt\_injections $0.65 \to 0.78$) and the rating and topic tasks (yelp\_stars $0.28 \to 0.50$, trec\_coarse $0.53 \to 0.71$) while costing some intent tasks (banking77 $0.40 \to 0.33$).
+\input{tables_tasks.tex}
+\FloatBarrier
+
 \section{Hyper-parameters}
 \begin{table}[H]\centering\small
 \begin{tabular}{lp{12.5cm}}

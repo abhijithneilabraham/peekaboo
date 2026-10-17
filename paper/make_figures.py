@@ -391,7 +391,28 @@ def tex_tables(N):
         if model != 'laya':
             L.append('\\addlinespace')
     L += ['\\bottomrule', '\\end{tabular}', '\\end{table}', '']
-    OUT['tables_wf.tex'] = L
+    OUT['tables_wf.tex'] = L; L = []
+    # the 43 public tasks, one row each
+    cols = [('0.8b', 'released', 'base'), ('0.8b', 'ttt', 'TTT'), ('0.8b', 'sup_ts', 'key'), ('0.8b', 'feedback', 'Pk'),
+            ('4b', 'released', 'base'), ('4b', 'ttt', 'TTT'), ('4b', 'sup_ts', 'key'), ('4b', 'feedback', 'Pk'),
+            ('laya', 'released', 'base'), ('laya', 'laya_td', 'fine-tune'), ('laya', 'feedback', 'Pk head'), ('laya', 'feedback_enc', 'Pk enc')]
+    cols = [c for c in cols if f'{c[0]}|{c[1]}' in N['tasks']]
+    tasks = sorted(N['tasks']['0.8b|released'])
+    L += ['% ---- per task', '\\begin{table}[tbp]\\centering\\scriptsize',
+          '\\caption{Accuracy on each of the 43 public tasks (up to 60 test rows each; mean over seeds). ``key\'\' is the answer-key adapter / head, ``Pk\'\' is Peekaboo, '
+          '``fine-tune\'\' is laya-typed-decisions, ``Pk enc\'\' is Peekaboo with the encoder unfrozen. Bold: the best method for that model on that task.}', '\\label{tab:tasks}',
+          '\\setlength{\\tabcolsep}{2.2pt}', '\\begin{tabular}{l' + 'r' * len(cols) + '}', '\\toprule',
+          'task & ' + ' & '.join(f'\\multicolumn{{{sum(1 for c in cols if c[0] == m)}}}{{c}}{{{mn}}}' for m, mn in MODELS if any(c[0] == m for c in cols)) + ' \\\\',
+          ' & ' + ' & '.join(c[2] for c in cols) + ' \\\\', '\\midrule']
+    for t in tasks:
+        row = []
+        for m, _ in MODELS:
+            vals = [N['tasks'][f'{c[0]}|{c[1]}'].get(t) for c in cols if c[0] == m]
+            best = max(v for v in vals if v is not None) if any(v is not None for v in vals) else None
+            row += [('' if v is None else (f'\\textbf{{{v:.2f}}}' if abs(v - best) < 5e-4 else f'{v:.2f}')) for v in vals]
+        L.append(t.replace('_', '\\_') + ' & ' + ' & '.join(row) + ' \\\\')
+    L += ['\\bottomrule', '\\end{tabular}', '\\end{table}', '']
+    OUT['tables_tasks.tex'] = L
     for name, lines in OUT.items():
         open(os.path.join(HERE, name), 'w').write('\n'.join(lines) + '\n')
 

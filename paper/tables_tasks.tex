@@ -1,0 +1,57 @@
+% ---- per task
+\begin{table}[tbp]\centering\scriptsize
+\caption{Accuracy on each of the 43 public tasks (up to 60 test rows each; mean over seeds). ``key'' is the answer-key adapter / head, ``Pk'' is Peekaboo, ``fine-tune'' is laya-typed-decisions, ``Pk enc'' is Peekaboo with the encoder unfrozen. Bold: the best method for that model on that task.}
+\label{tab:tasks}
+\setlength{\tabcolsep}{2.2pt}
+\begin{tabular}{lrrrrrrrrrrrr}
+\toprule
+task & \multicolumn{4}{c}{Vega 0.8B} & \multicolumn{4}{c}{Vega 4B} & \multicolumn{4}{c}{Laya} \\
+ & base & TTT & key & Pk & base & TTT & key & Pk & base & fine-tune & Pk head & Pk enc \\
+\midrule
+aegis\_prompt\_safety & 0.50 & 0.58 & \textbf{0.65} & 0.64 & 0.60 & 0.60 & \textbf{0.78} & 0.73 & 0.37 & 0.43 & 0.44 & \textbf{0.69} \\
+ag\_news & 0.97 & 0.92 & 0.97 & \textbf{0.98} & 0.95 & 0.95 & \textbf{0.96} & 0.94 & \textbf{0.98} & \textbf{0.98} & \textbf{0.98} & \textbf{0.98} \\
+anli\_r3 & 0.27 & \textbf{0.45} & 0.40 & 0.38 & 0.35 & \textbf{0.50} & 0.46 & 0.41 & 0.43 & 0.40 & 0.42 & \textbf{0.45} \\
+arc\_challenge & 0.47 & 0.35 & 0.46 & \textbf{0.48} & 0.78 & 0.77 & 0.76 & \textbf{0.81} & 0.28 & 0.37 & 0.28 & \textbf{0.38} \\
+arc\_easy & \textbf{0.60} & 0.35 & 0.52 & 0.57 & 0.92 & 0.85 & 0.93 & \textbf{0.94} & 0.52 & \textbf{0.58} & 0.52 & 0.57 \\
+banking77 & 0.68 & 0.68 & \textbf{0.71} & 0.63 & 0.73 & 0.73 & 0.72 & \textbf{0.75} & \textbf{0.42} & 0.40 & 0.41 & 0.33 \\
+boolq & 0.77 & 0.62 & 0.67 & \textbf{0.81} & 0.82 & 0.85 & 0.82 & \textbf{0.87} & 0.87 & 0.85 & \textbf{0.88} & \textbf{0.88} \\
+casehold & 0.35 & 0.35 & \textbf{0.51} & 0.45 & 0.55 & 0.42 & \textbf{0.68} & 0.65 & 0.37 & 0.38 & 0.37 & \textbf{0.41} \\
+climate\_fever & 0.38 & 0.40 & 0.46 & \textbf{0.49} & 0.45 & 0.37 & 0.46 & \textbf{0.50} & 0.33 & \textbf{0.35} & 0.33 & 0.29 \\
+clinc150\_oos & \textbf{0.67} & \textbf{0.67} & 0.56 & 0.62 & \textbf{0.90} & \textbf{0.90} & 0.72 & 0.80 & 0.00 & \textbf{0.32} & 0.00 & 0.00 \\
+commonsenseqa & 0.35 & 0.15 & \textbf{0.42} & 0.36 & 0.53 & 0.48 & 0.59 & \textbf{0.61} & \textbf{0.45} & 0.43 & \textbf{0.45} & 0.43 \\
+cruxeval\_output & 0.65 & 0.48 & \textbf{0.88} & 0.78 & 0.85 & 0.92 & 0.92 & \textbf{0.95} & \textbf{0.78} & 0.73 & 0.78 & 0.78 \\
+dbpedia14 & 0.60 & \textbf{0.85} & 0.77 & 0.71 & 0.90 & \textbf{0.97} & 0.91 & 0.92 & 0.88 & 0.83 & 0.88 & \textbf{0.89} \\
+emotion & \textbf{0.55} & 0.47 & 0.36 & 0.52 & \textbf{0.65} & 0.45 & 0.40 & 0.57 & \textbf{0.57} & \textbf{0.57} & \textbf{0.57} & 0.50 \\
+enron\_spam & \textbf{1.00} & 0.92 & 0.99 & 0.99 & \textbf{1.00} & 0.98 & \textbf{1.00} & \textbf{1.00} & 0.92 & 0.90 & 0.94 & \textbf{0.94} \\
+glue\_rte & \textbf{0.63} & 0.48 & 0.59 & 0.60 & \textbf{0.88} & 0.85 & 0.84 & 0.85 & \textbf{0.83} & 0.82 & \textbf{0.83} & 0.77 \\
+hellaswag & 0.25 & 0.25 & \textbf{0.26} & \textbf{0.26} & \textbf{0.65} & 0.52 & 0.49 & 0.56 & 0.37 & 0.37 & 0.35 & \textbf{0.42} \\
+jailbreak\_cls & \textbf{0.98} & \textbf{0.98} & 0.98 & \textbf{0.98} & \textbf{1.00} & 0.98 & 0.99 & 0.99 & \textbf{0.98} & \textbf{0.98} & \textbf{0.98} & \textbf{0.98} \\
+ledgar & 0.32 & 0.32 & \textbf{0.62} & 0.40 & \textbf{0.65} & \textbf{0.65} & 0.64 & 0.63 & \textbf{0.25} & 0.20 & \textbf{0.25} & 0.14 \\
+massive\_intent\_en & 0.38 & 0.38 & \textbf{0.49} & 0.42 & 0.60 & 0.60 & \textbf{0.63} & 0.59 & 0.38 & \textbf{0.43} & 0.38 & 0.40 \\
+medmcqa & 0.18 & \textbf{0.28} & 0.24 & 0.27 & 0.45 & 0.50 & \textbf{0.53} & 0.47 & \textbf{0.35} & \textbf{0.35} & \textbf{0.35} & \textbf{0.35} \\
+medqa\_usmle & \textbf{0.29} & \textbf{0.29} & 0.27 & 0.27 & 0.51 & 0.36 & 0.49 & \textbf{0.53} & 0.22 & 0.27 & 0.22 & \textbf{0.28} \\
+mmlu & \textbf{0.37} & 0.22 & 0.29 & 0.32 & \textbf{0.72} & 0.42 & 0.61 & 0.65 & 0.27 & \textbf{0.35} & 0.27 & 0.32 \\
+mmlu\_pro & 0.20 & 0.13 & 0.14 & \textbf{0.22} & 0.38 & 0.18 & \textbf{0.43} & 0.41 & 0.18 & 0.20 & 0.19 & \textbf{0.21} \\
+openbookqa & \textbf{0.58} & 0.22 & 0.52 & \textbf{0.58} & \textbf{0.83} & 0.63 & 0.73 & 0.77 & 0.42 & \textbf{0.50} & 0.42 & 0.49 \\
+prompt\_injections & 0.75 & \textbf{0.96} & 0.87 & 0.87 & 0.85 & \textbf{0.96} & 0.81 & 0.88 & 0.65 & 0.60 & 0.72 & \textbf{0.78} \\
+pubmedqa & 0.13 & \textbf{0.57} & 0.48 & 0.54 & 0.40 & \textbf{0.63} & 0.61 & 0.57 & 0.53 & 0.55 & 0.53 & \textbf{0.57} \\
+race\_middle & \textbf{0.60} & 0.37 & 0.52 & \textbf{0.60} & 0.80 & \textbf{0.88} & 0.82 & 0.82 & \textbf{0.58} & 0.52 & 0.58 & 0.55 \\
+sciq & \textbf{0.73} & \textbf{0.73} & 0.58 & 0.72 & 0.93 & 0.87 & 0.93 & \textbf{0.94} & 0.52 & 0.53 & 0.52 & \textbf{0.59} \\
+superglue\_cb & 0.67 & 0.67 & 0.53 & \textbf{0.77} & 0.82 & \textbf{0.89} & 0.78 & 0.80 & 0.87 & 0.87 & \textbf{0.88} & 0.81 \\
+toxic\_chat\_jailbreak & \textbf{0.98} & \textbf{0.98} & 0.96 & 0.93 & 0.93 & 0.45 & \textbf{0.95} & 0.92 & 0.83 & 0.90 & 0.81 & \textbf{0.92} \\
+toxic\_chat\_toxicity & \textbf{0.95} & 0.93 & 0.91 & 0.91 & \textbf{1.00} & 0.98 & 0.98 & 0.98 & 0.97 & 0.97 & \textbf{0.98} & 0.90 \\
+trec\_coarse & 0.53 & \textbf{0.72} & 0.71 & 0.43 & 0.77 & \textbf{0.88} & 0.82 & 0.75 & 0.53 & 0.53 & 0.52 & \textbf{0.71} \\
+truthfulqa\_mc1 & 0.36 & 0.36 & \textbf{0.81} & 0.75 & 0.62 & 0.62 & \textbf{0.75} & \textbf{0.75} & 0.16 & 0.24 & 0.16 & \textbf{0.43} \\
+tweet\_hate & \textbf{0.65} & 0.63 & 0.58 & 0.62 & \textbf{0.68} & 0.60 & 0.54 & 0.50 & \textbf{0.73} & 0.72 & 0.72 & 0.62 \\
+tweet\_irony & \textbf{0.78} & 0.62 & 0.71 & 0.74 & \textbf{0.78} & 0.67 & 0.68 & 0.72 & \textbf{0.78} & 0.74 & 0.75 & 0.68 \\
+tweet\_offensive & 0.78 & 0.80 & 0.80 & \textbf{0.81} & 0.78 & 0.81 & 0.80 & \textbf{0.84} & 0.69 & 0.71 & 0.67 & \textbf{0.79} \\
+tweet\_sentiment & 0.44 & 0.41 & 0.45 & \textbf{0.54} & \textbf{0.58} & \textbf{0.58} & 0.50 & 0.49 & 0.56 & 0.49 & \textbf{0.58} & 0.54 \\
+tweet\_stance\_abortion & 0.36 & 0.47 & \textbf{0.48} & 0.44 & \textbf{0.53} & 0.49 & 0.47 & 0.42 & 0.33 & 0.31 & 0.33 & \textbf{0.45} \\
+unfair\_tos & \textbf{0.74} & 0.63 & 0.56 & 0.53 & \textbf{0.88} & 0.74 & 0.78 & 0.76 & \textbf{0.88} & 0.84 & 0.83 & 0.70 \\
+vitaminc & \textbf{0.47} & 0.28 & 0.42 & 0.39 & \textbf{0.62} & 0.57 & 0.53 & 0.61 & 0.43 & 0.32 & 0.46 & \textbf{0.61} \\
+winogrande & 0.50 & 0.50 & 0.48 & \textbf{0.54} & 0.57 & 0.57 & \textbf{0.62} & 0.61 & 0.53 & 0.48 & 0.53 & \textbf{0.57} \\
+yelp\_stars & 0.52 & 0.52 & \textbf{0.54} & 0.50 & \textbf{0.57} & 0.48 & 0.47 & 0.52 & 0.28 & 0.37 & 0.28 & \textbf{0.50} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
