@@ -1,14 +1,12 @@
-# Status of the remaining Peekaboo experiments  (Sat Oct 17 08:03:59 2026)
+# Status of the remaining Peekaboo experiments  (Sat Oct 17 08:13:59 2026)
 
-done: 218 · pending: 13 · running: 2  (of 233 steps)
+done: 220 · pending: 11 · running: 2  (of 233 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **running** `laya/feedback_enc/public/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method feedback_enc --seed 2`)
-- **running** `laya/feedback_enc/jevbench/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite jevbench --method feedback_enc --seed 2`)
-- **pending** `laya/feedback_enc/decisionbench/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_enc --seed 0`)
-- **pending** `laya/feedback_enc/decisionbench/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_enc --seed 1`)
+- **running** `laya/feedback_enc/decisionbench/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_enc --seed 0`)
+- **running** `laya/feedback_enc/decisionbench/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_enc --seed 1`)
 - **pending** `laya/feedback_enc/decisionbench/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_enc --seed 2`)
 - **pending** `laya/feedback_enc/typed/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite typed --method feedback_enc --seed 0`)
 - **pending** `laya/feedback_enc/typed/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite typed --method feedback_enc --seed 1`)
@@ -239,12 +237,12 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     laya/feedback_kl0/agnews/s2 
 - done     laya/feedback_enc/public/s0 570s
 - done     laya/feedback_enc/public/s1 495s
-- running  laya/feedback_enc/public/s2 
+- done     laya/feedback_enc/public/s2 480s
 - done     laya/feedback_enc/jevbench/s0 335s
 - done     laya/feedback_enc/jevbench/s1 285s
-- running  laya/feedback_enc/jevbench/s2 
-- pending  laya/feedback_enc/decisionbench/s0 
-- pending  laya/feedback_enc/decisionbench/s1 
+- done     laya/feedback_enc/jevbench/s2 245s
+- running  laya/feedback_enc/decisionbench/s0 
+- running  laya/feedback_enc/decisionbench/s1 
 - pending  laya/feedback_enc/decisionbench/s2 
 - pending  laya/feedback_enc/typed/s0 
 - pending  laya/feedback_enc/typed/s1 
