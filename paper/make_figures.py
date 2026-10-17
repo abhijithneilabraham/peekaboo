@@ -152,9 +152,9 @@ def G(N, model, method, s, key='records'):
 def fig_gains(N):
     fig, axes = plt.subplots(1, 3, figsize=(11, 3.1), sharey=False)
     for ax, (model, mname) in zip(axes, MODELS):
-        bars = ([('laya_td', "Laya's fine-tune (answer key)", C['theirs']), ('sup_ts', 'answer-key head', C['sup']),
-                 ('feedback', 'Peekaboo (right/wrong)', C['pk']), ('feedback_enc', 'Peekaboo, encoder unfrozen', C['enc'])] if model == 'laya' else
-                [('ttt', "VegaML's TTT (answer key)", C['theirs']), ('sup_ts', 'answer-key adapter', C['sup']), ('feedback', 'Peekaboo (right/wrong)', C['pk'])])
+        bars = ([('laya_td', "their own method, answer key (VegaML's TTT head / Laya's fine-tune)", C['theirs']), ('sup_ts', 'our add-on trained on the answer key', C['sup']),
+                 ('feedback', 'Peekaboo, right / wrong only', C['pk']), ('feedback_enc', 'Peekaboo, encoder unfrozen, right / wrong only', C['enc'])] if model == 'laya' else
+                [('ttt', 'their own method', C['theirs']), ('sup_ts', 'answer-key add-on', C['sup']), ('feedback', 'Peekaboo', C['pk'])])
         w = 0.8 / len(bars); x = np.arange(len(SUITES))
         for i, (method, label, col) in enumerate(bars):
             g = [G(N, model, method, s) for s in SUITES]
@@ -162,11 +162,13 @@ def fig_gains(N):
             err = [[v['gain']['gain'] - v['gain']['lo'] if v and v['gain'] else 0 for v in g], [v['gain']['hi'] - v['gain']['gain'] if v and v['gain'] else 0 for v in g]]
             ax.bar(x + (i - (len(bars) - 1) / 2) * w, y, w, yerr=err, color=col, label=label, error_kw={'lw': 0.7, 'capsize': 1.5})
         ax.axhline(0, color='k', lw=0.6); ax.set_xticks(x); ax.set_xticklabels([SSHORT[s] for s in SUITES], rotation=25, ha='right')
-        ax.set_title(mname); ax.legend(loc='upper left', frameon=False)
+        ax.set_title(mname)
         if model == 'laya':
             ax.set_ylim(top=min(ax.get_ylim()[1], 45))
-    axes[0].set_ylabel('accuracy gain over the base model (points)')
-    fig.tight_layout(); fig.savefig(os.path.join(FIG, 'gains.pdf')); plt.close(fig)
+    axes[0].set_ylabel('gain over base (points)')
+    h, l = axes[2].get_legend_handles_labels()
+    fig.legend(h, l, frameon=False, ncol=2, loc='lower center', bbox_to_anchor=(0.5, -0.02))
+    fig.tight_layout(rect=(0, 0.14, 1, 1)); fig.savefig(os.path.join(FIG, 'gains.pdf'), bbox_inches='tight'); plt.close(fig)
 
 
 def fig_reliability(N):
@@ -184,8 +186,9 @@ def fig_reliability(N):
                 ax.set_xlabel('stated confidence')
             if ax is axes[row][0]:
                 ax.set_ylabel('fraction correct')
-    axes[0][0].legend(frameon=False, loc='upper left')
-    fig.tight_layout(); fig.savefig(os.path.join(FIG, 'reliability.pdf')); plt.close(fig)
+    h, l = axes[0][0].get_legend_handles_labels()
+    fig.legend(h, l, frameon=False, ncol=3, loc='lower center', bbox_to_anchor=(0.5, -0.01))
+    fig.tight_layout(rect=(0, 0.05, 1, 1)); fig.savefig(os.path.join(FIG, 'reliability.pdf'), bbox_inches='tight'); plt.close(fig)
 
 
 def fig_ablation(N):
@@ -254,9 +257,9 @@ def fig_laya(N):
         y = [np.mean(G(N, 'laya', method, s)['acc']) if G(N, 'laya', method, s) else np.nan for s in SUITES]
         e = [np.std(G(N, 'laya', method, s)['acc']) if G(N, 'laya', method, s) and len(G(N, 'laya', method, s)['acc']) > 1 else 0 for s in SUITES]
         ax.bar(x + (i - (len(bars) - 1) / 2) * w, y, w, yerr=e, color=col, label=label, error_kw={'lw': 0.7, 'capsize': 1.5})
-    ax.set_xticks(x); ax.set_xticklabels([SNAME[s] for s in SUITES]); ax.set_ylabel('accuracy'); ax.set_ylim(0.3, 1.0)
-    ax.legend(frameon=False, ncol=2, loc='upper left', fontsize=7)
-    fig.tight_layout(); fig.savefig(os.path.join(FIG, 'laya.pdf')); plt.close(fig)
+    ax.set_xticks(x); ax.set_xticklabels([SNAME[s] for s in SUITES], rotation=15, ha='right'); ax.set_ylabel('accuracy'); ax.set_ylim(0.3, 1.0)
+    ax.legend(frameon=False, ncol=2, loc='upper center', bbox_to_anchor=(0.5, -0.22), fontsize=8)
+    fig.tight_layout(); fig.savefig(os.path.join(FIG, 'laya.pdf'), bbox_inches='tight'); plt.close(fig)
 
 
 def fig_benchmarks():
@@ -269,15 +272,16 @@ def fig_benchmarks():
         y = np.array([counts[s].get(t, 0) for s in SUITES])
         axes[0].bar(range(len(SUITES)), y, bottom=bottom, color=col, label=tn[t]); bottom += y
     axes[0].set_xticks(range(len(SUITES))); axes[0].set_xticklabels([SSHORT[s] for s in SUITES], rotation=25, ha='right')
-    axes[0].set_ylabel('test rows'); axes[0].set_title('test rows by question type'); axes[0].legend(frameon=False)
+    axes[0].set_ylabel('test rows'); axes[0].set_title('test rows by question type')
+    axes[0].legend(frameon=False, ncol=3, loc='upper center', bbox_to_anchor=(0.5, -0.32))
     for s, col in zip(SUITES, plt.cm.tab10(np.linspace(0, 1, 10))):
         k = [len(it['labels']) for it in T.VT.items(s)]
         vals, cnt = np.unique(np.minimum(k, 9), return_counts=True)
         axes[1].plot(vals, cnt / cnt.sum(), 'o-', ms=3, color=col, label=SNAME[s])
     axes[1].set_xticks(range(2, 10)); axes[1].set_xticklabels([str(i) for i in range(2, 9)] + ['9+'])
     axes[1].set_xlabel('options per question'); axes[1].set_ylabel('fraction of test rows'); axes[1].set_title('how many options a question has')
-    axes[1].legend(frameon=False, fontsize=7, loc='center right')
-    fig.tight_layout(); fig.savefig(os.path.join(FIG, 'benchmarks.pdf')); plt.close(fig)
+    axes[1].legend(frameon=False, fontsize=7, ncol=3, loc='upper center', bbox_to_anchor=(0.5, -0.25))
+    fig.tight_layout(); fig.savefig(os.path.join(FIG, 'benchmarks.pdf'), bbox_inches='tight'); plt.close(fig)
 
 
 def fig_switch_T(N):
@@ -289,11 +293,12 @@ def fig_switch_T(N):
         on = [N['switch'].get(f'{model}|feedback|{s}', {}).get('on', np.nan) for s in SUITES]
         axes[1].bar(x + (i - 1) * w, on, w, label=mname, color=[C['pk'], C['enc'], C['pooled']][i])
     axes[0].axhline(1, color='k', lw=0.6, ls='--'); axes[0].set_ylabel('fitted temperature T'); axes[0].set_title('honesty fix: temperature fitted from right/wrong')
-    axes[1].set_ylabel('runs where the switch kept the add-on'); axes[1].set_title('feedback-checked switch'); axes[1].set_ylim(0, 1.05)
+    axes[1].set_ylabel('share of runs keeping the add-on'); axes[1].set_title('feedback-checked switch'); axes[1].set_ylim(0, 1.05)
     for ax in axes:
         ax.set_xticks(x); ax.set_xticklabels([SSHORT[s] for s in SUITES], rotation=25, ha='right')
-    axes[0].legend(frameon=False, loc='upper right')
-    fig.tight_layout(); fig.savefig(os.path.join(FIG, 'switch_T.pdf')); plt.close(fig)
+    h, l = axes[0].get_legend_handles_labels()
+    fig.legend(h, l, frameon=False, ncol=3, loc='lower center', bbox_to_anchor=(0.5, -0.02))
+    fig.tight_layout(rect=(0, 0.08, 1, 1)); fig.savefig(os.path.join(FIG, 'switch_T.pdf'), bbox_inches='tight'); plt.close(fig)
 
 
 # ───────────────────────────── LaTeX ─────────────────────────────
@@ -324,7 +329,7 @@ def tex_tables(N):
         L += [f'% ---- {what}', '\\begin{table}[tbp]\\centering\\scriptsize', f'\\caption{{{caption}. Mean over 3 seeds ($\\pm$ s.d.) where a method is stochastic. '
               + ('Each gain is paired on the same rows against the model\'s own base; the CIs are in Table~\\ref{tab:h2h} and Figure~\\ref{fig:gains}. ' if what == 'gain' else '')
               + 'JevBench has no training split: Peekaboo learns by 5-fold cross-fitting (paraphrase groups kept together), pooled Peekaboo never sees it, and VegaML\'s TTT and the answer-key methods are not defined for it.}',
-              f'\\label{{{label}}}', '\\setlength{\\tabcolsep}{2.5pt}', '\\begin{tabular}{llr' + 'r' * len(SUITES) + '}', '\\toprule',
+              f'\\label{{{label}}}', '\\setlength{\\tabcolsep}{2.5pt}', '\\resizebox{\\linewidth}{!}{\\begin{tabular}{llr' + 'r' * len(SUITES) + '}', '\\toprule',
               'model & method & learns from & ' + ' & '.join(SSHORT[s] for s in SUITES) + ' \\\\', '\\midrule']
         for model, mname in MODELS:
             for i, (method, key, name, src) in enumerate(main_rows[model]):
@@ -340,12 +345,12 @@ def tex_tables(N):
                 L.append(f'{mname if i == 0 else ""} & {name} & {src} & ' + ' & '.join(cells) + ' \\\\')
             if model != 'laya':
                 L.append('\\addlinespace')
-        L += ['\\bottomrule', '\\end{tabular}', '\\end{table}', '']
+        L += ['\\bottomrule', '\\end{tabular}}', '\\end{table}', '']
     OUT['tables_main.tex'] = L; L = []
     # ablations: accuracy and ECE for every variant
     L += ['% ---- ablations', '\\begin{table}[tbp]\\centering\\scriptsize', '\\caption{Every variant and ablation: accuracy (top) and expected calibration error (bottom), mean over 3 seeds. '
           '``switch\'\': the add-on is used only where held-out right / wrong feedback says it beats the base model. ``no honesty fix\'\': the trained add-on without the feedback-fitted temperature. ``KL 0\'\': no leash.}',
-          '\\label{tab:ablation}', '\\setlength{\\tabcolsep}{3pt}', '\\begin{tabular}{ll' + 'r' * len(SUITES) + '}', '\\toprule',
+          '\\label{tab:ablation}', '\\setlength{\\tabcolsep}{3pt}', '\\resizebox{\\linewidth}{!}{\\begin{tabular}{ll' + 'r' * len(SUITES) + '}', '\\toprule',
           'model & variant & ' + ' & '.join(SSHORT[s] for s in SUITES) + ' \\\\']
     for what in ('acc', 'ece'):
         L += ['\\midrule', f'\\multicolumn{{{2 + len(SUITES)}}}{{l}}{{\\textit{{{"accuracy" if what == "acc" else "calibration error (ECE)"}}}}} \\\\', '\\midrule']
@@ -358,7 +363,7 @@ def tex_tables(N):
                 if not any(c not in ('', '$\\cdot$') for c in cells):
                     continue
                 L.append(f'{mname if first else ""} & {NAMES[(method, key)]} & ' + ' & '.join(cells) + ' \\\\'); first = False
-    L += ['\\bottomrule', '\\end{tabular}', '\\end{table}', '']
+    L += ['\\bottomrule', '\\end{tabular}}', '\\end{table}', '']
     OUT['tables_ablation.tex'] = L; L = []
     # head to head
     L += ['% ---- head to head', '\\begin{table}[tbp]\\centering\\small', '\\caption{Peekaboo head to head, in accuracy points with a paired 95\\% bootstrap CI. Positive means Peekaboo is better. '

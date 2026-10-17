@@ -3,7 +3,7 @@
 \caption{Every variant and ablation: accuracy (top) and expected calibration error (bottom), mean over 3 seeds. ``switch'': the add-on is used only where held-out right / wrong feedback says it beats the base model. ``no honesty fix'': the trained add-on without the feedback-fitted temperature. ``KL 0'': no leash.}
 \label{tab:ablation}
 \setlength{\tabcolsep}{3pt}
-\begin{tabular}{llrrrrrr}
+\resizebox{\linewidth}{!}{\begin{tabular}{llrrrrrr}
 \toprule
 model & variant & public & JevBench & DecisionB. & typed-dec. & emotion & AG News \\
 \midrule
@@ -67,6 +67,6 @@ Laya & base model & 0.212 & 0.113 & 0.174 & 0.183 & 0.306 & 0.012 \\
  & pooled Peekaboo + switch & 0.212 {\scriptsize$\pm$0.000} & 0.096 {\scriptsize$\pm$0.019} & 0.174 {\scriptsize$\pm$0.000} & 0.052 {\scriptsize$\pm$0.016} & 0.306 {\scriptsize$\pm$0.000} & 0.012 {\scriptsize$\pm$0.000} \\
  & pooled Peekaboo without the honesty fix & 0.328 {\scriptsize$\pm$0.033} & 0.271 {\scriptsize$\pm$0.029} & 0.349 {\scriptsize$\pm$0.054} & 0.328 {\scriptsize$\pm$0.036} & 0.364 {\scriptsize$\pm$0.019} & 0.056 {\scriptsize$\pm$0.009} \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 

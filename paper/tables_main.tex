@@ -3,7 +3,7 @@
 \caption{Accuracy. Mean over 3 seeds ($\pm$ s.d.) where a method is stochastic. JevBench has no training split: Peekaboo learns by 5-fold cross-fitting (paraphrase groups kept together), pooled Peekaboo never sees it, and VegaML's TTT and the answer-key methods are not defined for it.}
 \label{tab:acc}
 \setlength{\tabcolsep}{2.5pt}
-\begin{tabular}{llrrrrrrr}
+\resizebox{\linewidth}{!}{\begin{tabular}{llrrrrrrr}
 \toprule
 model & method & learns from & public & JevBench & DecisionB. & typed-dec. & emotion & AG News \\
 \midrule
@@ -26,7 +26,7 @@ Laya & base model & none & 0.542 & 0.589 & 0.401 & 0.361 & 0.597 & 0.930 \\
  & \textbf{Peekaboo}, encoder unfrozen & right / wrong & 0.572 {\scriptsize$\pm$0.007} & 0.558 {\scriptsize$\pm$0.011} & 0.559 {\scriptsize$\pm$0.005} & 0.684 {\scriptsize$\pm$0.021} & 0.817 {\scriptsize$\pm$0.003} & 0.923 {\scriptsize$\pm$0.004} \\
  & pooled Peekaboo, head only & right / wrong & 0.538 {\scriptsize$\pm$0.002} & 0.569 {\scriptsize$\pm$0.007} & 0.398 {\scriptsize$\pm$0.006} & 0.475 {\scriptsize$\pm$0.004} & 0.594 {\scriptsize$\pm$0.002} & 0.930 {\scriptsize$\pm$0.000} \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 % ---- gain
@@ -34,7 +34,7 @@ Laya & base model & none & 0.542 & 0.589 & 0.401 & 0.361 & 0.597 & 0.930 \\
 \caption{Gain over the base model, in accuracy points. Mean over 3 seeds ($\pm$ s.d.) where a method is stochastic. Each gain is paired on the same rows against the model's own base; the CIs are in Table~\ref{tab:h2h} and Figure~\ref{fig:gains}. JevBench has no training split: Peekaboo learns by 5-fold cross-fitting (paraphrase groups kept together), pooled Peekaboo never sees it, and VegaML's TTT and the answer-key methods are not defined for it.}
 \label{tab:gain}
 \setlength{\tabcolsep}{2.5pt}
-\begin{tabular}{llrrrrrrr}
+\resizebox{\linewidth}{!}{\begin{tabular}{llrrrrrrr}
 \toprule
 model & method & learns from & public & JevBench & DecisionB. & typed-dec. & emotion & AG News \\
 \midrule
@@ -57,7 +57,7 @@ Laya & base model & none & -- & -- & -- & -- & -- & -- \\
  & \textbf{Peekaboo}, encoder unfrozen & right / wrong & +3.0 & -3.0 & +15.8 & +32.3 & +22.0 & -0.7 \\
  & pooled Peekaboo, head only & right / wrong & -0.4 & -2.0 & -0.2 & +11.4 & -0.2 & +0.0 \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 % ---- ece
@@ -65,7 +65,7 @@ Laya & base model & none & -- & -- & -- & -- & -- & -- \\
 \caption{Expected calibration error (lower is better). Mean over 3 seeds ($\pm$ s.d.) where a method is stochastic. JevBench has no training split: Peekaboo learns by 5-fold cross-fitting (paraphrase groups kept together), pooled Peekaboo never sees it, and VegaML's TTT and the answer-key methods are not defined for it.}
 \label{tab:ece}
 \setlength{\tabcolsep}{2.5pt}
-\begin{tabular}{llrrrrrrr}
+\resizebox{\linewidth}{!}{\begin{tabular}{llrrrrrrr}
 \toprule
 model & method & learns from & public & JevBench & DecisionB. & typed-dec. & emotion & AG News \\
 \midrule
@@ -88,6 +88,6 @@ Laya & base model & none & 0.212 & 0.113 & 0.174 & 0.183 & 0.306 & 0.012 \\
  & \textbf{Peekaboo}, encoder unfrozen & right / wrong & 0.152 {\scriptsize$\pm$0.006} & 0.087 {\scriptsize$\pm$0.012} & 0.062 {\scriptsize$\pm$0.009} & 0.062 {\scriptsize$\pm$0.019} & 0.035 {\scriptsize$\pm$0.007} & 0.030 {\scriptsize$\pm$0.007} \\
  & pooled Peekaboo, head only & right / wrong & 0.164 {\scriptsize$\pm$0.007} & 0.096 {\scriptsize$\pm$0.019} & 0.067 {\scriptsize$\pm$0.015} & 0.052 {\scriptsize$\pm$0.016} & 0.087 {\scriptsize$\pm$0.006} & 0.016 {\scriptsize$\pm$0.003} \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
