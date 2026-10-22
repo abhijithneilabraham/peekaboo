@@ -139,7 +139,7 @@ def plan_v2(out):
     # (on an A40 one encoder run takes ~20 min, so: three seeds on the public menu and DecisionBench, one seed on
     #  typed-decisions and emotion; none on JevBench (5 folds) or AG News, where the released model is already at 0.93)
     for s in ('public', 'decisionbench', 'typed', 'emotion'):
-        for sd in (SEEDS if s in ('public', 'decisionbench') else [0]):
+        for sd in (SEEDS if s == 'public' else [0, 1] if s == 'decisionbench' else [0]):
             for m in ('feedback_enc', 'sup_enc', 'feedback_enc_1pass'):
                 lm(s, m, sd, 15)
     # 3. the main comparison: TTT (both rules), the answer-key add-on (+ early stopping), Peekaboo, both 8-pass and 1-pass
@@ -150,9 +150,12 @@ def plan_v2(out):
             for m in ('sup_ts', 'feedback', 'feedback_1pass', 'sup_1pass'):
                 for sd in SEEDS:
                     vm(size, s, m, sd, gr)
+        # Laya head only (the frozen encoder is re-run every pass, ~8 min a run on an A40): three seeds on typed-decisions,
+        # one seed elsewhere for the one-pass arms, and the eight-pass arms only on typed-decisions and emotion
         for m in ('sup_ts', 'feedback', 'feedback_1pass', 'sup_1pass'):
-            for sd in SEEDS:
-                lm(s, m, sd, 3)
+            seeds = SEEDS if s == 'typed' else ([0] if (m.endswith('1pass') or s == 'emotion') else [])
+            for sd in seeds:
+                lm(s, m, sd, 4)
     # 4. typed-decisions on Vega with the shipped typed_decisions adapter (fitted on this pool) switched off
     for size, res, _, gr in VEGA:
         V(size, 'noship_released/typed', ['adapt.py', '--suite', 'typed', '--method', 'noship_released'], ex(res, 'methods', 'typed', 'noship_released_s0.json'), gr, [f'vega-{size}/cache/typed'])
@@ -165,8 +168,8 @@ def plan_v2(out):
             for sd in SEEDS:
                 for size, res, _, gr in VEGA:
                     vm(size, s, m, sd, gr)
-                if sd == 0:                                      # Laya head: one seed (time)
-                    lm(s, m, sd, 3)
+                if sd == 0 and s == 'typed' and m.startswith('logged'):   # Laya head: logged feedback on typed-decisions only
+                    lm(s, m, sd, 4)
     # 6. ablation: no KL term; pooled Peekaboo (Laya's KL ablation and pooled head are in the v1 grid)
     for s in SUITES:
         for sd in SEEDS:
