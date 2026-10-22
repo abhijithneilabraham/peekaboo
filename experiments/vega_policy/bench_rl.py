@@ -43,12 +43,15 @@ def split(items, how, seed=0, n_train=15, n_test=10):
 class Policy:
     """The released engine plus one trainable adapter. probs() mirrors Vega._view (route + thermal temperature)."""
 
-    def __init__(self, v, lr, rank=8):
+    def __init__(self, v, lr, rank=8, shipped=True):
         self.v, self.eng = v, v.engine
         self.n_ship = len(v.adapters)
         self.j = attach_adapter(self.eng, rank=rank, alpha=float(rank))
         with torch.no_grad():
             self.eng.gate_nets[self.j][-1].bias.fill_(3.0)      # start open; the gate can still learn to close
+            if not shipped:                                      # v2 "_noship": the shipped adapters' gates held shut, so
+                for i in range(self.n_ship):                     # the released reference is the base engine (as adapters="off")
+                    self.eng.gate_nets[i][-1].bias.fill_(-1e4)
         self.eng.eval()
         for p in self.eng.parameters():
             p.requires_grad_(False)

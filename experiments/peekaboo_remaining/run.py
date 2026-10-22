@@ -97,6 +97,92 @@ def plan(out):
     return steps
 
 
+REAL_SUITES = ('decisionbench', 'typed', 'emotion')              # realistic-feedback arms run on three benchmarks
+REALISTIC = ('feedback_noise20', 'feedback_half', 'feedback_complaints', 'logged_argmax', 'logged_ips')
+
+
+def plan_v2(out):
+    """The v2 grid (after the review of the first paper). Same rows, models and metrics as v1; what changed:
+      * every feedback method now has a one-pass arm (each row rated once, as a deployment would) next to the
+        8-pass arm, and the answer-key arms (sup_ts / sup_enc) also report an early-stopped version (records_es)
+      * Laya gets the matched answer-key fine-tune with the encoder unfrozen (sup_enc) and the KL term on sup_ts
+      * the answer-key arms are cross-fitted on JevBench too, like Peekaboo
+      * typed-decisions on Vega is also run with the shipped typed_decisions adapter off (_noship)
+      * realistic feedback (noisy, missing, complaints only, logged argmax, logged sampled) on three benchmarks
+      * TTT is scored under both vegaml rules (records / records_guard); the switch compares best answers
+      * emotion and AG News pools keep the natural class mix (suite_cache.py)"""
+    steps = []
+    ex = lambda *p: (lambda: os.path.exists(os.path.join(out, *p)))
+    sfx = {'0.8b': '', '4b': '_4b', 'laya': '_laya', 'laya_td': '_laya_td'}
+    cached = lambda model, res, s: (lambda: os.path.exists(os.path.join(out, res, f'cache_{s}.done'))
+                                    and os.path.exists(os.path.join(out, f'bank_{s}{sfx[model]}.pt')))
+    V = lambda size, n, a, d, g, needs: steps.append(Step(f'vega-{size}/{n}', VP, a, d, size, g, needs))
+    Lm = lambda model, n, a, d, g, needs: steps.append(Step(f'{model}/{n}', HERE, ['laya_peekaboo.py'] + a, d, model, g, needs))
+    rows_from = lambda s: 'laya/cache/decisionbench' if s == 'decisionbench' else f'vega-0.8b/cache/{s}'
+    vm = lambda size, s, m, sd, g, extra=(): V(size, f'{m}/{s}/s{sd}', ['adapt.py', '--suite', s, '--method', m, '--seed', str(sd)],
+                                                ex(VEGA_RES[size], 'methods', s, f'{m}_s{sd}.json'), g, [f'vega-{size}/cache/{s}'] + list(extra))
+    lm = lambda s, m, sd, g: Lm('laya', f'{m}/{s}/s{sd}', ['train', '--suite', s, '--method', m, '--seed', str(sd)],
+                                ex('results_laya', 'methods', s, f'{m}_s{sd}.json'), g, ['laya/cache/' + s])
+    # 1. read every suite once through every model; replay checks
+    for s in SUITES:
+        for size, res, gc, _ in VEGA:
+            needs = [] if (size == '0.8b' and s != 'decisionbench') else [rows_from(s)]
+            V(size, f'cache/{s}', ['suite_cache.py', '--suite', s], cached(size, res, s), gc, needs)
+        for model in ('laya', 'laya_td'):
+            needs = [] if (model == 'laya' and s == 'decisionbench') else [rows_from(s)]
+            Lm(model, f'cache/{s}', ['cache', '--suite', s], cached(model, f'results_{model}', s), 4, needs)
+    for s in SUITES:
+        for size, res, _, gr in VEGA:
+            V(size, f'replay/{s}', ['adapt.py', '--suite', s, '--method', 'replay'], ex(res, 'methods', s, 'replay_s0.json'), gr, [f'vega-{size}/cache/{s}'])
+        Lm('laya', f'replay/{s}', ['train', '--suite', s, '--method', 'replay'], ex('results_laya', 'methods', s, 'replay_s0.json'), 4, [f'laya/cache/{s}'])
+    # 2. Laya with the encoder unfrozen: the long pole, so it starts as soon as its cache exists
+    for s in SUITES:
+        for sd in SEEDS:
+            for m in ('feedback_enc', 'sup_enc', 'feedback_enc_1pass'):
+                lm(s, m, sd, 14)
+    # 3. the main comparison: TTT (both rules), the answer-key add-on (+ early stopping), Peekaboo, both 8-pass and 1-pass
+    for s in SUITES:
+        for size, res, _, gr in VEGA:
+            if s != 'jevbench':
+                V(size, f'ttt/{s}', ['adapt.py', '--suite', s, '--method', 'ttt'], ex(res, 'methods', s, 'ttt_s0.json'), 0, [f'vega-{size}/cache/{s}'])
+            for m in ('sup_ts', 'feedback', 'feedback_1pass', 'sup_1pass'):
+                for sd in SEEDS:
+                    vm(size, s, m, sd, gr)
+        for m in ('sup_ts', 'feedback', 'feedback_1pass', 'sup_1pass'):
+            for sd in SEEDS:
+                lm(s, m, sd, 8)
+    # 4. typed-decisions on Vega with the shipped typed_decisions adapter (fitted on this pool) switched off
+    for size, res, _, gr in VEGA:
+        V(size, 'noship_released/typed', ['adapt.py', '--suite', 'typed', '--method', 'noship_released'], ex(res, 'methods', 'typed', 'noship_released_s0.json'), gr, [f'vega-{size}/cache/typed'])
+        for m in ('feedback_noship', 'sup_ts_noship', 'feedback_1pass_noship'):
+            for sd in SEEDS:
+                vm(size, 'typed', m, sd, gr)
+    # 5. realistic feedback: noisy, missing, complaints only, and logged (argmax / sampled) answers learned off-policy
+    for s in REAL_SUITES:
+        for m in REALISTIC:
+            for sd in SEEDS:
+                for size, res, _, gr in VEGA:
+                    vm(size, s, m, sd, gr)
+                lm(s, m, sd, 8)
+    # 6. ablation: no KL term; pooled Peekaboo
+    for s in SUITES:
+        for sd in SEEDS:
+            for size, res, _, gr in VEGA:
+                vm(size, s, 'feedback_kl0', sd, gr)
+            lm(s, 'feedback_kl0', sd, 8)
+    for sd in SEEDS:
+        for size, res, _, gr in VEGA:
+            V(size, f'pooled/s{sd}', ['adapt.py', '--suite', 'all', '--method', 'pooled', '--seed', str(sd)],
+              ex(res, 'methods', f'pooled_s{sd}.done'), 2 * gr, [f'vega-{size}/cache/{x}' for x in SUITES])
+        Lm('laya', f'pooled/s{sd}', ['train', '--suite', 'all', '--method', 'pooled', '--seed', str(sd)],
+           ex('results_laya', 'methods', f'pooled_s{sd}.done'), 10, [f'laya/cache/{x}' for x in SUITES])
+    steps.append(Step('tables', HERE, ['table.py'], lambda: False, None, 0))
+    return steps
+
+
+VEGA_RES = {'0.8b': 'results', '4b': 'results_4b'}
+
+
 # ───────────────────────────── bookkeeping ─────────────────────────────
 def log_path(out, st):
     return os.path.join(out, 'logs', st.name.replace('/', '__') + '.log')
@@ -189,10 +275,17 @@ def main():
     ap.add_argument('--jobs', type=int, default=None); ap.add_argument('--out', default=None)
     ap.add_argument('--only', default=os.environ.get('ONLY', ''),
                     help='comma-separated step-name prefixes (e.g. vega-4b/); other steps are left alone and treated as satisfied')
+    ap.add_argument('--grid', default='v2', choices=['v1', 'v2'], help='v1: the first paper\'s grid (output/); v2: the grid after the review (output_v2/)')
     a = ap.parse_args()
-    out = os.path.abspath(a.out or os.environ.get('VEGA_OUT') or os.path.join(HERE, 'output'))
+    out = os.path.abspath(a.out or os.environ.get('VEGA_OUT') or os.path.join(HERE, 'output' if a.grid == 'v1' else 'output_v2'))
     os.makedirs(os.path.join(out, 'logs'), exist_ok=True)
-    steps = plan(out)
+    if a.grid == 'v2':                               # the same rows as v1 for the four README benchmarks (emotion and AG News
+        import shutil                                # pools are redrawn with the natural class mix, so they are rebuilt)
+        for f in ('items_public.json', 'items_jevbench.json', 'items_decisionbench.json', 'items_typed.json', 'decisionbench_items.json', 'decisionbench_items_100.json'):
+            src, dst = os.path.join(HERE, 'output', f), os.path.join(out, f)
+            if os.path.exists(src) and not os.path.exists(dst):
+                shutil.copy(src, dst)
+    steps = plan(out) if a.grid == 'v1' else plan_v2(out)
     names = {st.name: st for st in steps}
     only = [p for p in a.only.split(',') if p]
     for st in steps:

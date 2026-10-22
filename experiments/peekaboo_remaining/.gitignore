@@ -1,6 +1,7 @@
-output/*.pt
-output/*.tmp
-output/items_*.json
-output/decisionbench_items*.json
-output/RUNNING
-__pycache__/
+# feature caches (GBs) and dataset text are never committed; results, logs and tables are
+output*/*.pt
+output*/*.pt.tmp
+output*/items_*.json
+output*/decisionbench_items*.json
+output*/RUNNING
+output*/**/*.tmp

@@ -180,13 +180,21 @@ class Laya:
         return out
 
 
-def peekaboo(L, bank, train, cal, test, method, rng, epochs=8, lr=1e-4, batch=32):
+ENC_METHODS = ('feedback_enc', 'feedback_enc_1pass', 'sup_enc')
+EPOCHS = dict(A.EPOCHS, feedback_enc_1pass=1)
+
+
+def peekaboo(L, bank, train, cal, test, method, rng, lr=1e-4, batch=32):
     """Peekaboo on Laya: the same loop as Vega's (adapt.train_adapter), on a trainable copy of the decision head.
-    method 'sup_ts' trains the same copy with cross-entropy on the answer key + temperature scaling (the answer-key
-    baseline); 'feedback_kl0' / 'feedback_kl1' are the leash ablations; 'feedback_enc' also trains a copy of the
-    encoder. Returns calibrated and raw test probabilities."""
-    spec, kl = A.FEEDBACK.get(method, A.CLEAN), A.KL.get(method, 0.1)
-    enc = method == 'feedback_enc'
+    Methods: feedback (Peekaboo), feedback_1pass (one pass: each row rated once), feedback_kl0 (no KL term),
+    sup_ts / sup_1pass (the same copy trained with cross-entropy on the answer key + the same KL term + temperature
+    scaling; v2 also early-stops on the calibration rows' labels -> records_es), feedback_enc / feedback_enc_1pass
+    (a copy of the encoder trained too), sup_enc (the matched answer-key fine-tune with the encoder unfrozen),
+    logged_argmax / logged_ips and the noisy / missing feedback variants (adapt.FEEDBACK).
+    Returns (calibrated test probabilities, info, raw test probabilities, early-stopped test probabilities or None)."""
+    spec, kl, epochs = A.FEEDBACK.get(method, A.CLEAN), A.KL.get(method, 0.1), EPOCHS.get(method, 8)
+    kind = A.KIND(method)
+    enc = method in ENC_METHODS
     ref = L.released()
     mods = {k: copy.deepcopy(v).eval() for k, v in ref.items()}
     groups = [{'params': [p for m in mods.values() for p in m.parameters()], 'lr': lr}]
@@ -198,65 +206,90 @@ def peekaboo(L, bank, train, cal, test, method, rng, epochs=8, lr=1e-4, batch=32
         p.requires_grad_(True)
     opt = torch.optim.Adam(groups, lr=lr)
     base, curve, log = 0.5, [], None
-    if method == 'logged_ips':
+    es = {'cal_acc': [], 'best_epoch': None, 'state': None}
+    if kind in ('ips', 'argmax'):
         log = {}
         for it, p in zip(train, L.predict(bank, train, ref)):
-            a = int(rng.choice(len(p), p=p / p.sum())); log[it['id']] = (a, float(a == A.gold(it)), float(p[a]))
+            a = int(rng.choice(len(p), p=p / p.sum())) if kind == 'ips' else int(np.argmax(p))
+            log[it['id']] = (a, float(a == A.gold(it)), float(p[a]))
         base = float(np.mean([x[1] for x in log.values()]))
+
+    def data_loss(lp, ar, g, rows):
+        """The data term of the loss for one (micro-)batch, summed over rows; returns (loss, reward tensor or None)."""
+        if kind == 'sup':
+            return -lp[ar, g].sum(), None
+        if kind == 'ips':
+            a = torch.tensor([log[it['id']][0] for it in rows], device=L.dev)
+            r = torch.tensor([log[it['id']][1] for it in rows], device=L.dev)
+            p0 = torch.tensor([log[it['id']][2] for it in rows], device=L.dev)
+            return -((r - base) * (lp[ar, a].exp() / p0).clamp(max=10.0)).sum(), r
+        if kind == 'argmax':
+            a = torch.tensor([log[it['id']][0] for it in rows], device=L.dev)
+            r = torch.tensor([log[it['id']][1] for it in rows], device=L.dev)
+            pa = lp[ar, a].exp().clamp(max=1 - 1e-6)
+            return -(r * lp[ar, a] + (1 - r) * torch.log1p(-pa)).sum(), r
+        with torch.no_grad():
+            a = torch.multinomial(lp.exp(), 1).squeeze(1); r_true = (a == g).float()
+            r, seen = A.observe(r_true, spec)
+        sf = seen.float()
+        return -((r - base) * lp[ar, a] * sf).sum() * (len(rows) / max(float(sf.sum()), 1.0)), (r_true, r, sf)
+
     for ep in range(epochs):
         order = rng.permutation(len(train)); rew = []
         for s in range(0, len(train), batch):
             rows = [train[i] for i in order[s:s + batch]]
-            if enc:      # the update below (clean feedback), in micro-batches; the KL anchor is the released model
-                opt.zero_grad(); rb = []
-                for c in range(0, len(rows), MICRO):
-                    sub = rows[c:c + MICRO]
-                    g = torch.tensor([A.gold(it) for it in sub], device=L.dev)
-                    lp, mask, _ = L.logp(bank, sub, mods); ar = torch.arange(len(sub), device=L.dev)
+            opt.zero_grad(); rb = []
+            for c in range(0, len(rows), MICRO if enc else len(rows)):   # the encoder trains in micro-batches of 8
+                sub = rows[c:c + (MICRO if enc else len(rows))]
+                g = torch.tensor([A.gold(it) for it in sub], device=L.dev)
+                lp, mask, h = L.logp(bank, sub, mods); ar = torch.arange(len(sub), device=L.dev)
+                loss, r = data_loss(lp, ar, g, sub)
+                if kl:                                   # the KL anchor to the released model, for every method
                     with torch.no_grad():
-                        a = torch.multinomial(lp.exp(), 1).squeeze(1); r = (a == g).float()
-                        lq, _, _ = L.logp(bank, sub, ref)
-                    loss = -((r - base) * lp[ar, a]).sum() + kl * (lp.exp() * (lp - lq)).masked_fill(~mask, 0).sum()
-                    (loss / len(rows)).backward(); rb.append(r)
-                r = torch.cat(rb); base = 0.9 * base + 0.1 * float(r.mean()); rew.append(float(r.mean()))
-                torch.nn.utils.clip_grad_norm_(params, 1.0); opt.step()
-                continue
-            g = torch.tensor([A.gold(it) for it in rows], device=L.dev)
-            lp, mask, h = L.logp(bank, rows, mods)
-            ar = torch.arange(len(rows), device=L.dev)
-            if method == 'sup_ts':
-                loss = -lp[ar, g].mean()
-            elif method == 'logged_ips':
-                a = torch.tensor([log[it['id']][0] for it in rows], device=L.dev)
-                r = torch.tensor([log[it['id']][1] for it in rows], device=L.dev)
-                p0 = torch.tensor([log[it['id']][2] for it in rows], device=L.dev)
-                loss = -((r - base) * (lp[ar, a].exp() / p0).clamp(max=10.0)).mean(); rew.append(float(r.mean()))
-            else:
-                with torch.no_grad():
-                    a = torch.multinomial(lp.exp(), 1).squeeze(1); r_true = (a == g).float()
-                    r, seen = A.observe(r_true, spec)
-                sf = seen.float(); n = float(sf.sum())
-                loss = -((r - base) * lp[ar, a] * sf).sum() / max(n, 1.0)
+                        lq, _, _ = L.logp(bank, sub, ref, h=None if enc else h)
+                    loss = loss + kl * (lp.exp() * (lp - lq)).masked_fill(~mask, 0).sum()
+                (loss / len(rows)).backward()
+                if r is not None:
+                    rb.append(r)
+            torch.nn.utils.clip_grad_norm_(params, 1.0); opt.step()
+            if rb and kind == 'bandit':
+                r_true = torch.cat([x[0] for x in rb]); r = torch.cat([x[1] for x in rb]); sf = torch.cat([x[2] for x in rb])
+                n = float(sf.sum())
                 if n:
                     base = 0.9 * base + 0.1 * float((r * sf).sum() / n)
                 rew.append(float(r_true.mean()))
-            if kl and method != 'sup_ts':
-                with torch.no_grad():
-                    lq, _, _ = L.logp(bank, rows, ref, h=h)
-                loss = loss + kl * (lp.exp() * (lp - lq)).masked_fill(~mask, 0).sum(-1).mean()
-            opt.zero_grad(); loss.backward(); torch.nn.utils.clip_grad_norm_(params, 1.0); opt.step()
+            elif rb:
+                rew.append(float(torch.cat(rb).mean()))
         curve.append(float(np.mean(rew)) if rew else None)
+        if kind == 'sup' and cal:                    # early stopping on the calibration rows' labels (the method's own)
+            acc = float(np.mean([int(np.argmax(p)) == A.gold(it) for p, it in zip(L.predict(bank, cal, mods), cal)]))
+            es['cal_acc'].append(acc)
+            if es['best_epoch'] is None or acc > max(es['cal_acc'][:-1]):
+                es['best_epoch'] = ep + 1; es['state'] = [p.detach().to('cpu', copy=True) for p in params]
     Pc, Pt = L.predict(bank, cal, mods), L.predict(bank, test, mods)
-    if method == 'sup_ts':
+    P0c = L.predict(bank, cal, ref)
+    calp = {'ids': [it['id'] for it in cal], 'adapter': [[round(float(x), 6) for x in p] for p in Pc], 'base': [[round(float(x), 6) for x in p] for p in P0c]}
+    info = {'n_train': len(train), 'n_cal': len(cal), 'epochs': epochs, 'reward_curve': curve, 'cal': calp}
+    if kind == 'sup':
         T = A.fit_T_labels(Pc, cal)
-        return A.temp(Pt, T), {'T': T, 'n_train': len(train), 'n_cal': len(cal)}, Pt
-    if method == 'logged_ips':
-        acts = [int(rng.choice(len(p), p=p / p.sum())) for p in L.predict(bank, cal, ref)]
-        T = A.fit_T_feedback(Pc, cal, rng, actions=acts)
+        Pes = None
+        if es['state'] is not None:
+            with torch.no_grad():
+                for p, q in zip(params, es['state']):
+                    p.copy_(q.to(p.device))
+            Pc_es, Pt_es = L.predict(bank, cal, mods), L.predict(bank, test, mods)
+            Pes = A.temp(Pt_es, A.fit_T_labels(Pc_es, cal))
+        info.update(T=T, early_stop={'cal_acc': es['cal_acc'], 'best_epoch': es['best_epoch']})
+        return A.temp(Pt, T), info, Pt, Pes
+    if kind == 'ips':
+        T = A.fit_T_feedback(Pc, cal, rng, actions=[int(rng.choice(len(p), p=p / p.sum())) for p in P0c])
+    elif kind == 'argmax':
+        T = A.fit_T_feedback(Pc, cal, rng, actions=[int(np.argmax(p)) for p in P0c])
     else:
         T = A.fit_T_feedback(Pc, cal, rng, spec=spec)
-    sw = A.switch_check(A.temp(Pc, T), L.predict(bank, cal, ref), cal, rng)
-    return A.temp(Pt, T), {'T': T, 'reward_curve': curve, 'n_train': len(train), 'n_cal': len(cal), 'feedback': spec, 'switch': sw}, Pt
+    sw = A.switch_check(A.temp(Pc, T), P0c, cal, rng)
+    info.update(T=T, feedback=spec, switch=sw)
+    return A.temp(Pt, T), info, Pt, None
 
 
 def train_main(suite, method, seed):
@@ -269,7 +302,7 @@ def train_main(suite, method, seed):
     ok = lambda it: 'ids' in bank.get(it['id'], {})
     pool = [it for it in items if it['split'] == 'pool' and ok(it)]
     usable = [it for it in test if ok(it)]
-    L = Laya(); t0 = time.time(); recs, raw, swr, info = {}, {}, {}, {'folds': []}
+    L = Laya(); t0 = time.time(); recs, raw, swr, esr, info = {}, {}, {}, {}, {'folds': []}
     if method == 'replay':
         P = L.predict(bank, usable, L.released())
         diffs = [max(abs(released[it['id']]['probs'][lab] - float(p[j])) for j, lab in enumerate(it['labels'])) for it, p in zip(usable, P)]
@@ -281,12 +314,14 @@ def train_main(suite, method, seed):
                  if suite == 'jevbench' else [(0, pool, usable)])
         for f, tr_pool, te in folds:
             if suite == 'jevbench':
-                train = [it for it in tr_pool if A.stable('cal' + it['id']) % 5]; cal = [it for it in tr_pool if not A.stable('cal' + it['id']) % 5]
+                train = [it for it in tr_pool if not A.jev_cal(it)]; cal = [it for it in tr_pool if A.jev_cal(it)]
             else:
                 train, cal = A.cal_split(tr_pool)
-            P, fi, Praw = peekaboo(L, bank, train, cal, te, method, rng)
+            P, fi, Praw, Pes = peekaboo(L, bank, train, cal, te, method, rng)
             recs.update(A.to_records(te, P, released))   # same architecture and cost as base Laya: no extra latency
             raw.update(A.to_records(te, Praw, released))
+            if Pes is not None:
+                esr.update(A.to_records(te, Pes, released))
             if fi.get('switch') is not None:
                 swr.update(A.to_records(te, P, released) if fi['switch']['on'] else {it['id']: dict(released[it['id']], labels=it['labels']) for it in te})
             info['folds'].append(dict(fi, fold=f, n_test=len(te)))
@@ -296,7 +331,7 @@ def train_main(suite, method, seed):
                               'error': released.get(it['id'], {}).get('error', 'no input')}
     acc = np.mean([r['pred'] == r['gold'] for r in recs.values()])
     print(f'Laya {suite} {method} s{seed}: accuracy {acc:.4f} on {len(recs)} rows, {time.time() - t0:.0f}s', flush=True)
-    extra = {k: [d.get(it['id'], recs[it['id']]) for it in test] for k, d in (('records_raw', raw), ('records_switch', swr)) if d}
+    extra = {k: [d.get(it['id'], recs[it['id']]) for it in test] for k, d in (('records_raw', raw), ('records_switch', swr), ('records_es', esr)) if d}
     json.dump(dict({'suite': suite, 'method': method, 'seed': seed, 'size': paths.SIZE, 'info': info,
                     'records': [recs[it['id']] for it in test]}, **extra), open(out + '.tmp', 'w'))
     os.replace(out + '.tmp', out)

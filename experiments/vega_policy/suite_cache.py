@@ -75,15 +75,25 @@ def build_items(suite, quick=False):
         return full, meta
     if suite in ('emotion', 'agnews'):               # large public datasets with real training splits: dair-ai/emotion is the
         key = {'emotion': 'emotion', 'agnews': 'ag_news'}[suite]   # dataset of Vega's fine-tuning recipe, AG News one Laya reports
-        r = load_task(BT.BY_KEY[key], n_eval=40 if quick else 2000, n_fit=80 if quick else 4000, seed=SEED)   # VegaML's own loader and question
+        natural = os.environ.get('POOL_DRAW', 'natural') == 'natural'
+        # v2: the feedback pool keeps the training split's natural class mix (a deployment's traffic), drawn at random.
+        # VegaML's loader draws fit rows class by class (round robin), which gave v1 a class-balanced pool against a
+        # naturally distributed test set; asking it for the whole split returns every usable row, from which we sample.
+        n_fit = 80 if quick else (10 ** 6 if natural else 4000)
+        r = load_task(BT.BY_KEY[key], n_eval=40 if quick else 2000, n_fit=n_fit, seed=SEED)   # VegaML's own loader and question
         if r.get('skipped'):
             raise RuntimeError(f'{suite}: {r["skipped"]}')
+        fit = r['fit']
+        if natural and not quick:
+            rng = np.random.default_rng(SEED)
+            fit = [fit[i] for i in sorted(rng.choice(len(fit), size=min(4000, len(fit)), replace=False))]
         out = []
-        for split, rows in (('test', r['items']), ('pool', r['fit'])):
+        for split, rows in (('test', r['items']), ('pool', fit)):
             for it in rows:
                 out.append({'id': f'{suite}:{it["id"]}', 'state': it['state'], 'gold': it['gold'], 'question': it.get('question') or r['question'],
                             'labels': list(r['labels']), 'qtype': r['meta']['qtype'], 'task': key, 'split': split})
-        return out, {'source': r['meta'].get('hf'), 'n_test': len(r['items']), 'n_pool': len(r['fit']), 'labels': r['labels']}
+        return out, {'source': r['meta'].get('hf'), 'n_test': len(r['items']), 'n_pool': len(fit), 'labels': r['labels'],
+                     'pool_draw': 'natural class mix, random sample' if natural else "VegaML's stratified round robin"}
     if suite == 'typed':                              # Laya's headline benchmark, LocalLLaMA/typed-decisions (all workflows)
         from datasets import load_dataset
         out, meta = [], {'source': 'LocalLLaMA/typed-decisions, config all', 'decisions': {}}
