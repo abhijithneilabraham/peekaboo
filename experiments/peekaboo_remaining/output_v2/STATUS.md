@@ -1,14 +1,12 @@
-# Status of the remaining Peekaboo experiments  (Thu Oct 22 05:22:08 2026)
+# Status of the remaining Peekaboo experiments  (Thu Oct 22 05:27:08 2026)
 
-done: 106 · pending: 433 · running: 2  (of 541 steps)
+done: 108 · pending: 431 · running: 2  (of 541 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **running** `laya/sup_enc/decisionbench/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method sup_enc --seed 1`)
-- **running** `laya/feedback_enc_1pass/decisionbench/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_enc_1pass --seed 1`)
-- **pending** `laya/feedback_enc/decisionbench/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_enc --seed 2`)
-- **pending** `laya/sup_enc/decisionbench/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method sup_enc --seed 2`)
+- **running** `laya/feedback_enc/decisionbench/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_enc --seed 2`)
+- **running** `laya/sup_enc/decisionbench/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method sup_enc --seed 2`)
 - **pending** `laya/feedback_enc_1pass/decisionbench/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_enc_1pass --seed 2`)
 - **pending** `laya/feedback_enc/typed/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite typed --method feedback_enc --seed 0`)
 - **pending** `laya/sup_enc/typed/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite typed --method sup_enc --seed 0`)
@@ -507,10 +505,10 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     laya/sup_enc/decisionbench/s0 2256s
 - done     laya/feedback_enc_1pass/decisionbench/s0 280s
 - done     laya/feedback_enc/decisionbench/s1 1986s
-- running  laya/sup_enc/decisionbench/s1 
-- running  laya/feedback_enc_1pass/decisionbench/s1 
-- pending  laya/feedback_enc/decisionbench/s2 
-- pending  laya/sup_enc/decisionbench/s2 
+- done     laya/sup_enc/decisionbench/s1 2261s
+- done     laya/feedback_enc_1pass/decisionbench/s1 275s
+- running  laya/feedback_enc/decisionbench/s2 
+- running  laya/sup_enc/decisionbench/s2 
 - pending  laya/feedback_enc_1pass/decisionbench/s2 
 - pending  laya/feedback_enc/typed/s0 
 - pending  laya/sup_enc/typed/s0 
