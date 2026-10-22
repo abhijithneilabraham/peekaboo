@@ -1,6 +1,6 @@
-# Status of the remaining Peekaboo experiments  (Thu Oct 22 06:57:26 2026)
+# Status of the remaining Peekaboo experiments  (Thu Oct 22 07:02:26 2026)
 
-done: 146 · pending: 247 · running: 3  (of 396 steps)
+done: 147 · pending: 246 · running: 3  (of 396 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
@@ -11,8 +11,7 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - **pending** `laya/feedback_enc/emotion/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method feedback_enc --seed 0`)
 - **pending** `laya/sup_enc/emotion/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method sup_enc --seed 0`)
 - **pending** `laya/feedback_enc_1pass/emotion/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method feedback_enc_1pass --seed 0`)
-- **running** `laya/feedback_1pass/decisionbench/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_1pass --seed 0`)
-- **pending** `laya/sup_1pass/decisionbench/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method sup_1pass --seed 0`)
+- **running** `laya/sup_1pass/decisionbench/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method sup_1pass --seed 0`)
 - **pending** `vega-0.8b/sup_ts/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method sup_ts --seed 0`)
 - **pending** `vega-0.8b/sup_ts/typed/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method sup_ts --seed 1`)
 - **pending** `vega-0.8b/sup_ts/typed/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method sup_ts --seed 2`)
@@ -401,8 +400,8 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-4b/sup_1pass/decisionbench/s0 95s
 - done     vega-4b/sup_1pass/decisionbench/s1 95s
 - done     vega-4b/sup_1pass/decisionbench/s2 95s
-- running  laya/feedback_1pass/decisionbench/s0 
-- pending  laya/sup_1pass/decisionbench/s0 
+- done     laya/feedback_1pass/decisionbench/s0 260s
+- running  laya/sup_1pass/decisionbench/s0 
 - done     vega-0.8b/ttt/typed 
 - pending  vega-0.8b/sup_ts/typed/s0 
 - pending  vega-0.8b/sup_ts/typed/s1 
