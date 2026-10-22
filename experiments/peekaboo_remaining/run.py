@@ -32,7 +32,7 @@ class Step:
 
 
 SUITES = ('public', 'jevbench', 'decisionbench', 'typed', 'emotion', 'agnews')
-VEGA = (('0.8b', 'results', 8, 2), ('4b', 'results_4b', 24, 4))
+VEGA = (('0.8b', 'results', 8, 2), ('4b', 'results_4b', 12, 4))   # (size, results dir, GB for the cache step, GB for a method step)
 
 
 def plan(out):
@@ -139,7 +139,7 @@ def plan_v2(out):
     for s in SUITES:
         for sd in SEEDS:
             for m in ('feedback_enc', 'sup_enc', 'feedback_enc_1pass'):
-                lm(s, m, sd, 14)
+                lm(s, m, sd, 10)
     # 3. the main comparison: TTT (both rules), the answer-key add-on (+ early stopping), Peekaboo, both 8-pass and 1-pass
     for s in SUITES:
         for size, res, _, gr in VEGA:
@@ -333,8 +333,9 @@ def main():
             if any(names[n].state != 'done' for n in st.needs):
                 continue
             if active and gpu and used + st.gpu > budget:
-                break                                            # strict priority: a big step at the front of the queue is not
-            # starved by the small ones behind it (the 4B feature caches are the long pole)
+                if st.gpu >= 12:                                 # a big step (a 4B cache) waits at the front of the queue and
+                    break                                        # nothing passes it; small steps may pass each other
+                continue
             start(st, out, base_env); active.append(st); used += st.gpu
         hb['running'] = [st.name for st in active]
         if time.time() - last_status > 60:
