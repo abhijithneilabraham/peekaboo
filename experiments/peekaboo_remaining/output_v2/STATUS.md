@@ -1,4 +1,4 @@
-# Status of the remaining Peekaboo experiments  (Thu Oct 22 08:02:27 2026)
+# Status of the remaining Peekaboo experiments  (Thu Oct 22 08:12:11 2026)
 
 done: 178 · pending: 210 · running: 8  (of 396 steps)
 
@@ -283,12 +283,12 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     laya/feedback_enc/decisionbench/s1 
 - done     laya/sup_enc/decisionbench/s1 
 - done     laya/feedback_enc_1pass/decisionbench/s1 
-- done     laya/feedback_enc/typed/s0 3846s
-- done     laya/sup_enc/typed/s0 4411s
-- done     laya/feedback_enc_1pass/typed/s0 530s
-- done     laya/feedback_enc/emotion/s0 695s
-- done     laya/sup_enc/emotion/s0 1200s
-- done     laya/feedback_enc_1pass/emotion/s0 175s
+- done     laya/feedback_enc/typed/s0 
+- done     laya/sup_enc/typed/s0 
+- done     laya/feedback_enc_1pass/typed/s0 
+- done     laya/feedback_enc/emotion/s0 
+- done     laya/sup_enc/emotion/s0 
+- done     laya/feedback_enc_1pass/emotion/s0 
 - done     vega-0.8b/ttt/public 
 - done     vega-0.8b/sup_ts/public/s0 
 - done     vega-0.8b/sup_ts/public/s1 
@@ -342,7 +342,7 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-4b/sup_1pass/jevbench/s1 
 - done     vega-4b/sup_1pass/jevbench/s2 
 - done     laya/feedback_1pass/jevbench/s0 
-- done     laya/sup_1pass/jevbench/s0 115s
+- done     laya/sup_1pass/jevbench/s0 
 - done     vega-0.8b/ttt/decisionbench 
 - done     vega-0.8b/sup_ts/decisionbench/s0 
 - done     vega-0.8b/sup_ts/decisionbench/s1 
@@ -355,48 +355,48 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-0.8b/feedback_1pass/decisionbench/s2 
 - done     vega-0.8b/sup_1pass/decisionbench/s0 
 - done     vega-0.8b/sup_1pass/decisionbench/s1 
-- done     vega-0.8b/sup_1pass/decisionbench/s2 85s
+- done     vega-0.8b/sup_1pass/decisionbench/s2 
 - done     vega-4b/ttt/decisionbench 
-- done     vega-4b/sup_ts/decisionbench/s0 255s
-- done     vega-4b/sup_ts/decisionbench/s1 240s
-- done     vega-4b/sup_ts/decisionbench/s2 250s
-- done     vega-4b/feedback/decisionbench/s0 190s
-- done     vega-4b/feedback/decisionbench/s1 190s
-- done     vega-4b/feedback/decisionbench/s2 195s
-- done     vega-4b/feedback_1pass/decisionbench/s0 60s
-- done     vega-4b/feedback_1pass/decisionbench/s1 65s
-- done     vega-4b/feedback_1pass/decisionbench/s2 70s
-- done     vega-4b/sup_1pass/decisionbench/s0 95s
-- done     vega-4b/sup_1pass/decisionbench/s1 95s
-- done     vega-4b/sup_1pass/decisionbench/s2 95s
-- done     laya/feedback_1pass/decisionbench/s0 260s
-- done     laya/sup_1pass/decisionbench/s0 440s
+- done     vega-4b/sup_ts/decisionbench/s0 
+- done     vega-4b/sup_ts/decisionbench/s1 
+- done     vega-4b/sup_ts/decisionbench/s2 
+- done     vega-4b/feedback/decisionbench/s0 
+- done     vega-4b/feedback/decisionbench/s1 
+- done     vega-4b/feedback/decisionbench/s2 
+- done     vega-4b/feedback_1pass/decisionbench/s0 
+- done     vega-4b/feedback_1pass/decisionbench/s1 
+- done     vega-4b/feedback_1pass/decisionbench/s2 
+- done     vega-4b/sup_1pass/decisionbench/s0 
+- done     vega-4b/sup_1pass/decisionbench/s1 
+- done     vega-4b/sup_1pass/decisionbench/s2 
+- done     laya/feedback_1pass/decisionbench/s0 
+- done     laya/sup_1pass/decisionbench/s0 
 - done     vega-0.8b/ttt/typed 
-- done     vega-0.8b/sup_ts/typed/s0 340s
-- done     vega-0.8b/sup_ts/typed/s1 325s
-- done     vega-0.8b/sup_ts/typed/s2 310s
-- done     vega-0.8b/feedback/typed/s0 195s
-- done     vega-0.8b/feedback/typed/s1 225s
-- done     vega-0.8b/feedback/typed/s2 185s
-- done     vega-0.8b/feedback_1pass/typed/s0 60s
-- done     vega-0.8b/feedback_1pass/typed/s1 45s
-- done     vega-0.8b/feedback_1pass/typed/s2 75s
-- done     vega-0.8b/sup_1pass/typed/s0 90s
-- done     vega-0.8b/sup_1pass/typed/s1 90s
-- done     vega-0.8b/sup_1pass/typed/s2 95s
+- done     vega-0.8b/sup_ts/typed/s0 
+- done     vega-0.8b/sup_ts/typed/s1 
+- done     vega-0.8b/sup_ts/typed/s2 
+- done     vega-0.8b/feedback/typed/s0 
+- done     vega-0.8b/feedback/typed/s1 
+- done     vega-0.8b/feedback/typed/s2 
+- done     vega-0.8b/feedback_1pass/typed/s0 
+- done     vega-0.8b/feedback_1pass/typed/s1 
+- done     vega-0.8b/feedback_1pass/typed/s2 
+- done     vega-0.8b/sup_1pass/typed/s0 
+- done     vega-0.8b/sup_1pass/typed/s1 
+- done     vega-0.8b/sup_1pass/typed/s2 
 - done     vega-4b/ttt/typed 
-- done     vega-4b/sup_ts/typed/s0 255s
-- done     vega-4b/sup_ts/typed/s1 230s
-- done     vega-4b/sup_ts/typed/s2 655s
-- done     vega-4b/feedback/typed/s0 525s
-- done     vega-4b/feedback/typed/s1 525s
-- done     vega-4b/feedback/typed/s2 515s
-- done     vega-4b/feedback_1pass/typed/s0 150s
-- done     vega-4b/feedback_1pass/typed/s1 145s
-- done     vega-4b/feedback_1pass/typed/s2 145s
-- done     vega-4b/sup_1pass/typed/s0 205s
-- done     vega-4b/sup_1pass/typed/s1 210s
-- done     vega-4b/sup_1pass/typed/s2 205s
+- done     vega-4b/sup_ts/typed/s0 
+- done     vega-4b/sup_ts/typed/s1 
+- done     vega-4b/sup_ts/typed/s2 
+- done     vega-4b/feedback/typed/s0 
+- done     vega-4b/feedback/typed/s1 
+- done     vega-4b/feedback/typed/s2 
+- done     vega-4b/feedback_1pass/typed/s0 
+- done     vega-4b/feedback_1pass/typed/s1 
+- done     vega-4b/feedback_1pass/typed/s2 
+- done     vega-4b/sup_1pass/typed/s0 
+- done     vega-4b/sup_1pass/typed/s1 
+- done     vega-4b/sup_1pass/typed/s2 
 - running  laya/sup_ts/typed/s0 
 - running  laya/sup_ts/typed/s1 
 - running  laya/sup_ts/typed/s2 
