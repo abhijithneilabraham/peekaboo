@@ -1,25 +1,22 @@
-# Status of the remaining Peekaboo experiments  (Thu Oct 22 01:42:12 2026)
+# Status of the remaining Peekaboo experiments  (Thu Oct 22 01:52:28 2026)
 
-done: 50 · pending: 483 · running: 8  (of 541 steps)
+done: 56 · pending: 482 · running: 3  (of 541 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **pending** `vega-4b/cache/public`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite public`)
-- **pending** `vega-4b/cache/decisionbench`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite decisionbench`)
-- **pending** `vega-4b/cache/typed`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite typed`)
-- **running** `laya/cache/typed`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py cache --suite typed`)
-- **running** `laya_td/cache/typed`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya_td python laya_peekaboo.py cache --suite typed`)
+- **running** `vega-4b/cache/public`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite public`)
+- **running** `vega-4b/cache/decisionbench`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite decisionbench`)
+- **running** `vega-4b/cache/typed`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite typed`)
+- **pending** `laya/cache/typed`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py cache --suite typed`)
+- **pending** `laya_td/cache/typed`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya_td python laya_peekaboo.py cache --suite typed`)
 - **pending** `vega-4b/cache/emotion`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite emotion`)
-- **running** `laya/cache/emotion`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py cache --suite emotion`)
-- **running** `laya_td/cache/emotion`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya_td python laya_peekaboo.py cache --suite emotion`)
-- **running** `vega-0.8b/cache/agnews`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python suite_cache.py --suite agnews`)
+- **pending** `vega-0.8b/cache/agnews`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python suite_cache.py --suite agnews`)
 - **pending** `vega-4b/cache/agnews`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite agnews`)
 - **pending** `laya/cache/agnews`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py cache --suite agnews`)
 - **pending** `laya_td/cache/agnews`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya_td python laya_peekaboo.py cache --suite agnews`)
 - **pending** `vega-4b/replay/public`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite public --method replay`)
 - **pending** `vega-4b/replay/decisionbench`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method replay`)
-- **running** `vega-0.8b/replay/typed`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method replay`)
 - **pending** `vega-4b/replay/typed`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method replay`)
 - **pending** `laya/replay/typed`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite typed --method replay`)
 - **pending** `vega-4b/replay/emotion`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method replay`)
@@ -94,7 +91,7 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - **pending** `vega-4b/sup_1pass/public/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite public --method sup_1pass --seed 0`)
 - **pending** `vega-4b/sup_1pass/public/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite public --method sup_1pass --seed 1`)
 - **pending** `vega-4b/sup_1pass/public/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite public --method sup_1pass --seed 2`)
-- **running** `laya/sup_ts/public/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method sup_ts --seed 0`)
+- **pending** `laya/sup_ts/public/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method sup_ts --seed 0`)
 - **pending** `laya/sup_ts/public/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method sup_ts --seed 1`)
 - **pending** `laya/sup_ts/public/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method sup_ts --seed 2`)
 - **pending** `laya/feedback/public/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method feedback --seed 0`)
@@ -106,8 +103,6 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - **pending** `laya/sup_1pass/public/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method sup_1pass --seed 0`)
 - **pending** `laya/sup_1pass/public/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method sup_1pass --seed 1`)
 - **pending** `laya/sup_1pass/public/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method sup_1pass --seed 2`)
-- **running** `vega-4b/sup_ts/jevbench/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite jevbench --method sup_ts --seed 2`)
-- **pending** `vega-4b/feedback/jevbench/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite jevbench --method feedback --seed 0`)
 - **pending** `vega-4b/feedback/jevbench/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite jevbench --method feedback --seed 1`)
 - **pending** `vega-4b/feedback/jevbench/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite jevbench --method feedback --seed 2`)
 - **pending** `vega-4b/feedback_1pass/jevbench/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite jevbench --method feedback_1pass --seed 0`)
@@ -128,7 +123,6 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - **pending** `laya/sup_1pass/jevbench/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite jevbench --method sup_1pass --seed 0`)
 - **pending** `laya/sup_1pass/jevbench/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite jevbench --method sup_1pass --seed 1`)
 - **pending** `laya/sup_1pass/jevbench/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite jevbench --method sup_1pass --seed 2`)
-- **pending** `vega-0.8b/ttt/decisionbench`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite decisionbench --method ttt`)
 - **pending** `vega-0.8b/sup_ts/decisionbench/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite decisionbench --method sup_ts --seed 0`)
 - **pending** `vega-0.8b/sup_ts/decisionbench/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite decisionbench --method sup_ts --seed 1`)
 - **pending** `vega-0.8b/sup_ts/decisionbench/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite decisionbench --method sup_ts --seed 2`)
@@ -499,43 +493,43 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 
 <details><summary>all steps</summary>
 
-- done     vega-0.8b/cache/public 150s
-- pending  vega-4b/cache/public 
-- done     laya/cache/public 420s
-- done     laya_td/cache/public 430s
+- done     vega-0.8b/cache/public 
+- running  vega-4b/cache/public 
+- done     laya/cache/public 
+- done     laya_td/cache/public 
 - done     vega-0.8b/cache/jevbench 
 - done     vega-4b/cache/jevbench 
 - done     laya/cache/jevbench 
 - done     laya_td/cache/jevbench 
-- done     vega-0.8b/cache/decisionbench 465s
-- pending  vega-4b/cache/decisionbench 
+- done     vega-0.8b/cache/decisionbench 
+- running  vega-4b/cache/decisionbench 
 - done     laya/cache/decisionbench 
-- done     laya_td/cache/decisionbench 155s
-- done     vega-0.8b/cache/typed 775s
-- pending  vega-4b/cache/typed 
-- running  laya/cache/typed 
-- running  laya_td/cache/typed 
-- done     vega-0.8b/cache/emotion 600s
+- done     laya_td/cache/decisionbench 
+- done     vega-0.8b/cache/typed 
+- running  vega-4b/cache/typed 
+- pending  laya/cache/typed 
+- pending  laya_td/cache/typed 
+- done     vega-0.8b/cache/emotion 
 - pending  vega-4b/cache/emotion 
-- running  laya/cache/emotion 
-- running  laya_td/cache/emotion 
-- running  vega-0.8b/cache/agnews 
+- done     laya/cache/emotion 
+- done     laya_td/cache/emotion 
+- pending  vega-0.8b/cache/agnews 
 - pending  vega-4b/cache/agnews 
 - pending  laya/cache/agnews 
 - pending  laya_td/cache/agnews 
-- done     vega-0.8b/replay/public 180s
+- done     vega-0.8b/replay/public 
 - pending  vega-4b/replay/public 
-- done     laya/replay/public 200s
+- done     laya/replay/public 
 - done     vega-0.8b/replay/jevbench 
 - done     vega-4b/replay/jevbench 
 - done     laya/replay/jevbench 
-- done     vega-0.8b/replay/decisionbench 70s
+- done     vega-0.8b/replay/decisionbench 
 - pending  vega-4b/replay/decisionbench 
 - done     laya/replay/decisionbench 
-- running  vega-0.8b/replay/typed 
+- done     vega-0.8b/replay/typed 
 - pending  vega-4b/replay/typed 
 - pending  laya/replay/typed 
-- done     vega-0.8b/replay/emotion 95s
+- done     vega-0.8b/replay/emotion 
 - pending  vega-4b/replay/emotion 
 - pending  laya/replay/emotion 
 - pending  vega-0.8b/replay/agnews 
@@ -595,19 +589,19 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - pending  laya/feedback_enc/agnews/s2 
 - pending  laya/sup_enc/agnews/s2 
 - pending  laya/feedback_enc_1pass/agnews/s2 
-- done     vega-0.8b/ttt/public 35s
-- done     vega-0.8b/sup_ts/public/s0 260s
-- done     vega-0.8b/sup_ts/public/s1 260s
-- done     vega-0.8b/sup_ts/public/s2 250s
-- done     vega-0.8b/feedback/public/s0 180s
-- done     vega-0.8b/feedback/public/s1 170s
-- done     vega-0.8b/feedback/public/s2 165s
-- done     vega-0.8b/feedback_1pass/public/s0 90s
-- done     vega-0.8b/feedback_1pass/public/s1 80s
-- done     vega-0.8b/feedback_1pass/public/s2 75s
-- done     vega-0.8b/sup_1pass/public/s0 110s
-- done     vega-0.8b/sup_1pass/public/s1 115s
-- done     vega-0.8b/sup_1pass/public/s2 110s
+- done     vega-0.8b/ttt/public 
+- done     vega-0.8b/sup_ts/public/s0 
+- done     vega-0.8b/sup_ts/public/s1 
+- done     vega-0.8b/sup_ts/public/s2 
+- done     vega-0.8b/feedback/public/s0 
+- done     vega-0.8b/feedback/public/s1 
+- done     vega-0.8b/feedback/public/s2 
+- done     vega-0.8b/feedback_1pass/public/s0 
+- done     vega-0.8b/feedback_1pass/public/s1 
+- done     vega-0.8b/feedback_1pass/public/s2 
+- done     vega-0.8b/sup_1pass/public/s0 
+- done     vega-0.8b/sup_1pass/public/s1 
+- done     vega-0.8b/sup_1pass/public/s2 
 - pending  vega-4b/ttt/public 
 - pending  vega-4b/sup_ts/public/s0 
 - pending  vega-4b/sup_ts/public/s1 
@@ -621,7 +615,7 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - pending  vega-4b/sup_1pass/public/s0 
 - pending  vega-4b/sup_1pass/public/s1 
 - pending  vega-4b/sup_1pass/public/s2 
-- running  laya/sup_ts/public/s0 
+- pending  laya/sup_ts/public/s0 
 - pending  laya/sup_ts/public/s1 
 - pending  laya/sup_ts/public/s2 
 - pending  laya/feedback/public/s0 
@@ -647,8 +641,8 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-0.8b/sup_1pass/jevbench/s2 
 - done     vega-4b/sup_ts/jevbench/s0 
 - done     vega-4b/sup_ts/jevbench/s1 
-- running  vega-4b/sup_ts/jevbench/s2 
-- pending  vega-4b/feedback/jevbench/s0 
+- done     vega-4b/sup_ts/jevbench/s2 
+- done     vega-4b/feedback/jevbench/s0 
 - pending  vega-4b/feedback/jevbench/s1 
 - pending  vega-4b/feedback/jevbench/s2 
 - pending  vega-4b/feedback_1pass/jevbench/s0 
@@ -669,7 +663,7 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - pending  laya/sup_1pass/jevbench/s0 
 - pending  laya/sup_1pass/jevbench/s1 
 - pending  laya/sup_1pass/jevbench/s2 
-- pending  vega-0.8b/ttt/decisionbench 
+- done     vega-0.8b/ttt/decisionbench 
 - pending  vega-0.8b/sup_ts/decisionbench/s0 
 - pending  vega-0.8b/sup_ts/decisionbench/s1 
 - pending  vega-0.8b/sup_ts/decisionbench/s2 
@@ -991,7 +985,7 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-0.8b/feedback_kl0/jevbench/s1 
 - pending  vega-4b/feedback_kl0/jevbench/s1 
 - pending  laya/feedback_kl0/jevbench/s1 
-- done     vega-0.8b/feedback_kl0/jevbench/s2 50s
+- done     vega-0.8b/feedback_kl0/jevbench/s2 
 - pending  vega-4b/feedback_kl0/jevbench/s2 
 - pending  laya/feedback_kl0/jevbench/s2 
 - pending  vega-0.8b/feedback_kl0/decisionbench/s0 
