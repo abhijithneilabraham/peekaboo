@@ -1,20 +1,20 @@
 \begin{table}[tbp]\centering\small
-\caption{VegaML's TTT head only answers rows whose option set matches a fitted head (``covered''); elsewhere its output is the released engine's. Peekaboo minus TTT (0.8.0 rule) on covered and uncovered rows, and the answer-key adapter minus TTT on covered rows.}
+\caption{VegaML's TTT head answers a row only where a head was kept for its task and the option set matches (``covered''); elsewhere its output is the released engine's. Eight-pass Peekaboo minus TTT, and the answer-key adapter minus TTT, on covered and uncovered rows, under the vegaml 0.12.3 rule used in the main comparison; rows covered under the 0.8.0 rule for reference.}
 \label{tab:ttt}
-\resizebox{\linewidth}{!}{\begin{tabular}{llrrrr}
+\resizebox{\linewidth}{!}{\begin{tabular}{llrrrrr}
 \toprule
-model & benchmark & rows covered & Peekaboo $-$ TTT, covered & uncovered & answer key $-$ TTT, covered \\
+model & benchmark & covered (0.12.3) & covered (0.8.0) & Peekaboo $-$ TTT, covered & uncovered & answer key $-$ TTT, covered \\
 \midrule
-Vega 0.8B & 43 public tasks & 1945 / 2535 & +7.9 {\scriptsize[+2.5, +14.4]} & +7.0 {\scriptsize[-0.6, +16.8]} & +6.8 {\scriptsize[+1.2, +13.3]} \\
-Vega 0.8B & DecisionBench & 394 / 1075 & +2.8 {\scriptsize[-1.8, +7.0]} & +12.8 {\scriptsize[+8.5, +17.6]} & +3.8 {\scriptsize[-1.1, +8.3]} \\
-Vega 0.8B & typed-decisions & 2000 / 2000 & +0.9 {\scriptsize[-1.2, +3.1]} & +nan {\scriptsize[+nan, +nan]} & +1.7 {\scriptsize[-0.3, +3.9]} \\
-Vega 0.8B & emotion & 1503 / 1503 & -6.4 {\scriptsize[-8.4, -4.3]} & +nan {\scriptsize[+nan, +nan]} & -1.2 {\scriptsize[-3.3, +0.9]} \\
-Vega 0.8B & AG News & 1912 / 1912 & +1.2 {\scriptsize[-0.0, +2.5]} & +nan {\scriptsize[+nan, +nan]} & +0.2 {\scriptsize[-1.1, +1.4]} \\
-Vega 4B & 43 public tasks & 2125 / 2535 & +3.1 {\scriptsize[-1.0, +7.4]} & +1.1 {\scriptsize[+nan, +nan]} & +2.8 {\scriptsize[-1.1, +7.1]} \\
-Vega 4B & DecisionBench & 394 / 1075 & +6.0 {\scriptsize[+0.8, +11.4]} & +5.0 {\scriptsize[+2.2, +8.1]} & +5.6 {\scriptsize[+0.6, +10.8]} \\
-Vega 4B & typed-decisions & 2000 / 2000 & -1.1 {\scriptsize[-3.3, +1.1]} & +nan {\scriptsize[+nan, +nan]} & +1.2 {\scriptsize[-0.7, +3.0]} \\
-Vega 4B & emotion & 1503 / 1503 & -6.8 {\scriptsize[-8.9, -4.7]} & +nan {\scriptsize[+nan, +nan]} & -5.7 {\scriptsize[-7.7, -3.7]} \\
-Vega 4B & AG News & 1912 / 1912 & +1.5 {\scriptsize[+0.4, +2.6]} & +nan {\scriptsize[+nan, +nan]} & +1.0 {\scriptsize[-0.2, +2.1]} \\
+Vega 0.8B & 43 public tasks & 690 / 2535 & 1945 & -1.9 {\scriptsize[-8.6, +5.7]} & +3.0 {\scriptsize[-0.6, +6.9]} & -2.7 {\scriptsize[-8.3, +3.3]} \\
+Vega 0.8B & DecisionBench & 329 / 1075 & 394 & +3.2 {\scriptsize[-2.0, +7.9]} & +11.5 {\scriptsize[+7.2, +16.1]} & +3.9 {\scriptsize[-1.3, +8.7]} \\
+Vega 0.8B & typed-decisions & 600 / 2000 & 2000 & -0.7 {\scriptsize[-4.1, +2.8]} & +1.7 {\scriptsize[-0.2, +3.5]} & -0.4 {\scriptsize[-3.6, +2.9]} \\
+Vega 0.8B & emotion & 1503 / 1503 & 1503 & -6.4 {\scriptsize[-8.4, -4.3]} & -- & -1.2 {\scriptsize[-3.3, +0.9]} \\
+Vega 0.8B & AG News & 0 / 1912 & 1912 & -- & +1.1 {\scriptsize[+0.1, +2.0]} & -- \\
+Vega 4B & 43 public tasks & 931 / 2535 & 2125 & -3.7 {\scriptsize[-8.5, +1.0]} & -0.6 {\scriptsize[-3.6, +2.4]} & -2.8 {\scriptsize[-6.9, +1.0]} \\
+Vega 4B & DecisionBench & 302 / 1075 & 394 & +3.1 {\scriptsize[-1.9, +8.9]} & +4.3 {\scriptsize[+1.8, +7.1]} & +3.6 {\scriptsize[-1.9, +9.8]} \\
+Vega 4B & typed-decisions & 600 / 2000 & 2000 & +1.7 {\scriptsize[-1.6, +5.1]} & -2.0 {\scriptsize[-4.4, +0.2]} & +2.7 {\scriptsize[-0.5, +6.0]} \\
+Vega 4B & emotion & 1503 / 1503 & 1503 & -6.8 {\scriptsize[-8.9, -4.7]} & -- & -5.7 {\scriptsize[-7.7, -3.7]} \\
+Vega 4B & AG News & 1912 / 1912 & 1912 & +1.5 {\scriptsize[+0.4, +2.6]} & -- & +1.0 {\scriptsize[-0.2, +2.1]} \\
 \bottomrule
 \end{tabular}}
 \end{table}

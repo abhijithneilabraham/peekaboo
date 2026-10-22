@@ -319,16 +319,16 @@ def tab_main():
     rows_v = [('released', 'records', 'released model', 'none'), ('ttt', 'records', "TTT head, 0.8.0 rule", 'answer key'), ('ttt', 'records_guard', "TTT head, 0.12.3 rule", 'answer key'),
               ('sup_ts', 'records', 'answer-key adapter, same recipe', 'answer key'), ('sup_ts', 'records_es', 'answer-key adapter, early-stopped', 'answer key'), ('sup_1pass', 'records', 'answer-key adapter, one pass', 'answer key'),
               ('feedback', 'records', '\\textbf{Peekaboo}, eight passes', 'verdicts'), ('feedback_1pass', 'records', '\\textbf{Peekaboo}, one pass', 'verdicts'),
-              ('logged_argmax', 'records', 'logged best answers, rated once', 'verdicts'), ('feedback_kl0', 'records', 'Peekaboo, no KL term', 'verdicts'), ('pooled', 'records', 'pooled Peekaboo', 'verdicts')]
+              ('logged_argmax', 'records', 'logged best answers, rated once', 'verdicts'), ('logged_ips', 'records', 'logged sampled answers, rated once', 'verdicts'), ('feedback_kl0', 'records', 'Peekaboo, no KL term', 'verdicts')]
     rows_l = [('released', 'records', 'released model', 'none'), ('laya_td', 'records', "laya-typed-decisions (fine-tune on typed-decisions)", 'answer key'),
               ('sup_ts', 'records', 'answer-key head, same recipe', 'answer key'), ('sup_ts', 'records_es', 'answer-key head, early-stopped', 'answer key'), ('sup_1pass', 'records', 'answer-key head, one pass', 'answer key'),
               ('feedback', 'records', '\\textbf{Peekaboo}, head only, eight passes', 'verdicts'), ('feedback_1pass', 'records', '\\textbf{Peekaboo}, head only, one pass', 'verdicts'),
               ('sup_enc', 'records', 'answer-key fine-tune, encoder unfrozen', 'answer key'), ('sup_enc', 'records_es', 'answer-key fine-tune, encoder unfrozen, early-stopped', 'answer key'),
               ('feedback_enc', 'records', '\\textbf{Peekaboo}, encoder unfrozen, eight passes', 'verdicts'), ('feedback_enc_1pass', 'records', '\\textbf{Peekaboo}, encoder unfrozen, one pass', 'verdicts'),
-              ('logged_argmax', 'records', 'logged best answers, rated once (head)', 'verdicts'), ('pooled', 'records', 'pooled Peekaboo (head)', 'verdicts')]
-    for what, caption, label in (('accuracy', 'Accuracy, mean over 3 seeds ($\\pm$ s.d.) where a method is stochastic', 'tab:acc'),
-                                 ('gain', 'Gain over the released model in accuracy points, with 95\\% intervals that resample seeds and row clusters; $\\dagger$ marks differences that survive Holm adjustment within the method\'s family', 'tab:gain')):
-        L = ['\\begin{table}[tbp]\\centering\\scriptsize', f'\\caption{{{caption}. JevBench has no training split: every method learns by 5-fold cross-fitting there, and pooled Peekaboo never sees it.}}', f'\\label{{{label}}}',
+              ]
+    for what, caption, label in (('accuracy', 'Accuracy, mean over seeds ($\\pm$ s.d.; three seeds except where Section~\\ref{sec:limitations} lists fewer)', 'tab:acc'),
+                                 ('gain', 'Gain over the released model in accuracy points; $\\dagger$ marks differences that survive Holm adjustment within the method\'s family. The 95\\% intervals are in Figure~\\ref{fig:gains} and Table~\\ref{tab:h2h}', 'tab:gain')):
+        L = ['\\begin{table}[tbp]\\centering\\scriptsize', f'\\caption{{{caption}. JevBench has no training split: every method learns by 5-fold cross-fitting there.}}', f'\\label{{{label}}}',
              '\\setlength{\\tabcolsep}{2.5pt}', '\\resizebox{\\linewidth}{!}{\\begin{tabular}{llr' + 'r' * len(SUITES) + '}', '\\toprule',
              'model & method & learns from & ' + ' & '.join(SSHORT[s] for s in SUITES) + ' \\\\', '\\midrule']
         for model, mname in MODELS:
@@ -351,17 +351,19 @@ def tab_main():
 
 def tab_h2h():
     L = ['\\begin{table}[tbp]\\centering\\scriptsize', '\\caption{Head to head, in accuracy points with 95\\% intervals (seeds and row clusters resampled). Positive means the first method is better. '
-         '$\\dagger$: survives Holm adjustment within the row\'s family; NI: non-inferior at a 2-point margin (lower bound above $-2$). TTT is scored under the vegaml 0.12.3 rule; for Laya ``their method\'\' is the typed-decisions fine-tune, in-domain only on typed-decisions.}',
+         '$\\dagger$: survives Holm adjustment within the row\'s family; NI: non-inferior at a 2-point margin (lower bound above $-2$). TTT is scored under the vegaml 0.12.3 rule; for Laya ``their method\'\' is the typed-decisions fine-tune, in-domain only on typed-decisions. The Laya head-only one-pass arms barely move from the released model (Section~\\ref{sec:laya}), so no NI marks are given for them.}',
          '\\label{tab:h2h}', '\\setlength{\\tabcolsep}{3pt}', '\\resizebox{\\linewidth}{!}{\\begin{tabular}{ll' + 'r' * len(SUITES) + '}', '\\toprule',
          'model & comparison & ' + ' & '.join(SSHORT[s] for s in SUITES) + ' \\\\']
     rows = [('feedback', 'records', 'ttt', 'records_guard', 'Peekaboo (8 passes) vs. their method'), ('feedback', 'records', 'sup_ts', 'records', 'Peekaboo (8) vs. answer key, same recipe (8)'),
             ('feedback', 'records', 'sup_ts', 'records_es', 'Peekaboo (8) vs. answer key, early-stopped'), ('feedback_1pass', 'records', 'sup_1pass', 'records', 'Peekaboo (1 pass) vs. answer key (1 pass)'),
-            ('feedback_1pass', 'records', 'feedback', 'records', 'Peekaboo, 1 pass vs. 8 passes'), ('logged_argmax', 'records', 'feedback_1pass', 'records', 'logged best answers vs. Peekaboo (1 pass)'),
+            ('feedback_1pass', 'records', 'feedback', 'records', 'Peekaboo, 1 pass vs. 8 passes'), ('logged_ips', 'records', 'feedback_1pass', 'records', 'logged sampled answers vs. Peekaboo (1 pass)'),
+            ('logged_ips', 'records', 'feedback', 'records', 'logged sampled answers vs. Peekaboo (8)'), ('logged_ips', 'records', 'sup_ts', 'records_es', 'logged sampled answers vs. answer key, early-stopped'),
+            ('logged_argmax', 'records', 'sup_ts', 'records_es', 'logged best answers vs. answer key, early-stopped'),
             ('feedback', 'records', 'feedback_kl0', 'records', 'KL term vs. none'), ('feedback', 'records_switch', 'feedback', 'records', 'with the switch vs. without')]
     rows_l = [('feedback', 'records', 'laya_td', 'records', 'Peekaboo, head (8) vs. their fine-tune'), ('feedback', 'records', 'sup_ts', 'records_es', 'Peekaboo, head (8) vs. answer-key head, early-stopped'),
               ('feedback_1pass', 'records', 'sup_1pass', 'records', 'Peekaboo, head (1) vs. answer-key head (1)'),
               ('feedback_enc', 'records', 'laya_td', 'records', 'Peekaboo, encoder (8) vs. their fine-tune'), ('feedback_enc', 'records', 'sup_enc', 'records', 'Peekaboo, encoder (8) vs. answer-key encoder, same recipe'),
-              ('feedback_enc', 'records', 'sup_enc', 'records_es', 'Peekaboo, encoder (8) vs. answer-key encoder, early-stopped'), ('feedback_enc_1pass', 'records', 'feedback_enc', 'records', 'Peekaboo, encoder: 1 pass vs. 8'),
+              ('feedback_enc', 'records', 'sup_enc', 'records_es', 'Peekaboo, encoder (8) vs. answer-key encoder, early-stopped'), ('feedback_enc_1pass', 'records', 'feedback_enc', 'records', 'Peekaboo, encoder: 1 pass vs. 8 passes'),
               ('feedback_enc', 'records', 'feedback', 'records', 'encoder unfrozen vs. head only (8 passes)')]
     for model, mname in MODELS:
         L += ['\\midrule', f'\\multicolumn{{{2 + len(SUITES)}}}{{l}}{{\\textit{{{mname}}}}} \\\\']
@@ -369,7 +371,7 @@ def tab_h2h():
             cells = []
             for s in SUITES:
                 g = N['compare'].get(f'{model}|{a}|{ka}|{s}|vs|{b}|{kb}')
-                cells.append((fg(g) + (' NI' if g.get('non_inferior_2') and 'answer' in name else '')) if g else '--')
+                cells.append((fg(g) + (' NI' if g.get('non_inferior_2') and 'answer' in name and 'head' not in name else '')) if g else '--')
             if any(c != '--' for c in cells):
                 L.append(f' & {name} & ' + ' & '.join(cells) + ' \\\\')
     L += ['\\bottomrule', '\\end{tabular}}', '\\end{table}']
@@ -393,21 +395,21 @@ def tab_realistic():
 
 
 def tab_calibration():
-    L = ['\\begin{table}[tbp]\\centering\\scriptsize', '\\caption{Calibration and proper scores (lower is better; mean over seeds). ``+ T\'\' rows apply one temperature to the released model, fitted on its own calibration rows from verdicts on sampled answers (mean over 10 draws) or from labels.}',
-         '\\label{tab:cal}', '\\setlength{\\tabcolsep}{2.5pt}', '\\resizebox{\\linewidth}{!}{\\begin{tabular}{ll' + 'rrr' * len(SUITES) + '}', '\\toprule',
-         'model & method & ' + ' & '.join(f'\\multicolumn{{3}}{{c}}{{{SSHORT[s]}}}' for s in SUITES) + ' \\\\', ' & & ' + ' & '.join('ECE & NLL & AURC' for _ in SUITES) + ' \\\\']
+    L = ['\\begin{table}[tbp]\\centering\\scriptsize', '\\caption{Calibration, proper scores and selective risk (lower is better; mean over seeds). ``+ T\'\' rows apply one temperature to the released model, fitted on its own calibration rows from verdicts on sampled answers (mean over 10 draws) or from labels; JevBench has no calibration pool for them.}',
+         '\\label{tab:cal}', '\\setlength{\\tabcolsep}{2.5pt}', '\\resizebox{\\linewidth}{!}{\\begin{tabular}{ll' + 'rrrr' * len(SUITES) + '}', '\\toprule',
+         'model & method & ' + ' & '.join(f'\\multicolumn{{4}}{{c}}{{{SSHORT[s]}}}' for s in SUITES) + ' \\\\', ' & & ' + ' & '.join('ECE & NLL & Brier & AURC' for _ in SUITES) + ' \\\\']
     rows = [('released', 'records', 'released model'), ('baseT', 'feedback', 'released + T from verdicts'), ('baseT', 'labels', 'released + T from labels'), ('feedback', 'records_raw', 'Peekaboo before the honesty fix'),
             ('feedback', 'records', 'Peekaboo'), ('feedback_1pass', 'records', 'Peekaboo, one pass'), ('sup_ts', 'records', 'answer key + label temperature'), ('feedback_enc', 'records', 'Peekaboo, encoder unfrozen'), ('sup_enc', 'records', 'answer-key encoder + label temperature')]
     for model, mname in MODELS:
-        L += ['\\midrule', f'\\multicolumn{{{2 + 3 * len(SUITES)}}}{{l}}{{\\textit{{{mname}}}}} \\\\']
+        L += ['\\midrule', f'\\multicolumn{{{2 + 4 * len(SUITES)}}}{{l}}{{\\textit{{{mname}}}}} \\\\']
         for meth, key, name in rows:
             cells = []
             for s in SUITES:
                 if meth == 'baseT':
                     v = (N['base_T'].get(f'{model}|{s}') or {}).get(key)
-                    cells += [f'{v[w]:.3f}' if v and v.get(w) is not None else '--' for w in ('ece', 'nll', 'aurc')]
+                    cells += [f'{v[w]:.3f}' if v and v.get(w) is not None else '--' for w in ('ece', 'nll', 'brier', 'aurc')]
                 else:
-                    cells += [f'{np.mean(sc(model, meth, key, s, w)):.3f}' if sc(model, meth, key, s, w) else '--' for w in ('ece', 'nll', 'aurc')]
+                    cells += [f'{np.mean(sc(model, meth, key, s, w)):.3f}' if sc(model, meth, key, s, w) else '--' for w in ('ece', 'nll', 'brier', 'aurc')]
             if any(c != '--' for c in cells):
                 L.append(f' & {name} & ' + ' & '.join(cells) + ' \\\\')
     L += ['\\bottomrule', '\\end{tabular}}', '\\end{table}']
@@ -446,16 +448,16 @@ def tab_anatomy():
             L.append(f'{mname} & {name} & {m("fix_rate")} & {m("fix_rate_rank2")} & {m("fix_rate_rank3")} & {m("fix_rate_rank4plus")} & {m("break_rate")} \\\\')
     L += ['\\bottomrule', '\\end{tabular}', '\\end{table}']
     table(L, 'tables_fixbreak.tex')
-    L = ['\\begin{table}[tbp]\\centering\\small', '\\caption{VegaML\'s TTT head only answers rows whose option set matches a fitted head (``covered\'\'); elsewhere its output is the released engine\'s. Peekaboo minus TTT (0.8.0 rule) on covered and uncovered rows, and the answer-key adapter minus TTT on covered rows.}',
-         '\\label{tab:ttt}', '\\resizebox{\\linewidth}{!}{\\begin{tabular}{llrrrr}', '\\toprule', 'model & benchmark & rows covered & Peekaboo $-$ TTT, covered & uncovered & answer key $-$ TTT, covered \\\\', '\\midrule']
+    L = ['\\begin{table}[tbp]\\centering\\small', '\\caption{VegaML\'s TTT head answers a row only where a head was kept for its task and the option set matches (``covered\'\'); elsewhere its output is the released engine\'s. Eight-pass Peekaboo minus TTT, and the answer-key adapter minus TTT, on covered and uncovered rows, under the vegaml 0.12.3 rule used in the main comparison; rows covered under the 0.8.0 rule for reference.}',
+         '\\label{tab:ttt}', '\\resizebox{\\linewidth}{!}{\\begin{tabular}{llrrrrr}', '\\toprule', 'model & benchmark & covered (0.12.3) & covered (0.8.0) & Peekaboo $-$ TTT, covered & uncovered & answer key $-$ TTT, covered \\\\', '\\midrule']
     for model, mname in MODELS[:2]:
         for s in SUITES:
-            t = N['ttt'].get(f'{model}|{s}')
+            t = N['ttt'].get(f'{model}|{s}'); t0 = N['ttt'].get(f'{model}|{s}|v080') or {}
             if t:
-                L.append(f'{mname} & {SNAME[s]} & {t["rows_covered"]} / {t["rows"]} & {fg(t.get("peekaboo_vs_ttt_covered"), mark=False)} & {fg(t.get("peekaboo_vs_ttt_uncovered"), mark=False)} & {fg(t.get("adapter_vs_ttt_covered"), mark=False)} \\\\')
+                L.append(f'{mname} & {SNAME[s]} & {t["rows_covered"]} / {t["rows"]} & {t0.get("rows_covered", "--")} & {fg(t.get("peekaboo_vs_ttt_covered"), mark=False)} & {fg(t.get("peekaboo_vs_ttt_uncovered"), mark=False)} & {fg(t.get("adapter_vs_ttt_covered"), mark=False)} \\\\')
     L += ['\\bottomrule', '\\end{tabular}}', '\\end{table}']
     table(L, 'tables_ttt.tex')
-    L = ['\\begin{table}[tbp]\\centering\\small', '\\caption{Benchmark artifacts. Gain over the released model with every task, and without the tasks whose gold answer an adapter can learn without reading the input (public: truthfulqa\\_mc1, pubmedqa; DecisionBench: moderation-civil-comments, finqa-score).}',
+    L = ['\\begin{table}[tbp]\\centering\\small', '\\caption{Benchmark artifacts. Gain over the released model with every task, and without the five tasks whose gold answer an adapter can learn without reading the input (public: truthfulqa\\_mc1, pubmedqa; DecisionBench: contains\\_threat, toxicity\\_severity, finqa-numerical-reasoning).}',
          '\\label{tab:artifacts}', '\\resizebox{\\linewidth}{!}{\\begin{tabular}{llrrrr}', '\\toprule', 'model & method & public, all 43 & public, 41 tasks & DecisionBench, all 43 & DecisionBench, 40 tasks \\\\', '\\midrule']
     for model, mname in MODELS:
         for meth, key, name in (('feedback', 'records', 'Peekaboo (8)'), ('feedback_1pass', 'records', 'Peekaboo (1)'), ('sup_ts', 'records', 'answer key'), ('ttt', 'records_guard', 'TTT (0.12.3)'), ('feedback_enc', 'records', 'Peekaboo, encoder'), ('laya_td', 'records', 'their fine-tune')):
@@ -568,8 +570,10 @@ def tex_numbers():
             if v.get(w) is not None:
                 add(name + nm(model, meth, s), f'{v[w]:.2f}')
     for k, v in N['ttt'].items():
-        model, s = k.split('|')
-        add('tttCovered' + nm(model, s), str(v['rows_covered']))
+        parts = k.split('|'); model, s = parts[:2]; old = 'Vzero' if len(parts) == 3 else ''
+        add('tttCovered' + old + nm(model, s), str(v['rows_covered']))
+        if old:
+            continue
         for w in ('peekaboo_vs_ttt_covered', 'peekaboo_vs_ttt_uncovered', 'adapter_vs_ttt_covered'):
             if v.get(w):
                 add('gain' + ''.join(x.title() for x in w.split('_')) + nm(model, s), f'{v[w]["gain"]:+.1f}'); add('ci' + ''.join(x.title() for x in w.split('_')) + nm(model, s), f'[{v[w]["lo"]:+.1f}, {v[w]["hi"]:+.1f}]')
@@ -590,6 +594,8 @@ def tex_numbers():
             if vals:
                 for w, name in (('fix_rate', 'Fix'), ('break_rate', 'Break'), ('fix_rate_rank2', 'FixRankTwo'), ('fix_rate_rank4plus', 'FixRankFour')):
                     add(name + 'Mean' + nm(model, meth), f'{100 * np.nanmean([x[w] if x.get(w) is not None else np.nan for x in vals]):.0f}')
+    if N.get('t_match'):
+        add('TmatchSame', str(N['t_match']['same'])); add('TmatchNear', str(N['t_match']['within_one_step'])); add('TmatchRuns', str(N['t_match']['runs']))
     if N.get('T_range'):
         add('Tmin', f'{N["T_range"]["min"]:.1f}'); add('Tmax', f'{N["T_range"]["max"]:.1f}'); add('Tmedian', f'{N["T_range"]["median"]:.1f}')
     for k, v in N['balanced'].items():

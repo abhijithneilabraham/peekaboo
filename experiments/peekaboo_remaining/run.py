@@ -136,10 +136,11 @@ def plan_v2(out):
             V(size, f'replay/{s}', ['adapt.py', '--suite', s, '--method', 'replay'], ex(res, 'methods', s, 'replay_s0.json'), gr, [f'vega-{size}/cache/{s}'])
         Lm('laya', f'replay/{s}', ['train', '--suite', s, '--method', 'replay'], ex('results_laya', 'methods', s, 'replay_s0.json'), 4, [f'laya/cache/{s}'])
     # 2. Laya with the encoder unfrozen: the long pole, so it starts as soon as its cache exists
-    # (on an A40 one encoder run takes ~20 min, so: three seeds on the public menu and DecisionBench, one seed on
-    #  typed-decisions and emotion; none on JevBench (5 folds) or AG News, where the released model is already at 0.93)
-    for s in ('public', 'decisionbench', 'typed', 'emotion'):
-        for sd in (SEEDS if s == 'public' else [0, 1] if s == 'decisionbench' else [0]):
+    # (the plan as it finally ran: the grid was trimmed four times while running to fit the GPU budget, and the steps
+    #  that had already finished were kept. Encoder arms: three seeds on the public menu and JevBench, two on
+    #  DecisionBench, one on typed-decisions and emotion, none on AG News)
+    for s in ('public', 'jevbench', 'decisionbench', 'typed', 'emotion'):
+        for sd in (SEEDS if s in ('public', 'jevbench') else [0, 1] if s == 'decisionbench' else [0]):
             for m in ('feedback_enc', 'sup_enc', 'feedback_enc_1pass'):
                 lm(s, m, sd, 17)
     # 3. the main comparison: TTT (both rules), the answer-key add-on (+ early stopping), Peekaboo, both 8-pass and 1-pass
@@ -153,7 +154,7 @@ def plan_v2(out):
         # Laya head only (the frozen encoder is re-run every pass, ~8 min a run on an A40): three seeds on typed-decisions,
         # one seed elsewhere for the one-pass arms, and the eight-pass arms only on typed-decisions and emotion
         for m in ('feedback_1pass', 'sup_1pass'):              # eight-pass head-only arms: v1 grid (one run takes >1 h here)
-            for sd in (SEEDS if s == 'typed' else ([0] if s in ('public', 'decisionbench') else [])):
+            for sd in (SEEDS if s == 'typed' else ([0] if s in ('public', 'jevbench', 'decisionbench') else [])):
                 lm(s, m, sd, 4)
     # 4. typed-decisions on Vega with the shipped typed_decisions adapter (fitted on this pool) switched off
     for size, res, _, gr in VEGA:
@@ -169,9 +170,10 @@ def plan_v2(out):
                     vm(size, s, m, sd, gr)
     # 6. ablation: no KL term; pooled Peekaboo (Laya's KL ablation and pooled head are in the v1 grid)
     for s in SUITES:                                             # (pooled Peekaboo is in the v1 grid)
-        for sd in (SEEDS if s == 'decisionbench' else [0]):
+        for sd in SEEDS:
             for size, res, _, gr in VEGA:
-                vm(size, s, 'feedback_kl0', sd, gr)
+                if sd == 0 or s == 'decisionbench' or (size == '0.8b' and s == 'jevbench'):
+                    vm(size, s, 'feedback_kl0', sd, gr)
     steps.append(Step('tables', HERE, ['table.py'], lambda: False, None, 0))
     return steps
 

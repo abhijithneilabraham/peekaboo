@@ -1,5 +1,5 @@
 \begin{table}[tbp]\centering\scriptsize
-\caption{Accuracy, mean over 3 seeds ($\pm$ s.d.) where a method is stochastic. JevBench has no training split: every method learns by 5-fold cross-fitting there, and pooled Peekaboo never sees it.}
+\caption{Accuracy, mean over seeds ($\pm$ s.d.; three seeds except where Section~\ref{sec:limitations} lists fewer). JevBench has no training split: every method learns by 5-fold cross-fitting there.}
 \label{tab:acc}
 \setlength{\tabcolsep}{2.5pt}
 \resizebox{\linewidth}{!}{\begin{tabular}{llrrrrrrr}
@@ -15,6 +15,7 @@ Vega 0.8B & released model & none & 0.556 & 0.545 & 0.509 & 0.666 & 0.568 & 0.90
  & \textbf{Peekaboo}, eight passes & verdicts & 0.593 {\scriptsize$\pm$0.013} & 0.522 {\scriptsize$\pm$0.010} & 0.622 {\scriptsize$\pm$0.002} & 0.728 {\scriptsize$\pm$0.007} & 0.627 {\scriptsize$\pm$0.004} & 0.912 {\scriptsize$\pm$0.004} \\
  & \textbf{Peekaboo}, one pass & verdicts & 0.575 {\scriptsize$\pm$0.008} & 0.540 {\scriptsize$\pm$0.002} & 0.576 {\scriptsize$\pm$0.011} & 0.708 {\scriptsize$\pm$0.003} & 0.618 {\scriptsize$\pm$0.006} & 0.914 {\scriptsize$\pm$0.002} \\
  & logged best answers, rated once & verdicts & $\cdot$ & $\cdot$ & 0.583 {\scriptsize$\pm$0.009} & 0.726 & 0.603 & $\cdot$ \\
+ & logged sampled answers, rated once & verdicts & $\cdot$ & $\cdot$ & 0.592 {\scriptsize$\pm$0.011} & 0.722 & 0.634 & $\cdot$ \\
  & Peekaboo, no KL term & verdicts & 0.582 & 0.517 {\scriptsize$\pm$0.014} & 0.609 {\scriptsize$\pm$0.004} & 0.709 & 0.622 & 0.916 \\
 \addlinespace
 Vega 4B & released model & none & 0.718 & 0.667 & 0.636 & 0.729 & 0.575 & 0.928 \\
@@ -26,6 +27,7 @@ Vega 4B & released model & none & 0.718 & 0.667 & 0.636 & 0.729 & 0.575 & 0.928 
  & \textbf{Peekaboo}, eight passes & verdicts & 0.706 {\scriptsize$\pm$0.005} & 0.696 {\scriptsize$\pm$0.005} & 0.694 {\scriptsize$\pm$0.005} & 0.746 {\scriptsize$\pm$0.010} & 0.629 {\scriptsize$\pm$0.009} & 0.930 {\scriptsize$\pm$0.002} \\
  & \textbf{Peekaboo}, one pass & verdicts & 0.718 {\scriptsize$\pm$0.017} & 0.664 {\scriptsize$\pm$0.003} & 0.669 {\scriptsize$\pm$0.004} & 0.749 {\scriptsize$\pm$0.004} & 0.607 {\scriptsize$\pm$0.003} & 0.930 {\scriptsize$\pm$0.002} \\
  & logged best answers, rated once & verdicts & $\cdot$ & $\cdot$ & 0.655 {\scriptsize$\pm$0.004} & 0.769 & 0.611 & $\cdot$ \\
+ & logged sampled answers, rated once & verdicts & $\cdot$ & $\cdot$ & 0.680 {\scriptsize$\pm$0.003} & 0.748 & 0.620 & $\cdot$ \\
  & Peekaboo, no KL term & verdicts & 0.713 & 0.693 & 0.672 {\scriptsize$\pm$0.002} & 0.742 & 0.519 & 0.928 \\
 \addlinespace
 Laya & released model & none & 0.540 & 0.576 & 0.406 & 0.362 & 0.599 & 0.930 \\

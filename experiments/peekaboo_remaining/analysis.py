@@ -370,7 +370,7 @@ def fix_break(model, suite, method, key='records'):
     return out
 
 
-def ttt_coverage(model, suite, key='records'):
+def ttt_coverage(model, suite, key='records_guard'):
     its = items(suite)
     T = runs(model, suite, 'ttt', key)
     if not T:
@@ -379,12 +379,63 @@ def ttt_coverage(model, suite, key='records'):
     P = [correct(r) for r in runs(model, suite, 'feedback')]
     S = [correct(r) for r in runs(model, suite, 'sup_ts')]
     out = {'rows_covered': int(covered.sum()), 'rows': len(its)}
-    if P:
+    if P and covered.any():
         out['peekaboo_vs_ttt_covered'] = compare(suite, [correct(T[0])], P, mask=covered)
+    if P and (~covered).any():
         out['peekaboo_vs_ttt_uncovered'] = compare(suite, [correct(T[0])], P, mask=~covered)
-    if S:
+    if S and covered.any():
         out['adapter_vs_ttt_covered'] = compare(suite, [correct(T[0])], S, mask=covered)
+    out['rule'] = key
     return out
+
+
+def families(N):
+    """Holm families: for each model, each first method and each comparator (incl. its record key), the comparisons
+    across benchmarks; each method against the released model across benchmarks; the KL contrasts. Every comparison the
+    paper marks or counts is in exactly one family."""
+    fam = {}
+    first = ('feedback', 'feedback_1pass', 'feedback_enc', 'feedback_enc_1pass', 'logged_ips', 'logged_argmax', 'sup_ts', 'sup_1pass', 'sup_enc')
+    for k, v in N['compare'].items():
+        if not v:
+            continue
+        parts = k.split('|')
+        if len(parts) == 6 and parts[5] == 'released' and parts[1] in first + ('ttt', 'laya_td') and parts[2] in ('records', 'records_es', 'records_guard'):
+            fam.setdefault(f'{parts[0]}|{parts[1]}|{parts[2]}|vs|released', {})[k] = v
+        elif len(parts) == 7 and parts[1] in first:
+            fam.setdefault(f'{parts[0]}|{parts[1]}|{parts[2]}|vs|{parts[5]}|{parts[6]}', {})[k] = v
+    for f in fam.values():
+        holm(f)
+    N['families'] = {name: sorted(f) for name, f in fam.items()}
+
+
+def t_match(N):
+    """How often the feedback-fitted temperature equals a temperature fitted on argmax correctness (top-label temperature
+    scaling with the same 0/1 signal), on each run's own calibration rows (stored in the run's info)."""
+    out = {'same': 0, 'within_one_step': 0, 'runs': 0}
+    for m in MODELS:
+        for s in SUITES:
+            gold = {it['id']: it['labels'].index(it['gold']) for it in items(s, 'pool') + items(s)}
+            for meth in ('feedback', 'feedback_enc'):
+                for inf in infos(m, s, meth):
+                    for f in inf.get('folds', []):
+                        cal = f.get('cal')
+                        if not cal or not f.get('T'):
+                            continue
+                        P = [np.asarray(p, float) for p in cal['adapter']]
+                        g = [gold.get(i) for i in cal['ids']]
+                        ok = [j for j, x in enumerate(g) if x is not None]
+                        P = [P[j] / P[j].sum() for j in ok]; g = [g[j] for j in ok]
+                        acts = [int(np.argmax(p)) for p in P]; r = [float(a == y) for a, y in zip(acts, g)]
+
+                        def ll(T):
+                            tot = 0.0
+                            for p, a, ri in zip(P, acts, r):
+                                q = min(max(temp(p, T)[a], 1e-6), 1 - 1e-6); tot += ri * np.log(q) + (1 - ri) * np.log(1 - q)
+                            return tot
+                        Ta = float(max(TGRID, key=ll))
+                        i1, i2 = int(np.argmin(abs(TGRID - f['T']))), int(np.argmin(abs(TGRID - Ta)))
+                        out['runs'] += 1; out['same'] += int(i1 == i2); out['within_one_step'] += int(abs(i1 - i2) <= 1)
+    N['t_match'] = out
 
 
 # ───────────────────────────── main ─────────────────────────────
@@ -481,24 +532,30 @@ def main():
                 continue
             c = np.mean([correct(r) for r in R], 0)
             N['tasks_db'][f'{m}|{meth}'] = {t: {'base': float(base[g].mean()), 'acc': float(c[g].mean()), 'n': int(len(g))} for t, g in task_groups('decisionbench').items()}
-    # Holm within the families a reader will count
-    fam = {}
-    for k, v in N['compare'].items():
-        if not v:
-            continue
-        parts = k.split('|')
-        if '|vs|' in k and parts[1] in ('feedback', 'feedback_enc') and parts[2] == 'records' and len(parts) >= 7 and parts[5] in ('ttt', 'laya_td', 'sup_ts', 'sup_enc') and parts[6] == 'records':
-            fam.setdefault(f'{parts[0]}|{parts[1]}|vs|{parts[5]}', {})[k] = v
-        if parts[-1] == 'released' and parts[1] in ('feedback', 'feedback_1pass', 'feedback_enc') and parts[2] == 'records':
-            fam.setdefault(f'{parts[0]}|{parts[1]}|vs|released', {})[k] = v
-        if '|vs|feedback_kl0|' in k:
-            fam.setdefault('kl', {})[k] = v
-    for name, f in fam.items():
-        holm(f)
-    N['families'] = {name: sorted(f) for name, f in fam.items()}
+    post(N)
     json.dump(N, open(os.path.join(OUT, 'analysis.json'), 'w'), indent=0)
     print('wrote', os.path.join(OUT, 'analysis.json'), {k: len(v) for k, v in N.items()})
 
 
+def post(N):
+    """Everything computed from the stored comparisons and records without new bootstraps: Holm families, TTT coverage
+    under both rules, the temperature check. `python analysis.py --post` reruns only this on an existing analysis.json."""
+    N['ttt'] = {}
+    for m in ('0.8b', '4b'):
+        for s in SUITES:
+            if s == 'jevbench':
+                continue
+            for key in ('records_guard', 'records'):
+                tc = ttt_coverage(m, s, key)
+                if tc:
+                    N['ttt'][f'{m}|{s}' + ('' if key == 'records_guard' else '|v080')] = tc
+    families(N)
+    t_match(N)
+
+
 if __name__ == '__main__':
-    main()
+    if '--post' in sys.argv:
+        path = os.path.join(OUT, 'analysis.json'); N = json.load(open(path)); post(N)
+        json.dump(N, open(path, 'w'), indent=0); print('post-processed', path, N['t_match'], len(N['families']), 'families')
+    else:
+        main()
