@@ -31,15 +31,22 @@ mkdir -p $OUT
 nohup python run.py --grid v2 --out $OUT --jobs 8 >> $OUT/run.log 2>&1 &
 RUN=$!
 START=$(date +%s)
+timed_out=0
 while kill -0 $RUN 2>/dev/null; do
-  sleep 600
+  sleep 300
   push
   if (( $(date +%s) - START > MAX_HOURS * 3600 )); then
     echo "MAX_HOURS reached; stopping" >> $OUT/run.log
-    pkill -f "run.py --grid v2" ; sleep 5; pkill -f adapt.py; pkill -f laya_peekaboo.py; pkill -f suite_cache.py
-    break
+    kill $RUN; sleep 5; pkill -f "adapt.p[y]"; pkill -f "laya_peekaboo.p[y]"; pkill -f "suite_cache.p[y]"
+    timed_out=1; break
   fi
 done
 sleep 5
 echo "autopilot: run.py finished at $(date -u)" >> $OUT/run.log
-terminate
+# terminate the pod only when the grid is complete or the time cap was hit; a run that died early stays up for a fix
+if (( timed_out )) || python run.py --grid v2 --out $OUT --check > /dev/null 2>&1; then
+  terminate
+else
+  echo "autopilot: grid not complete (see STATUS.md); pod left running for a fix" >> $OUT/run.log
+  push
+fi
