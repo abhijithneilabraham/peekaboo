@@ -1,31 +1,18 @@
-# Status of the remaining Peekaboo experiments  (Thu Oct 22 09:33:21 2026)
+# Status of the remaining Peekaboo experiments  (Thu Oct 22 09:39:21 2026)
 
-done: 216 · pending: 90 · running: 8  (of 314 steps)
+done: 229 · pending: 77 · running: 8  (of 314 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **running** `vega-4b/sup_ts/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method sup_ts --seed 0`)
-- **running** `vega-4b/sup_ts/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method sup_ts --seed 1`)
-- **running** `vega-4b/sup_ts/agnews/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method sup_ts --seed 2`)
-- **running** `vega-4b/feedback/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback --seed 0`)
-- **running** `vega-4b/feedback/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback --seed 1`)
-- **running** `vega-4b/feedback/agnews/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback --seed 2`)
-- **running** `vega-4b/feedback_1pass/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback_1pass --seed 0`)
-- **running** `vega-4b/feedback_1pass/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback_1pass --seed 1`)
-- **pending** `vega-4b/feedback_1pass/agnews/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback_1pass --seed 2`)
-- **pending** `vega-4b/sup_1pass/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method sup_1pass --seed 0`)
-- **pending** `vega-4b/sup_1pass/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method sup_1pass --seed 1`)
-- **pending** `vega-4b/sup_1pass/agnews/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method sup_1pass --seed 2`)
-- **pending** `vega-0.8b/noship_released/typed`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method noship_released`)
-- **pending** `vega-0.8b/feedback_noship/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method feedback_noship --seed 0`)
-- **pending** `vega-0.8b/feedback_noship/typed/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method feedback_noship --seed 1`)
-- **pending** `vega-0.8b/feedback_noship/typed/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method feedback_noship --seed 2`)
-- **pending** `vega-0.8b/sup_ts_noship/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method sup_ts_noship --seed 0`)
-- **pending** `vega-0.8b/sup_ts_noship/typed/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method sup_ts_noship --seed 1`)
-- **pending** `vega-0.8b/sup_ts_noship/typed/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method sup_ts_noship --seed 2`)
-- **pending** `vega-0.8b/feedback_1pass_noship/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method feedback_1pass_noship --seed 0`)
-- **pending** `vega-0.8b/feedback_1pass_noship/typed/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method feedback_1pass_noship --seed 1`)
+- **running** `vega-0.8b/feedback_noship/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method feedback_noship --seed 0`)
+- **running** `vega-0.8b/feedback_noship/typed/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method feedback_noship --seed 1`)
+- **running** `vega-0.8b/feedback_noship/typed/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method feedback_noship --seed 2`)
+- **running** `vega-0.8b/sup_ts_noship/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method sup_ts_noship --seed 0`)
+- **running** `vega-0.8b/sup_ts_noship/typed/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method sup_ts_noship --seed 1`)
+- **running** `vega-0.8b/sup_ts_noship/typed/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method sup_ts_noship --seed 2`)
+- **running** `vega-0.8b/feedback_1pass_noship/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method feedback_1pass_noship --seed 0`)
+- **running** `vega-0.8b/feedback_1pass_noship/typed/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method feedback_1pass_noship --seed 1`)
 - **pending** `vega-0.8b/feedback_1pass_noship/typed/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method feedback_1pass_noship --seed 2`)
 - **pending** `vega-4b/noship_released/typed`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method noship_released`)
 - **pending** `vega-4b/feedback_noship/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback_noship --seed 0`)
@@ -321,27 +308,27 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-0.8b/sup_1pass/agnews/s1 70s
 - done     vega-0.8b/sup_1pass/agnews/s2 100s
 - done     vega-4b/ttt/agnews 
-- running  vega-4b/sup_ts/agnews/s0 
-- running  vega-4b/sup_ts/agnews/s1 
-- running  vega-4b/sup_ts/agnews/s2 
-- running  vega-4b/feedback/agnews/s0 
-- running  vega-4b/feedback/agnews/s1 
-- running  vega-4b/feedback/agnews/s2 
-- running  vega-4b/feedback_1pass/agnews/s0 
-- running  vega-4b/feedback_1pass/agnews/s1 
-- pending  vega-4b/feedback_1pass/agnews/s2 
-- pending  vega-4b/sup_1pass/agnews/s0 
-- pending  vega-4b/sup_1pass/agnews/s1 
-- pending  vega-4b/sup_1pass/agnews/s2 
-- pending  vega-0.8b/noship_released/typed 
-- pending  vega-0.8b/feedback_noship/typed/s0 
-- pending  vega-0.8b/feedback_noship/typed/s1 
-- pending  vega-0.8b/feedback_noship/typed/s2 
-- pending  vega-0.8b/sup_ts_noship/typed/s0 
-- pending  vega-0.8b/sup_ts_noship/typed/s1 
-- pending  vega-0.8b/sup_ts_noship/typed/s2 
-- pending  vega-0.8b/feedback_1pass_noship/typed/s0 
-- pending  vega-0.8b/feedback_1pass_noship/typed/s1 
+- done     vega-4b/sup_ts/agnews/s0 375s
+- done     vega-4b/sup_ts/agnews/s1 375s
+- done     vega-4b/sup_ts/agnews/s2 380s
+- done     vega-4b/feedback/agnews/s0 340s
+- done     vega-4b/feedback/agnews/s1 335s
+- done     vega-4b/feedback/agnews/s2 345s
+- done     vega-4b/feedback_1pass/agnews/s0 140s
+- done     vega-4b/feedback_1pass/agnews/s1 140s
+- done     vega-4b/feedback_1pass/agnews/s2 140s
+- done     vega-4b/sup_1pass/agnews/s0 140s
+- done     vega-4b/sup_1pass/agnews/s1 115s
+- done     vega-4b/sup_1pass/agnews/s2 125s
+- done     vega-0.8b/noship_released/typed 120s
+- running  vega-0.8b/feedback_noship/typed/s0 
+- running  vega-0.8b/feedback_noship/typed/s1 
+- running  vega-0.8b/feedback_noship/typed/s2 
+- running  vega-0.8b/sup_ts_noship/typed/s0 
+- running  vega-0.8b/sup_ts_noship/typed/s1 
+- running  vega-0.8b/sup_ts_noship/typed/s2 
+- running  vega-0.8b/feedback_1pass_noship/typed/s0 
+- running  vega-0.8b/feedback_1pass_noship/typed/s1 
 - pending  vega-0.8b/feedback_1pass_noship/typed/s2 
 - pending  vega-4b/noship_released/typed 
 - pending  vega-4b/feedback_noship/typed/s0 
