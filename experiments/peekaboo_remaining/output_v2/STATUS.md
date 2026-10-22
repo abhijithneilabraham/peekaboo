@@ -1,24 +1,18 @@
-# Status of the remaining Peekaboo experiments  (Thu Oct 22 10:10:22 2026)
+# Status of the remaining Peekaboo experiments  (Thu Oct 22 10:15:22 2026)
 
-done: 264 · pending: 42 · running: 8  (of 314 steps)
+done: 270 · pending: 36 · running: 8  (of 314 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **running** `vega-4b/feedback_complaints/decisionbench/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method feedback_complaints --seed 1`)
-- **running** `vega-4b/feedback_complaints/decisionbench/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method feedback_complaints --seed 2`)
-- **running** `vega-0.8b/logged_argmax/decisionbench/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite decisionbench --method logged_argmax --seed 0`)
-- **running** `vega-4b/logged_argmax/decisionbench/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method logged_argmax --seed 0`)
-- **running** `vega-0.8b/logged_argmax/decisionbench/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite decisionbench --method logged_argmax --seed 1`)
 - **running** `vega-4b/logged_argmax/decisionbench/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method logged_argmax --seed 1`)
-- **running** `vega-0.8b/logged_argmax/decisionbench/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite decisionbench --method logged_argmax --seed 2`)
 - **running** `vega-4b/logged_argmax/decisionbench/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method logged_argmax --seed 2`)
-- **pending** `vega-0.8b/logged_ips/decisionbench/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite decisionbench --method logged_ips --seed 0`)
-- **pending** `vega-4b/logged_ips/decisionbench/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method logged_ips --seed 0`)
-- **pending** `vega-0.8b/logged_ips/decisionbench/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite decisionbench --method logged_ips --seed 1`)
-- **pending** `vega-4b/logged_ips/decisionbench/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method logged_ips --seed 1`)
-- **pending** `vega-0.8b/logged_ips/decisionbench/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite decisionbench --method logged_ips --seed 2`)
-- **pending** `vega-4b/logged_ips/decisionbench/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method logged_ips --seed 2`)
+- **running** `vega-0.8b/logged_ips/decisionbench/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite decisionbench --method logged_ips --seed 0`)
+- **running** `vega-4b/logged_ips/decisionbench/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method logged_ips --seed 0`)
+- **running** `vega-0.8b/logged_ips/decisionbench/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite decisionbench --method logged_ips --seed 1`)
+- **running** `vega-4b/logged_ips/decisionbench/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method logged_ips --seed 1`)
+- **running** `vega-0.8b/logged_ips/decisionbench/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite decisionbench --method logged_ips --seed 2`)
+- **running** `vega-4b/logged_ips/decisionbench/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method logged_ips --seed 2`)
 - **pending** `vega-0.8b/feedback_noise20/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method feedback_noise20 --seed 0`)
 - **pending** `vega-4b/feedback_noise20/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback_noise20 --seed 0`)
 - **pending** `vega-0.8b/feedback_half/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method feedback_half --seed 0`)
@@ -320,21 +314,21 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-0.8b/feedback_complaints/decisionbench/s0 365s
 - done     vega-4b/feedback_complaints/decisionbench/s0 440s
 - done     vega-0.8b/feedback_complaints/decisionbench/s1 350s
-- running  vega-4b/feedback_complaints/decisionbench/s1 
+- done     vega-4b/feedback_complaints/decisionbench/s1 445s
 - done     vega-0.8b/feedback_complaints/decisionbench/s2 360s
-- running  vega-4b/feedback_complaints/decisionbench/s2 
-- running  vega-0.8b/logged_argmax/decisionbench/s0 
-- running  vega-4b/logged_argmax/decisionbench/s0 
-- running  vega-0.8b/logged_argmax/decisionbench/s1 
+- done     vega-4b/feedback_complaints/decisionbench/s2 445s
+- done     vega-0.8b/logged_argmax/decisionbench/s0 385s
+- done     vega-4b/logged_argmax/decisionbench/s0 470s
+- done     vega-0.8b/logged_argmax/decisionbench/s1 380s
 - running  vega-4b/logged_argmax/decisionbench/s1 
-- running  vega-0.8b/logged_argmax/decisionbench/s2 
+- done     vega-0.8b/logged_argmax/decisionbench/s2 380s
 - running  vega-4b/logged_argmax/decisionbench/s2 
-- pending  vega-0.8b/logged_ips/decisionbench/s0 
-- pending  vega-4b/logged_ips/decisionbench/s0 
-- pending  vega-0.8b/logged_ips/decisionbench/s1 
-- pending  vega-4b/logged_ips/decisionbench/s1 
-- pending  vega-0.8b/logged_ips/decisionbench/s2 
-- pending  vega-4b/logged_ips/decisionbench/s2 
+- running  vega-0.8b/logged_ips/decisionbench/s0 
+- running  vega-4b/logged_ips/decisionbench/s0 
+- running  vega-0.8b/logged_ips/decisionbench/s1 
+- running  vega-4b/logged_ips/decisionbench/s1 
+- running  vega-0.8b/logged_ips/decisionbench/s2 
+- running  vega-4b/logged_ips/decisionbench/s2 
 - pending  vega-0.8b/feedback_noise20/typed/s0 
 - pending  vega-4b/feedback_noise20/typed/s0 
 - pending  vega-0.8b/feedback_half/typed/s0 
