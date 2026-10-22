@@ -1,6 +1,6 @@
-# Status of the remaining Peekaboo experiments  (Thu Oct 22 07:37:26 2026)
+# Status of the remaining Peekaboo experiments  (Thu Oct 22 07:42:26 2026)
 
-done: 160 · pending: 233 · running: 3  (of 396 steps)
+done: 163 · pending: 230 · running: 3  (of 396 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
@@ -8,10 +8,7 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - **running** `laya/feedback_enc/emotion/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method feedback_enc --seed 0`)
 - **running** `laya/sup_enc/emotion/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method sup_enc --seed 0`)
 - **pending** `laya/feedback_enc_1pass/emotion/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method feedback_enc_1pass --seed 0`)
-- **running** `vega-0.8b/sup_1pass/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method sup_1pass --seed 0`)
-- **pending** `vega-0.8b/sup_1pass/typed/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method sup_1pass --seed 1`)
-- **pending** `vega-0.8b/sup_1pass/typed/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method sup_1pass --seed 2`)
-- **pending** `vega-4b/sup_ts/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method sup_ts --seed 0`)
+- **running** `vega-4b/sup_ts/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method sup_ts --seed 0`)
 - **pending** `vega-4b/sup_ts/typed/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method sup_ts --seed 1`)
 - **pending** `vega-4b/sup_ts/typed/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method sup_ts --seed 2`)
 - **pending** `vega-4b/feedback/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback --seed 0`)
@@ -399,11 +396,11 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-0.8b/feedback_1pass/typed/s0 60s
 - done     vega-0.8b/feedback_1pass/typed/s1 45s
 - done     vega-0.8b/feedback_1pass/typed/s2 75s
-- running  vega-0.8b/sup_1pass/typed/s0 
-- pending  vega-0.8b/sup_1pass/typed/s1 
-- pending  vega-0.8b/sup_1pass/typed/s2 
+- done     vega-0.8b/sup_1pass/typed/s0 90s
+- done     vega-0.8b/sup_1pass/typed/s1 90s
+- done     vega-0.8b/sup_1pass/typed/s2 95s
 - done     vega-4b/ttt/typed 
-- pending  vega-4b/sup_ts/typed/s0 
+- running  vega-4b/sup_ts/typed/s0 
 - pending  vega-4b/sup_ts/typed/s1 
 - pending  vega-4b/sup_ts/typed/s2 
 - pending  vega-4b/feedback/typed/s0 
