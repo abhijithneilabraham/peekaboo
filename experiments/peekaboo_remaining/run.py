@@ -153,7 +153,7 @@ def plan_v2(out):
         # Laya head only (the frozen encoder is re-run every pass, ~8 min a run on an A40): three seeds on typed-decisions,
         # one seed elsewhere for the one-pass arms, and the eight-pass arms only on typed-decisions and emotion
         for m in ('sup_ts', 'feedback', 'feedback_1pass', 'sup_1pass'):
-            seeds = SEEDS if s == 'typed' else ([0] if (m.endswith('1pass') or s == 'emotion') else [])
+            seeds = SEEDS if s == 'typed' else ([0] if (s in ('public', 'decisionbench') and m.endswith('1pass')) else [])
             for sd in seeds:
                 lm(s, m, sd, 4)
     # 4. typed-decisions on Vega with the shipped typed_decisions adapter (fitted on this pool) switched off
@@ -163,22 +163,16 @@ def plan_v2(out):
             for sd in SEEDS:
                 vm(size, 'typed', m, sd, gr)
     # 5. realistic feedback: noisy, missing, complaints only, and logged (argmax / sampled) answers learned off-policy
-    for s in REAL_SUITES:
+    for s in REAL_SUITES:                                        # three seeds on DecisionBench, one elsewhere (time)
         for m in REALISTIC:
-            for sd in SEEDS:
+            for sd in (SEEDS if s == 'decisionbench' else [0]):
                 for size, res, _, gr in VEGA:
                     vm(size, s, m, sd, gr)
-                if sd == 0 and s == 'typed' and m.startswith('logged'):   # Laya head: logged feedback on typed-decisions only
-                    lm(s, m, sd, 4)
     # 6. ablation: no KL term; pooled Peekaboo (Laya's KL ablation and pooled head are in the v1 grid)
-    for s in SUITES:
-        for sd in SEEDS:
+    for s in SUITES:                                             # (pooled Peekaboo is in the v1 grid)
+        for sd in (SEEDS if s == 'decisionbench' else [0]):
             for size, res, _, gr in VEGA:
                 vm(size, s, 'feedback_kl0', sd, gr)
-    for sd in SEEDS:
-        for size, res, _, gr in VEGA:
-            V(size, f'pooled/s{sd}', ['adapt.py', '--suite', 'all', '--method', 'pooled', '--seed', str(sd)],
-              ex(res, 'methods', f'pooled_s{sd}.done'), 2 * gr, [f'vega-{size}/cache/{x}' for x in SUITES])
     steps.append(Step('tables', HERE, ['table.py'], lambda: False, None, 0))
     return steps
 
