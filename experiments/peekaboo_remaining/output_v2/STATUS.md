@@ -1,22 +1,18 @@
-# Status of the remaining Peekaboo experiments  (Thu Oct 22 10:26:22 2026)
+# Status of the remaining Peekaboo experiments  (Thu Oct 22 10:31:22 2026)
 
-done: 281 · pending: 25 · running: 8  (of 314 steps)
+done: 285 · pending: 21 · running: 8  (of 314 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **running** `vega-4b/feedback_half/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback_half --seed 0`)
-- **running** `vega-0.8b/feedback_complaints/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method feedback_complaints --seed 0`)
-- **running** `vega-4b/feedback_complaints/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback_complaints --seed 0`)
-- **running** `vega-0.8b/logged_argmax/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method logged_argmax --seed 0`)
 - **running** `vega-4b/logged_argmax/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method logged_argmax --seed 0`)
 - **running** `vega-0.8b/logged_ips/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite typed --method logged_ips --seed 0`)
 - **running** `vega-4b/logged_ips/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method logged_ips --seed 0`)
 - **running** `vega-0.8b/feedback_noise20/emotion/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite emotion --method feedback_noise20 --seed 0`)
-- **pending** `vega-4b/feedback_noise20/emotion/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method feedback_noise20 --seed 0`)
-- **pending** `vega-0.8b/feedback_half/emotion/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite emotion --method feedback_half --seed 0`)
-- **pending** `vega-4b/feedback_half/emotion/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method feedback_half --seed 0`)
-- **pending** `vega-0.8b/feedback_complaints/emotion/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite emotion --method feedback_complaints --seed 0`)
+- **running** `vega-4b/feedback_noise20/emotion/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method feedback_noise20 --seed 0`)
+- **running** `vega-0.8b/feedback_half/emotion/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite emotion --method feedback_half --seed 0`)
+- **running** `vega-4b/feedback_half/emotion/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method feedback_half --seed 0`)
+- **running** `vega-0.8b/feedback_complaints/emotion/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite emotion --method feedback_complaints --seed 0`)
 - **pending** `vega-4b/feedback_complaints/emotion/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method feedback_complaints --seed 0`)
 - **pending** `vega-0.8b/logged_argmax/emotion/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite emotion --method logged_argmax --seed 0`)
 - **pending** `vega-4b/logged_argmax/emotion/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method logged_argmax --seed 0`)
@@ -321,18 +317,18 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-0.8b/feedback_noise20/typed/s0 525s
 - done     vega-4b/feedback_noise20/typed/s0 525s
 - done     vega-0.8b/feedback_half/typed/s0 505s
-- running  vega-4b/feedback_half/typed/s0 
-- running  vega-0.8b/feedback_complaints/typed/s0 
-- running  vega-4b/feedback_complaints/typed/s0 
-- running  vega-0.8b/logged_argmax/typed/s0 
+- done     vega-4b/feedback_half/typed/s0 520s
+- done     vega-0.8b/feedback_complaints/typed/s0 490s
+- done     vega-4b/feedback_complaints/typed/s0 515s
+- done     vega-0.8b/logged_argmax/typed/s0 575s
 - running  vega-4b/logged_argmax/typed/s0 
 - running  vega-0.8b/logged_ips/typed/s0 
 - running  vega-4b/logged_ips/typed/s0 
 - running  vega-0.8b/feedback_noise20/emotion/s0 
-- pending  vega-4b/feedback_noise20/emotion/s0 
-- pending  vega-0.8b/feedback_half/emotion/s0 
-- pending  vega-4b/feedback_half/emotion/s0 
-- pending  vega-0.8b/feedback_complaints/emotion/s0 
+- running  vega-4b/feedback_noise20/emotion/s0 
+- running  vega-0.8b/feedback_half/emotion/s0 
+- running  vega-4b/feedback_half/emotion/s0 
+- running  vega-0.8b/feedback_complaints/emotion/s0 
 - pending  vega-4b/feedback_complaints/emotion/s0 
 - pending  vega-0.8b/logged_argmax/emotion/s0 
 - pending  vega-4b/logged_argmax/emotion/s0 
