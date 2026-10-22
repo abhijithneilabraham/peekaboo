@@ -1,13 +1,12 @@
-# Status of the remaining Peekaboo experiments  (Thu Oct 22 05:17:08 2026)
+# Status of the remaining Peekaboo experiments  (Thu Oct 22 05:22:08 2026)
 
-done: 105 · pending: 434 · running: 2  (of 541 steps)
+done: 106 · pending: 433 · running: 2  (of 541 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **running** `laya/feedback_enc/decisionbench/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_enc --seed 1`)
 - **running** `laya/sup_enc/decisionbench/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method sup_enc --seed 1`)
-- **pending** `laya/feedback_enc_1pass/decisionbench/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_enc_1pass --seed 1`)
+- **running** `laya/feedback_enc_1pass/decisionbench/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_enc_1pass --seed 1`)
 - **pending** `laya/feedback_enc/decisionbench/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_enc --seed 2`)
 - **pending** `laya/sup_enc/decisionbench/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method sup_enc --seed 2`)
 - **pending** `laya/feedback_enc_1pass/decisionbench/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite decisionbench --method feedback_enc_1pass --seed 2`)
@@ -507,9 +506,9 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     laya/feedback_enc/decisionbench/s0 1981s
 - done     laya/sup_enc/decisionbench/s0 2256s
 - done     laya/feedback_enc_1pass/decisionbench/s0 280s
-- running  laya/feedback_enc/decisionbench/s1 
+- done     laya/feedback_enc/decisionbench/s1 1986s
 - running  laya/sup_enc/decisionbench/s1 
-- pending  laya/feedback_enc_1pass/decisionbench/s1 
+- running  laya/feedback_enc_1pass/decisionbench/s1 
 - pending  laya/feedback_enc/decisionbench/s2 
 - pending  laya/sup_enc/decisionbench/s2 
 - pending  laya/feedback_enc_1pass/decisionbench/s2 
