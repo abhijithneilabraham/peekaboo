@@ -1,16 +1,9 @@
-# Status of the remaining Peekaboo experiments  (Thu Oct 22 10:44:23 2026)
+# Status of the remaining Peekaboo experiments  (Thu Oct 22 10:48:44 2026)
 
-done: 308 · pending: 1 · running: 5  (of 314 steps)
+done: 314  (of 314 steps)
 
-NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
-finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
+COMPLETE. The tables are in TABLES.md.
 
-- **running** `vega-4b/feedback_kl0/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback_kl0 --seed 0`)
-- **running** `vega-0.8b/feedback_kl0/emotion/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite emotion --method feedback_kl0 --seed 0`)
-- **running** `vega-4b/feedback_kl0/emotion/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method feedback_kl0 --seed 0`)
-- **running** `vega-0.8b/feedback_kl0/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method feedback_kl0 --seed 0`)
-- **running** `vega-4b/feedback_kl0/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback_kl0 --seed 0`)
-- **pending** `tables`    (from `.`: `VEGA_OUT=<output> python table.py`)
 
 <details><summary>all steps</summary>
 
@@ -322,11 +315,11 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-0.8b/feedback_kl0/decisionbench/s2 215s
 - done     vega-4b/feedback_kl0/decisionbench/s2 250s
 - done     vega-0.8b/feedback_kl0/typed/s0 295s
-- running  vega-4b/feedback_kl0/typed/s0 
-- running  vega-0.8b/feedback_kl0/emotion/s0 
-- running  vega-4b/feedback_kl0/emotion/s0 
-- running  vega-0.8b/feedback_kl0/agnews/s0 
-- running  vega-4b/feedback_kl0/agnews/s0 
-- pending  tables 
+- done     vega-4b/feedback_kl0/typed/s0 275s
+- done     vega-0.8b/feedback_kl0/emotion/s0 195s
+- done     vega-4b/feedback_kl0/emotion/s0 185s
+- done     vega-0.8b/feedback_kl0/agnews/s0 160s
+- done     vega-4b/feedback_kl0/agnews/s0 160s
+- done     tables 216s
 
 </details>
