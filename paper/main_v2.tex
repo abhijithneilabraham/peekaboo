@@ -1,0 +1,175 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{newtxtext,newtxmath}
+\usepackage{microtype}
+\usepackage{amsmath}
+\usepackage{booktabs,multirow,array}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{placeins}
+\usepackage{float}
+\renewcommand{\topfraction}{0.9}\renewcommand{\bottomfraction}{0.9}\renewcommand{\textfraction}{0.05}\renewcommand{\floatpagefraction}{0.75}
+\setcounter{topnumber}{3}\setcounter{bottomnumber}{3}\setcounter{totalnumber}{5}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[colorlinks,linkcolor={blue!60!black},citecolor={blue!60!black},urlcolor={blue!60!black}]{hyperref}
+\usepackage{url}
+\captionsetup{font=small,labelfont=bf}
+\setlist{nosep,leftmargin=*}
+\graphicspath{{figures/}}
+\newcommand{\pk}{Peekaboo}
+\newcommand{\KL}{\mathrm{KL}}
+\input{numbers.tex}
+
+\title{\pk{}: What Right / Wrong Feedback Buys a Small Decision Model,\\Measured Against the Model's Own Answer-Key Recipe}
+\author{Abhijith Neil Abraham \and Fariz Rahman \and Fadil Rahman}
+\date{October 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\input{abstract.tex}
+\end{abstract}
+
+\section{Introduction}
+
+Vega~\citep{vegaml} and Laya~\citep{laya} are small models built for one job: given a situation and a typed question (pick one of these options, yes or no, a rating), return a probability for each option in one forward pass, fast enough and calibrated enough to sit inside an agent loop and route the uncertain cases to a person. Both ship with a recipe for getting better at a user's task, and both recipes want labelled rows. Vega's is a per-task classifier fitted to its frozen features (test-time training, TTT) or an adapter trained the same way; Laya's is a whole-model fine-tune, and its released \texttt{laya-typed-decisions} checkpoint is that recipe applied to its headline benchmark.
+
+A deployed model rarely gets labels. What it gets, as a by-product of being used, is a verdict on its own answers: the suggested tool call was cancelled, the flagged message was fine after all, the escalated ticket did need escalating. Each event says whether the answer was right, not which answer was right. Learning a classifier from that signal is the bandit multiclass problem~\citep{kakade2008banditron,crammer2011multiclass,daniely2013price}, and improving a deployed NLP system from binary feedback simulated from gold labels is the protocol of Gao, Choi and Artzi~\citep{gao2022simulating}. None of that is new, and this paper does not claim a new learning setting or a new estimator.
+
+What we wanted to know is narrower and, we think, still worth measuring: for these two models, on the benchmarks their own authors use, how much of the labelled-data recipe does right / wrong feedback recover, under what protocol, and what are the gains made of? The first version of this paper~\footnote{\url{https://github.com/abhijithneilabraham/peekaboo}, commit \texttt{cd52a9f}.} answered with a grid in which every feedback method made eight passes over its rows, drawing a fresh answer and a fresh verdict each time, and it read the result as ``one bit per row is nearly as good as the label''. A review of that version\footnote{The review is in the repository under \texttt{reports/critique.zip}; Appendix~\ref{app:changes} lists what it found and what changed.} showed that this reading does not follow. Eight on-policy verdicts identify the gold answer for most rows, the expected update of REINFORCE with a 0/1 reward is cross-entropy reweighted by the model's own probability of the gold answer~\citep{zhang2018generalized,davis2025reinforce}, the switch that was meant to catch regressions compared the wrong quantity, the Laya comparison set an in-domain model against an out-of-domain one, and several of the gains were partly a label prior or a benchmark artifact. This version is the measurement done again with those things fixed, and with the questions a deployment actually raises added.
+
+The method, \pk{}, is unchanged in its parts: an add-on next to the untouched released model (a rank-8 gated LoRA adapter on Vega's decision engine; a copy of Laya's decision head, or of its head and encoder), trained by REINFORCE on the verdict of a sampled answer with a running baseline and a KL term towards the released probabilities; a single temperature refitted from verdicts alone; and a switch that keeps the add-on only where held-out verdicts say it beats the released model. What is new in this version is the accounting:
+\begin{itemize}
+\item every feedback arm is run both with eight passes (the information-rich protocol) and with one pass in which each row is rated exactly once, which is the number a deployment should expect; the same for the answer-key arms, at matched epochs;
+\item feedback as a deployment delivers it: the released model's own best answers rated once and learned off-policy, sampled answers logged once, ratings that are missing, flipped, or skewed towards complaints;
+\item the controls a reviewer will ask for: the same add-on trained on the labels, with and without early stopping; a label-prior baseline with no input features, trained from the same verdicts; the released model with the same feedback-fitted temperature; TTT under both of VegaML's selection rules; for Laya, the matched in-domain answer-key fine-tune with the encoder unfrozen;
+\item intervals that resample training seeds as well as rows, clustered by task or case, with Holm adjustment within each family of comparisons and a non-inferiority test at a stated margin; proper scores next to ECE;
+\item disclosure of what the benchmarks contain: a TruthfulQA task whose gold answer is always first, a DecisionBench task whose gold is readable from the option structure, and a shipped Vega adapter that was fitted with labels on the very rows that serve as its typed-decisions feedback pool.
+\end{itemize}
+\input{intro_findings.tex}
+
+\section{Related work}
+
+\paragraph{Learning a classifier from right / wrong.}
+Multiclass learning in which the learner is told only whether its prediction was correct goes back to the Banditron~\citep{kakade2008banditron}; Crammer and Gentile~\citep{crammer2011multiclass} evaluated it on text classification, and Daniely and Halbertal~\citep{daniely2013price} bound the price of bandit information at $O(k \log k)$ more mistakes in the realisable case, a more useful figure than the ``$\log_2 k$ bits against one'' heuristic our first version used. Wang and Qiao~\citep{wang2024bccp} train a neural classifier online from correctness feedback with an importance-weighted cross-entropy and derive conformal sets from the same feedback. Learning a structured predictor from the reward of its own output is bandit structured prediction~\citep{sokolov2016bandit,kreutzer2017bandit,nguyen2017bandit}, shown to work with real human ratings~\citep{kreutzer2018reliability} and, at eBay, with implicit feedback where explicit ratings were too noisy~\citep{kreutzer2018ebay}; the off-policy branch learns from logged feedback with importance weights~\citep{swaminathan2015crm,dudik2011doubly,joachims2018banditnet,lawrence2018counterfactual}.
+
+\paragraph{Improving a deployed system from its users.}
+The protocol closest to ours is Gao, Choi and Artzi~\citep{gao2022simulating}: binary rewards simulated from gold labels, on-policy policy-gradient learning from the model's own answers, supervised training as the reference line, and the finding that the initial model's quality decides whether learning works. Its follow-up collected real feedback over nine deployment rounds~\citep{gao2023continually}. Campos et al.~\citep{campos2020feedback} and Hancock et al.~\citep{hancock2019feed} improve deployed QA and dialogue systems from binary signals. Our contribution relative to this line is the object of study, two released typed-decision models with calibrated probabilities, the comparison against their vendors' own labelled-data recipes, and the matched one-pass and logged-feedback arms.
+
+\paragraph{What a 0/1 reward does to the update.}
+With a single gold answer $y$ and reward $r = \mathbf 1[a = y]$, the expected REINFORCE update is $\mathbb E_{a\sim\pi}[(r - b)\nabla\log\pi(a)] = \pi(y)\,\nabla\log\pi(y) = \nabla \pi(y)$: cross-entropy on the gold answer, reweighted by the policy's own probability of it. This is the mean-absolute-error objective of the label-noise literature~\citep{ghosh2017robust,zhang2018generalized}, known to under-fit rows the model already gets badly wrong, and the identity Davis and Recht~\citep{davis2025reinforce} give for binary-reward RL in general. Filtered self-training~\citep{zelikman2022star,dong2023raft,xiong2025minimalist} is the same mechanism without the negative term: every correct sample is a supervised step on the revealed label. Yue et al.~\citep{yue2025does} show that RL with verifiable rewards mostly re-ranks what the base model could already produce; Choshen et al.~\citep{choshen2020weaknesses} and Kiegeland and Kreutzer~\citep{kiegeland2021revisiting} make the same point for bandit NMT and attribute much of the gain to the sharpening of the output distribution. Our fix / break analysis (Section~\ref{sec:anatomy}) is a direct check of these predictions on our models.
+
+\paragraph{KL-regularised fine-tuning and forgetting.}
+A KL penalty to a reference policy is standard in RLHF~\citep{ziegler2019finetuning,stiennon2020summarize,ouyang2022instructgpt,christiano2017deep} and offline RL for dialogue~\citep{jaques2019way}; DPO~\citep{rafailov2023dpo} and KTO~\citep{ethayarajh2024kto} fold it into a supervised objective, KTO from binary desirable / undesirable labels, and REINFORCE with a baseline remains competitive with more elaborate estimators~\citep{ahmadian2024rloo}. Shenfeld et al.~\citep{shenfeld2026razor} show that on-policy RL forgets less than supervised fine-tuning because it stays closer to the base distribution, which bears on how Laya's whole-model fine-tune and our encoder-level add-on behave away from their training benchmark.
+
+\paragraph{Few-shot heads against a zero-shot model.}
+A linear probe fitted on a few labelled rows can be worse than the zero-shot model it replaces; CLIP needed about four shots per class to match its own zero-shot accuracy~\citep{radford2021clip}, and anchoring the fine-tuned model to the zero-shot one is the standard remedy~\citep{wortsman2022wiseft,kumar2022lpft}. VegaML's TTT head is such a probe, and the rule that decides when it replaces the engine changed in vegaml 0.12.3 to require beating the engine as well as chance; we report both rules.
+
+\paragraph{Label priors and label shift.}
+Part of what any adapter learns from a benchmark's rows is its label distribution and answer-position bias. Contextual calibration~\citep{zhao2021calibrate}, batch calibration~\citep{zhou2024batch}, prior adjustment~\citep{saerens2002adjusting,lipton2018detecting} and the choices-only baselines of multiple-choice evaluation~\citep{balepur2024choices,zheng2024pride} all measure this; our label-prior baseline (Section~\ref{sec:anatomy}) is the feedback-trained version.
+
+\paragraph{Calibration after policy gradient.}
+The expected 0/1 reward of a sampled answer is the linear score, which is improper~\citep{gneiting2007strictly}: it is maximised by putting all the mass on the argmax, and under a KL term of weight $\beta$ the optimum raises the log-odds of a reliably right answer by up to $1/\beta$ nats. Over-confidence after RL fine-tuning is documented for RLHF policies and fixed with a single temperature~\citep{kadavath2022know}, and binary-correctness RL hurts calibration unless a proper score is added to the reward~\citep{damani2026beyond}; Laya's own RLCD uses proper scoring rules for this reason. Fitting a temperature from correctness alone is top-label calibration~\citep{gupta2022toplabel}: ECE itself~\citep{naeini2015ece,guo2017calibration} consumes nothing but (confidence, right / wrong) pairs. Our ``honesty fix'' is that, written for sampled rather than argmax answers; we no longer present it as calibration without labels in any new sense. ECE is a biased, non-proper estimate~\citep{kumar2019verified,roelofs2022mitigating}, so we report NLL, Brier and AURC beside it.
+
+\section{The two decision models, and what they already know}
+\label{sec:models}
+
+\paragraph{Vega.}
+Vega~\citep{vegaml} reads the situation, question and options with a frozen Qwen3.5 backbone~\citep{qwen3} of 0.8B or 4B parameters, pools hidden states from two intermediate layers, and hands them to a small decision engine (14.3M parameters at 0.8B, 30.9M at 4B) that the authors call a physics engine: each option is an energy well in a 64-dimensional landscape, a particle is released, and $P(a) = \mathrm{softmax}(-E_a/\tau(s))$ with a per-question temperature computed from the particle's trajectory. The backbone was never trained; the engine and two gated adapters were, on an undisclosed corpus. The two adapters matter here. \texttt{public\_intents} was trained on six intent datasets, including banking77 and clinc150, which are also public-menu tasks. \texttt{typed\_decisions} was fitted with labels on the training split of the public typed-decisions dataset, and its gate opens on every one of the 8,000 typed-decisions rows we use. That training split is exactly the pool our feedback methods learn from on typed-decisions. So on that benchmark ``base Vega'' is a model that has already seen the labels of its feedback rows, and it is 5 to 6 points more accurate on the pool than on the test split; we report typed-decisions on Vega both as released and with the shipped adapters switched off (Section~\ref{sec:noship}). Vega and Laya come from the same developer, and we pin vegaml 0.8.0, the version the README's benchmark notebook uses.
+
+\paragraph{Laya.}
+Laya~\citep{laya} is a ModernBERT-large encoder~\citep{warner2024modernbert} (395M parameters) whose input carries the situation, the question and every option, each option introduced by a marker token, followed by a two-layer transformer head (26.5M parameters) that scores the marker positions; the scores are divided by a shipped temperature per (question type, option-count bucket). It was trained with RLCD on undisclosed data and reads 512 tokens, so rows whose option markers do not fit are unanswerable for every method built on it (all of clinc150\_oos; 49 DecisionBench test rows). \texttt{laya-typed-decisions} is the developer's whole-model fine-tune on typed-decisions' 6,000 training decisions, with a 1,024-token window. On the five other benchmarks it is a transfer model that never saw a row, which is how we present it.
+
+\section{\pk{}}
+\label{sec:method}
+
+\subsection{Setting, and what ``one bit'' means under each protocol}
+A decision model is a policy $\pi_0(a\mid s)$ over the options $a$ of a typed question $s$. In deployment it commits to an answer and later receives $r\in\{0,1\}$. We train an add-on $\pi$ from a pool of (question, answer, verdict) records and score it on held-out test rows. The reward is computed from the benchmark's gold answer, so it is never wrong or missing unless we make it so (Section~\ref{sec:realistic}). Two protocols appear throughout:
+\begin{itemize}
+\item \textbf{eight passes}: the policy answers every training row once per pass for eight passes, each time sampling a fresh answer from its current probabilities and receiving a fresh verdict. A row can thus be rated up to eight times on different answers. Whenever a verdict is 1 the gold answer has been revealed outright, and for two-option questions any verdict is the label. Section~\ref{sec:reveal} measures how often this happens: for most rows, it does. This is the protocol of our first version and of the headline comparisons with labelled training, which also make eight passes.
+\item \textbf{one pass}: every training row is answered once and rated once. This is what a deployment sees, and it is the number we now report as \pk{}'s deployment figure. It also takes one eighth of the gradient steps, so we run the answer-key arms for one pass as well.
+\end{itemize}
+
+\subsection{The add-on}
+The released weights are never changed. On Vega a gated LoRA adapter~\citep{hu2022lora} of rank 8 is attached to seven of the engine's linear layers with VegaML's own \texttt{attach\_adapter} (409k parameters at 0.8B, 857k at 4B, most of them in the gate network); its gate starts open and the shipped adapters keep routing as released. The policy is Vega's usual calibrated output computed from the adapted energies. On Laya we train a copy of the decision head with the encoder frozen (\emph{head only}), or a copy of head and encoder (\emph{encoder unfrozen}) at Laya's own encoder learning rate of $2.5\times10^{-5}$. The second is a fine-tune of the whole 421M model with a KL anchor, not a small add-on, and we describe it as such.
+
+\subsection{The update, and what it is in expectation}
+For a batch of questions the policy samples $a\sim\pi(\cdot\mid s)$, receives $r=\mathbf 1[a\text{ is right}]$, and minimises
+\begin{equation}
+\mathcal L = -(r-b)\log\pi(a\mid s) + \beta\,\KL\big(\pi(\cdot\mid s)\,\|\,\pi_0(\cdot\mid s)\big),\qquad \beta=0.1,
+\label{eq:loss}
+\end{equation}
+with $b$ an exponential running mean of recent rewards ($b\leftarrow0.9b+0.1\bar r$, started at $0.5$), Adam at $10^{-3}$ (Vega) or $10^{-4}$ (Laya head), batches of 32, gradient norm clipped at 1. Because the baseline is updated only after the batch, the expected gradient of the first term is $\pi(y\mid s)\nabla\log\pi(y\mid s)$, cross-entropy on the gold answer weighted by the policy's current probability of it. The answer-key arm minimises $-\log\pi(y\mid s)$ with the same KL term, rows, epochs and optimiser: the two differ only in that weight and in the sampling noise. That is the right frame for every ``feedback against labels'' number in this paper. The weighting predicts that feedback will trail labels most on rows the base model ranks the gold answer low, and tie or lead where the gold answer is already near the top; Section~\ref{sec:anatomy} checks this. In our first version $\beta$ was chosen in a pilot that trained and tested on DecisionBench's README rows, from $\{0, 0.1, 1\}$; it was not retuned, and the $\beta=1$ runs of that grid are reported in Appendix~\ref{app:changes}.
+
+\subsection{The honesty fix: top-label temperature scaling from verdicts}
+Policy-gradient training on an improper reward sharpens the probabilities (Section~\ref{sec:calibration} gives the pre-fix ECE). We refit one temperature $T$ on a held-out calibration split (20\% of each task's feedback rows) by sampling $a\sim\pi$ at $T=1$, observing $r$, and choosing
+\begin{equation}
+T^\star=\arg\max_T\sum_i\big[r_i\log p_T(a_i\mid s_i)+(1-r_i)\log(1-p_T(a_i\mid s_i))\big],\qquad p_T=\mathrm{softmax}(\log p/T),
+\end{equation}
+over 61 log-spaced values in $[0.25, 32]$. Since the trained policy samples its argmax most of the time, this picks the same $T$ as a fit on argmax correctness in nearly every run, i.e.\ it is top-label temperature scaling~\citep{gupta2022toplabel} from the verdicts a deployment already has. A temperature leaves the argmax unchanged, so accuracy is identical with and without it. The probabilities are floored at $10^{-12}$ before scaling, which ties the non-argmax options on rows where the trained policy had driven them below the floor; this affects NLL on those rows and is disclosed here because the first version did not.
+
+\subsection{The switch}
+\label{sec:switch}
+On the calibration rows, the add-on's best answer and the released model's best answer are each rated (two verdicts per row), and the add-on is kept only if it was right more often. The first version rated one \emph{sampled} answer from each; that statistic estimates the expected probability of the gold answer, which the honesty fix lowers for the add-on and over-confidence raises for the released model, so it threw away real argmax gains on calibration sets of 641 and 1,200 rows and kept a real loss on others. The sampled statistic is still computed and reported for comparison. The switch is a safeguard on the add-on as a whole, not a per-decision validator.
+
+\subsection{Pooled \pk{}}
+One add-on per model trained on the feedback of all five benchmarks that have a training split, evaluated on all six; JevBench is pure transfer for it.
+
+\section{Experimental setup}
+\label{sec:setup}
+
+\subsection{Benchmarks and pools}
+\input{tables_bench.tex}
+Table~\ref{tab:bench} and Figure~\ref{fig:bench} describe the six benchmarks: the three in Vega's README (43 public tasks, JevBench~\citep{jevbench}, DecisionBench~\citep{decisionbench}), the one in Laya's README (typed-decisions~\citep{typeddecisions}), and two classification sets we added for their large training splits (emotion~\citep{saravia2018emotion}, AG News~\citep{zhang2015agnews}). Rows are read, asked and scored with VegaML's benchmark harness, vendored unmodified, and the test rows are identical to our first version's. Three things about the pools are disclosed here. The public menu's feedback pool is the 50 ``fit'' rows per task that VegaML's notebook gives its TTT head, drawn class by class, so it is class-balanced while the 60 test rows per task are not; the same loader gave our first version a class-balanced emotion pool against a naturally distributed test set, which cost every method trained on it on emotion. In this version the emotion and AG News pools are 4,000 rows drawn at random from the whole training split, so they carry the natural class mix a deployment's traffic would. The DecisionBench pool is the other rows of the README's 43 tasks (100 per task minus the 25-row test slice), drawn at random. On typed-decisions the pool is the public training split, which is also the training data of Vega's shipped adapter (Section~\ref{sec:models}). Two public tasks and two DecisionBench tasks have construction artifacts that an adapter can learn without reading the input: in \texttt{truthfulqa\_mc1} the harness keeps the upstream option order, so the gold answer is option A in every row; in \texttt{pubmedqa} the gold is the majority class on 55\% of test rows; in \texttt{moderation-civil-comments} the gold is the first option in 86\% of rows; in \texttt{finqa-score} the options are always $\{x, 100x, x/100, 1.1x\}$ with gold $x$. We report every public and DecisionBench number with and without these tasks.
+
+\begin{figure}[t]\centering
+\includegraphics[width=\linewidth]{benchmarks.pdf}
+\caption{The six benchmarks' test rows, by question type (left) and by the number of options a question offers (right, as a share of that benchmark's rows).}
+\label{fig:bench}
+\end{figure}
+
+\subsection{Protocol and statistics}
+Every method learns from its pool's feedback rows (or their labels) and is scored on the test rows. On JevBench, which has no training split, every method including the answer-key arms learns by 5-fold cross-fitting with all paraphrases of a question kept in one fold, and the calibration fifth of each training fold is drawn by paraphrase group. The feedback rows of each task are split 80 / 20 into training and calibration rows with a fixed permutation. Stochastic methods run with seeds 0, 1 and 2. Gains are paired differences in per-row correctness between two methods on the same rows, in points. Their 95\% intervals come from a bootstrap that resamples the training seeds of each side with replacement and then resamples rows by cluster: tasks on the public menu (which is macro-averaged over tasks) and DecisionBench, cases on typed-decisions, paraphrase groups on JevBench. With three seeds the seed component is itself an underestimate, so the intervals are still optimistic. Two-sided $p$-values come from the same bootstrap and are Holm-adjusted within each family of comparisons a reader is likely to count (a method against the base model across benchmarks; \pk{} against each answer-key arm across benchmarks; the KL contrasts). ``Non-inferior'' means the interval's lower bound is above $-2$ points. Same-seed reruns on different machines move individual results by up to 3 points (the earlier grid's typed-decisions seed 2 moved by 3.1), so the three-seed means, not single seeds, are what reproduce. Accuracy, ECE (15 equal-width bins, as in the README), NLL, Brier, AURC, macro-F1 and the per-benchmark slices come from the harness's \texttt{score\_metrics}.
+
+\subsection{Methods compared}
+\begin{itemize}
+\item \textbf{Released model}: Vega 0.8B, Vega 4B, Laya, replayed on cached inputs and checked against the official prediction call and the README numbers. On typed-decisions, Vega also with its shipped adapters off.
+\item \textbf{Their own recipe}: for Vega, VegaML's TTT head trained on the labelled feedback rows of each task, under the vegaml 0.8.0 rule (a head replaces the engine where its cross-validated accuracy beats chance) and the 0.12.3 rule (where it also beats the engine on the same rows); for Laya, the released \texttt{laya-typed-decisions} checkpoint on every benchmark, in-domain only on typed-decisions.
+\item \textbf{Answer-key add-on, same recipe}: the same adapter (Vega) or head copy (Laya) trained with cross-entropy on the labels of the same rows, the same KL term, eight passes, then label-based temperature scaling; also run for one pass. In the first version the Laya head was trained without the KL term; it now matches Vega's.
+\item \textbf{Answer-key add-on, early-stopped}: the same run with the epoch chosen by argmax accuracy on the calibration rows' labels. This is the tuned labelled reference the first version lacked.
+\item \textbf{Answer-key fine-tune, encoder unfrozen} (Laya): head and encoder trained with cross-entropy, the same KL term, rows and passes as the encoder-unfrozen \pk{}; with and without early stopping.
+\item \textbf{Label prior}: one log-offset per (task, option text) on the released probabilities, no input features, trained with \pk{}'s own loop from verdicts (learning rate chosen on the calibration rows' verdicts) and, separately, from the labels.
+\item \textbf{Released model + temperature}: the released model with the honesty fix applied to its own sampled answers on its calibration rows, and with a label-fitted temperature.
+\item \textbf{\pk{}} with eight passes and with one pass; head only and encoder unfrozen on Laya; without the KL term; with the switch; pooled.
+\item \textbf{Realistic feedback}: the released model's best answers rated once and learned off-policy (a verdict of 1 is a label, a verdict of 0 rules that answer out); its sampled answers rated once and learned with clipped importance weights; eight-pass \pk{} with 20\% of verdicts flipped, with only half of the answers rated, and with every wrong answer reported but only 20\% of right ones.
+\end{itemize}
+
+\subsection{Compute and reproducibility}
+The grid (6 benchmarks $\times$ 3 models $\times$ methods $\times$ 3 seeds, 540 steps) ran on one NVIDIA A40 from cached backbone features. One script, \texttt{experiments/peekaboo\_remaining/run.py}, runs every step, skips finished ones and retries failures; \texttt{analysis.py} computes everything in this paper from the per-row records; \texttt{paper/make\_figures.py} writes every table, figure and number in the text, so the prose cannot drift from the results. The first version's results stay in the repository under \texttt{output/}.
+
+\input{results.tex}
+
+\section{Limitations}
+\label{sec:limitations}
+\input{limitations.tex}
+
+\section{Conclusion}
+\input{conclusion.tex}
+
+\paragraph{Acknowledgements.}
+We thank the authors of VegaML and Laya for releasing their models, benchmark code and training recipes, and the reviewers of the first version, whose report is reproduced in the repository.
+
+\FloatBarrier
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\appendix
+\input{appendix.tex}
+
+\end{document}

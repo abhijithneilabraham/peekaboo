@@ -333,7 +333,8 @@ def main():
             if any(names[n].state != 'done' for n in st.needs):
                 continue
             if active and gpu and used + st.gpu > budget:
-                continue
+                break                                            # strict priority: a big step at the front of the queue is not
+            # starved by the small ones behind it (the 4B feature caches are the long pole)
             start(st, out, base_env); active.append(st); used += st.gpu
         hb['running'] = [st.name for st in active]
         if time.time() - last_status > 60:

@@ -410,7 +410,7 @@ def main():
                     if rel_ok:
                         N['compare'][f'{tag}|vs|released'] = C(m, s, 'released', meth, 'records', k)
                         if s in ARTIFACT:
-                            mask = np.array([not any(a in it['task'] for a in ARTIFACT[s]) for it in items(s)])
+                            mask = np.array([not any(a in it['task'] or a in it['id'] for a in ARTIFACT[s]) for it in items(s)])
                             N['compare'][f'{tag}|vs|released|noartifact'] = C(m, s, 'released', meth, 'records', k, mask)
             if rel_ok:
                 N['scores'][f'{m}|released|records|{s}'] = {kk: [v] for kk, v in scores(s, runs(m, s, 'released')[0]).items()}
