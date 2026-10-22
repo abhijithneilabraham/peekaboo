@@ -1,32 +1,18 @@
-# Status of the remaining Peekaboo experiments  (Thu Oct 22 09:23:20 2026)
+# Status of the remaining Peekaboo experiments  (Thu Oct 22 09:28:20 2026)
 
-done: 190 · pending: 116 · running: 8  (of 314 steps)
+done: 204 · pending: 102 · running: 8  (of 314 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **running** `laya/sup_1pass/typed/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite typed --method sup_1pass --seed 0`)
-- **running** `laya/sup_1pass/typed/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite typed --method sup_1pass --seed 1`)
-- **running** `laya/sup_1pass/typed/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite typed --method sup_1pass --seed 2`)
-- **running** `vega-4b/sup_ts/emotion/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method sup_ts --seed 0`)
-- **running** `vega-4b/sup_ts/emotion/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method sup_ts --seed 1`)
-- **running** `vega-4b/sup_ts/emotion/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method sup_ts --seed 2`)
-- **running** `vega-4b/feedback/emotion/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method feedback --seed 1`)
-- **running** `vega-4b/feedback/emotion/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method feedback --seed 2`)
-- **pending** `vega-4b/feedback_1pass/emotion/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method feedback_1pass --seed 0`)
-- **pending** `vega-4b/feedback_1pass/emotion/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method feedback_1pass --seed 1`)
-- **pending** `vega-4b/feedback_1pass/emotion/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method feedback_1pass --seed 2`)
-- **pending** `vega-4b/sup_1pass/emotion/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method sup_1pass --seed 0`)
-- **pending** `vega-4b/sup_1pass/emotion/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method sup_1pass --seed 1`)
-- **pending** `vega-4b/sup_1pass/emotion/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite emotion --method sup_1pass --seed 2`)
-- **pending** `vega-0.8b/sup_ts/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method sup_ts --seed 0`)
-- **pending** `vega-0.8b/sup_ts/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method sup_ts --seed 1`)
-- **pending** `vega-0.8b/sup_ts/agnews/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method sup_ts --seed 2`)
-- **pending** `vega-0.8b/feedback/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method feedback --seed 0`)
-- **pending** `vega-0.8b/feedback/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method feedback --seed 1`)
-- **pending** `vega-0.8b/feedback/agnews/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method feedback --seed 2`)
-- **pending** `vega-0.8b/feedback_1pass/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method feedback_1pass --seed 0`)
-- **pending** `vega-0.8b/feedback_1pass/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method feedback_1pass --seed 1`)
+- **running** `vega-0.8b/sup_ts/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method sup_ts --seed 0`)
+- **running** `vega-0.8b/sup_ts/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method sup_ts --seed 1`)
+- **running** `vega-0.8b/sup_ts/agnews/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method sup_ts --seed 2`)
+- **running** `vega-0.8b/feedback/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method feedback --seed 0`)
+- **running** `vega-0.8b/feedback/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method feedback --seed 1`)
+- **running** `vega-0.8b/feedback/agnews/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method feedback --seed 2`)
+- **running** `vega-0.8b/feedback_1pass/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method feedback_1pass --seed 0`)
+- **running** `vega-0.8b/feedback_1pass/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method feedback_1pass --seed 1`)
 - **pending** `vega-0.8b/feedback_1pass/agnews/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method feedback_1pass --seed 2`)
 - **pending** `vega-0.8b/sup_1pass/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method sup_1pass --seed 0`)
 - **pending** `vega-0.8b/sup_1pass/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method sup_1pass --seed 1`)
@@ -304,9 +290,9 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     laya/feedback_1pass/typed/s0 
 - done     laya/feedback_1pass/typed/s1 
 - done     laya/feedback_1pass/typed/s2 
-- running  laya/sup_1pass/typed/s0 
-- running  laya/sup_1pass/typed/s1 
-- running  laya/sup_1pass/typed/s2 
+- done     laya/sup_1pass/typed/s0 975s
+- done     laya/sup_1pass/typed/s1 970s
+- done     laya/sup_1pass/typed/s2 965s
 - done     vega-0.8b/ttt/emotion 
 - done     vega-0.8b/sup_ts/emotion/s0 410s
 - done     vega-0.8b/sup_ts/emotion/s1 410s
@@ -321,27 +307,27 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-0.8b/sup_1pass/emotion/s1 125s
 - done     vega-0.8b/sup_1pass/emotion/s2 140s
 - done     vega-4b/ttt/emotion 
-- running  vega-4b/sup_ts/emotion/s0 
-- running  vega-4b/sup_ts/emotion/s1 
-- running  vega-4b/sup_ts/emotion/s2 
+- done     vega-4b/sup_ts/emotion/s0 395s
+- done     vega-4b/sup_ts/emotion/s1 405s
+- done     vega-4b/sup_ts/emotion/s2 405s
 - done     vega-4b/feedback/emotion/s0 320s
-- running  vega-4b/feedback/emotion/s1 
-- running  vega-4b/feedback/emotion/s2 
-- pending  vega-4b/feedback_1pass/emotion/s0 
-- pending  vega-4b/feedback_1pass/emotion/s1 
-- pending  vega-4b/feedback_1pass/emotion/s2 
-- pending  vega-4b/sup_1pass/emotion/s0 
-- pending  vega-4b/sup_1pass/emotion/s1 
-- pending  vega-4b/sup_1pass/emotion/s2 
+- done     vega-4b/feedback/emotion/s1 315s
+- done     vega-4b/feedback/emotion/s2 290s
+- done     vega-4b/feedback_1pass/emotion/s0 85s
+- done     vega-4b/feedback_1pass/emotion/s1 90s
+- done     vega-4b/feedback_1pass/emotion/s2 95s
+- done     vega-4b/sup_1pass/emotion/s0 125s
+- done     vega-4b/sup_1pass/emotion/s1 115s
+- done     vega-4b/sup_1pass/emotion/s2 125s
 - done     vega-0.8b/ttt/agnews 
-- pending  vega-0.8b/sup_ts/agnews/s0 
-- pending  vega-0.8b/sup_ts/agnews/s1 
-- pending  vega-0.8b/sup_ts/agnews/s2 
-- pending  vega-0.8b/feedback/agnews/s0 
-- pending  vega-0.8b/feedback/agnews/s1 
-- pending  vega-0.8b/feedback/agnews/s2 
-- pending  vega-0.8b/feedback_1pass/agnews/s0 
-- pending  vega-0.8b/feedback_1pass/agnews/s1 
+- running  vega-0.8b/sup_ts/agnews/s0 
+- running  vega-0.8b/sup_ts/agnews/s1 
+- running  vega-0.8b/sup_ts/agnews/s2 
+- running  vega-0.8b/feedback/agnews/s0 
+- running  vega-0.8b/feedback/agnews/s1 
+- running  vega-0.8b/feedback/agnews/s2 
+- running  vega-0.8b/feedback_1pass/agnews/s0 
+- running  vega-0.8b/feedback_1pass/agnews/s1 
 - pending  vega-0.8b/feedback_1pass/agnews/s2 
 - pending  vega-0.8b/sup_1pass/agnews/s0 
 - pending  vega-0.8b/sup_1pass/agnews/s1 
