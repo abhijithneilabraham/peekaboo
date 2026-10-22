@@ -1,14 +1,12 @@
-# Status of the remaining Peekaboo experiments  (Thu Oct 22 02:52:06 2026)
+# Status of the remaining Peekaboo experiments  (Thu Oct 22 02:57:06 2026)
 
-done: 85 · pending: 454 · running: 2  (of 541 steps)
+done: 87 · pending: 452 · running: 2  (of 541 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **running** `laya/sup_enc/public/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method sup_enc --seed 0`)
-- **running** `laya/feedback_enc_1pass/public/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method feedback_enc_1pass --seed 0`)
-- **pending** `laya/feedback_enc/public/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method feedback_enc --seed 1`)
-- **pending** `laya/sup_enc/public/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method sup_enc --seed 1`)
+- **running** `laya/feedback_enc/public/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method feedback_enc --seed 1`)
+- **running** `laya/sup_enc/public/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method sup_enc --seed 1`)
 - **pending** `laya/feedback_enc_1pass/public/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method feedback_enc_1pass --seed 1`)
 - **pending** `laya/feedback_enc/public/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method feedback_enc --seed 2`)
 - **pending** `laya/sup_enc/public/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method sup_enc --seed 2`)
@@ -507,10 +505,10 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-4b/replay/agnews 
 - done     laya/replay/agnews 
 - done     laya/feedback_enc/public/s0 1090s
-- running  laya/sup_enc/public/s0 
-- running  laya/feedback_enc_1pass/public/s0 
-- pending  laya/feedback_enc/public/s1 
-- pending  laya/sup_enc/public/s1 
+- done     laya/sup_enc/public/s0 1270s
+- done     laya/feedback_enc_1pass/public/s0 175s
+- running  laya/feedback_enc/public/s1 
+- running  laya/sup_enc/public/s1 
 - pending  laya/feedback_enc_1pass/public/s1 
 - pending  laya/feedback_enc/public/s2 
 - pending  laya/sup_enc/public/s2 
