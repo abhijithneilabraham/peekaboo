@@ -16,13 +16,13 @@ push() {
   cd /workspace/peekaboo
   git add -A experiments/peekaboo_remaining/output_v2 >/dev/null 2>&1
   git commit -qm "RunPod v2: results so far ($(date -u +%H:%M) UTC)" >/dev/null 2>&1 || true
-  for i in 1 2 3; do git pull -q --rebase origin main && git push -q origin main && break; sleep 20; done
+  for i in 1 2 3; do git pull -q --rebase --autostash origin main && git push -q origin main && break; sleep 20; done
 }
 
 terminate() {
   push
   curl -s -X POST "https://api.runpod.io/graphql?api_key=$RUNPOD_API_KEY" -H 'Content-Type: application/json' \
-       -d "{\"query\":\"mutation { podTerminate(input: {podId: \\\"$RUNPOD_POD_ID\\\"}) }\"}"
+       -d "{\"query\":\"mutation { podTerminate(input: {podId: \\\"$RUNPOD_POD_ID\\\"}) }\"}" >> $OUT/run.log 2>&1
 }
 
 cd experiments/peekaboo_remaining
@@ -43,9 +43,13 @@ while kill -0 $RUN 2>/dev/null; do
 done
 sleep 5
 echo "autopilot: run.py finished at $(date -u)" >> $OUT/run.log
-# terminate the pod only when the grid is complete or the time cap was hit; a run that died early stays up for a fix
-if (( timed_out )) || python run.py --grid v2 --out $OUT --check > /dev/null 2>&1; then
-  terminate
+# terminate the pod when the grid is complete or the time cap was hit; a run that died early stays up for a fix.
+# (--check exits 0 complete, 1 not complete, 2 a run is alive; a stale heartbeat file must not keep the pod alive)
+rm -f $OUT/RUNNING
+python run.py --grid v2 --out $OUT --check > /dev/null 2>&1; rc=$?
+echo "autopilot: run.py --check exit $rc, timed_out=$timed_out" >> $OUT/run.log
+if (( timed_out )) || (( rc == 0 )); then
+  terminate; sleep 60; terminate            # a second attempt in case the first API call failed
 else
   echo "autopilot: grid not complete (see STATUS.md); pod left running for a fix" >> $OUT/run.log
   push
