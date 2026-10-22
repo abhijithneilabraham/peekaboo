@@ -32,7 +32,7 @@ class Step:
 
 
 SUITES = ('public', 'jevbench', 'decisionbench', 'typed', 'emotion', 'agnews')
-VEGA = (('0.8b', 'results', 8, 1), ('4b', 'results_4b', 12, 1))   # (size, results dir, GB for the cache step, GB for a method step)
+VEGA = (('0.8b', 'results', 8, 3), ('4b', 'results_4b', 12, 3))   # (size, results dir, GB for the cache step, GB for a method step)
 
 
 def plan(out):
@@ -141,7 +141,7 @@ def plan_v2(out):
     for s in ('public', 'decisionbench', 'typed', 'emotion'):
         for sd in (SEEDS if s == 'public' else [0, 1] if s == 'decisionbench' else [0]):
             for m in ('feedback_enc', 'sup_enc', 'feedback_enc_1pass'):
-                lm(s, m, sd, 15)
+                lm(s, m, sd, 17)
     # 3. the main comparison: TTT (both rules), the answer-key add-on (+ early stopping), Peekaboo, both 8-pass and 1-pass
     for s in SUITES:
         for size, res, _, gr in VEGA:
