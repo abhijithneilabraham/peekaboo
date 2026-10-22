@@ -136,10 +136,12 @@ def plan_v2(out):
             V(size, f'replay/{s}', ['adapt.py', '--suite', s, '--method', 'replay'], ex(res, 'methods', s, 'replay_s0.json'), gr, [f'vega-{size}/cache/{s}'])
         Lm('laya', f'replay/{s}', ['train', '--suite', s, '--method', 'replay'], ex('results_laya', 'methods', s, 'replay_s0.json'), 4, [f'laya/cache/{s}'])
     # 2. Laya with the encoder unfrozen: the long pole, so it starts as soon as its cache exists
-    for s in SUITES:
-        for sd in SEEDS:
+    # (on an A40 one encoder run takes ~20 min, so: three seeds on the public menu and DecisionBench, one seed on
+    #  typed-decisions and emotion; none on JevBench (5 folds) or AG News, where the released model is already at 0.93)
+    for s in ('public', 'decisionbench', 'typed', 'emotion'):
+        for sd in (SEEDS if s in ('public', 'decisionbench') else [0]):
             for m in ('feedback_enc', 'sup_enc', 'feedback_enc_1pass'):
-                lm(s, m, sd, 16)
+                lm(s, m, sd, 15)
     # 3. the main comparison: TTT (both rules), the answer-key add-on (+ early stopping), Peekaboo, both 8-pass and 1-pass
     for s in SUITES:
         for size, res, _, gr in VEGA:
@@ -150,7 +152,7 @@ def plan_v2(out):
                     vm(size, s, m, sd, gr)
         for m in ('sup_ts', 'feedback', 'feedback_1pass', 'sup_1pass'):
             for sd in SEEDS:
-                lm(s, m, sd, 5)
+                lm(s, m, sd, 3)
     # 4. typed-decisions on Vega with the shipped typed_decisions adapter (fitted on this pool) switched off
     for size, res, _, gr in VEGA:
         V(size, 'noship_released/typed', ['adapt.py', '--suite', 'typed', '--method', 'noship_released'], ex(res, 'methods', 'typed', 'noship_released_s0.json'), gr, [f'vega-{size}/cache/typed'])
@@ -163,19 +165,17 @@ def plan_v2(out):
             for sd in SEEDS:
                 for size, res, _, gr in VEGA:
                     vm(size, s, m, sd, gr)
-                lm(s, m, sd, 5)
-    # 6. ablation: no KL term; pooled Peekaboo
+                if sd == 0:                                      # Laya head: one seed (time)
+                    lm(s, m, sd, 3)
+    # 6. ablation: no KL term; pooled Peekaboo (Laya's KL ablation and pooled head are in the v1 grid)
     for s in SUITES:
         for sd in SEEDS:
             for size, res, _, gr in VEGA:
                 vm(size, s, 'feedback_kl0', sd, gr)
-            lm(s, 'feedback_kl0', sd, 8)
     for sd in SEEDS:
         for size, res, _, gr in VEGA:
             V(size, f'pooled/s{sd}', ['adapt.py', '--suite', 'all', '--method', 'pooled', '--seed', str(sd)],
               ex(res, 'methods', f'pooled_s{sd}.done'), 2 * gr, [f'vega-{size}/cache/{x}' for x in SUITES])
-        Lm('laya', f'pooled/s{sd}', ['train', '--suite', 'all', '--method', 'pooled', '--seed', str(sd)],
-           ex('results_laya', 'methods', f'pooled_s{sd}.done'), 10, [f'laya/cache/{x}' for x in SUITES])
     steps.append(Step('tables', HERE, ['table.py'], lambda: False, None, 0))
     return steps
 
@@ -311,7 +311,7 @@ def main():
     import torch
     gpu = torch.cuda.is_available() and os.environ.get('VEGA_DEVICE', 'cuda').startswith('cuda')
     budget = 0.9 * torch.cuda.get_device_properties(0).total_memory / 2 ** 30 if gpu else 0
-    jobs = a.jobs or (8 if gpu else 1)
+    jobs = a.jobs or (10 if gpu else 1)
     print(f'device: {torch.cuda.get_device_name(0) + f" ({budget / 0.9:.0f} GB)" if gpu else "CPU (the 4B will take days; use a GPU)"}; '
           f'{jobs} steps at a time; output {out}', flush=True)
     base_env = dict(os.environ, VEGA_OUT=out, PYTHONUNBUFFERED='1', HF_HUB_DISABLE_XET='1', TOKENIZERS_PARALLELISM='false',
@@ -333,9 +333,9 @@ def main():
             if any(names[n].state != 'done' for n in st.needs):
                 continue
             if active and gpu and used + st.gpu > budget:
-                if st.gpu >= 10:                                 # a big step (a 4B cache, a Laya encoder run) waits at the front of
-                    break                                        # the queue and nothing passes it; small steps may pass each other
-                continue
+                if st.gpu >= 12 and st.name.endswith('cache'):   # a 4B cache waits at the front of the queue and nothing passes it
+                    break
+                continue                                         # otherwise small steps run alongside the encoder runs
             start(st, out, base_env); active.append(st); used += st.gpu
         hb['running'] = [st.name for st in active]
         if time.time() - last_status > 60:
