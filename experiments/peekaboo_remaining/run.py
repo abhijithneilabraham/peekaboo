@@ -152,9 +152,8 @@ def plan_v2(out):
                     vm(size, s, m, sd, gr)
         # Laya head only (the frozen encoder is re-run every pass, ~8 min a run on an A40): three seeds on typed-decisions,
         # one seed elsewhere for the one-pass arms, and the eight-pass arms only on typed-decisions and emotion
-        for m in ('sup_ts', 'feedback', 'feedback_1pass', 'sup_1pass'):
-            seeds = SEEDS if s == 'typed' else ([0] if (s in ('public', 'decisionbench') and m.endswith('1pass')) else [])
-            for sd in seeds:
+        for m in ('feedback_1pass', 'sup_1pass'):              # eight-pass head-only arms: v1 grid (one run takes >1 h here)
+            for sd in (SEEDS if s == 'typed' else ([0] if s in ('public', 'decisionbench') else [])):
                 lm(s, m, sd, 4)
     # 4. typed-decisions on Vega with the shipped typed_decisions adapter (fitted on this pool) switched off
     for size, res, _, gr in VEGA:
