@@ -393,11 +393,15 @@ def main():
     C = lambda m, s, a, b, ka='records', kb='records', mask=None: compare(s, [correct(r) for r in runs(m, s, a, ka)], [correct(r) for r in runs(m, s, b, kb)], mask)
     # every method against base, and the named head-to-heads; artifact-free versions on public and DecisionBench
     methods = {m: sorted({os.path.basename(f).rsplit('_s', 1)[0] for s in SUITES for f in glob.glob(os.path.join(OUT, RES[m], 'methods', s, '*_s[0-9].json'))}) for m in MODELS}
-    keys_of = lambda m, s, meth: [k for k in ('records', 'records_raw', 'records_switch', 'records_es', 'records_guard') if runs(m, s, meth, k)]
+    def keys_of(m, s, meth):
+        ks = [k for k in ('records', 'records_raw', 'records_switch', 'records_es', 'records_guard') if runs(m, s, meth, k)]
+        if 'records_switch' in ks and not any(f.get('switch') for i in infos(m, s, meth) for f in i.get('folds', [])):
+            ks.remove('records_switch')              # answer-key runs carry a copy of their records under this key; no switch ran
+        return ks
     for m in MODELS:
         for s in SUITES:
             rel_ok = bool(runs(m, s, 'released'))
-            for meth in methods[m] + (['laya_td'] if m == 'laya' else []):
+            for meth in [x for x in methods[m] if x != 'replay'] + (['laya_td'] if m == 'laya' else []):
                 for k in (keys_of(m, s, meth) if meth != 'laya_td' else ['records']):
                     R = runs(m, s, meth, k)
                     if not R:
