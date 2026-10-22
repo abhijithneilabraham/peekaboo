@@ -1,15 +1,13 @@
-# Status of the remaining Peekaboo experiments  (Thu Oct 22 07:42:26 2026)
+# Status of the remaining Peekaboo experiments  (Thu Oct 22 07:47:26 2026)
 
-done: 163 · pending: 230 · running: 3  (of 396 steps)
+done: 165 · pending: 228 · running: 3  (of 396 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **running** `laya/feedback_enc/emotion/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method feedback_enc --seed 0`)
 - **running** `laya/sup_enc/emotion/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method sup_enc --seed 0`)
-- **pending** `laya/feedback_enc_1pass/emotion/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method feedback_enc_1pass --seed 0`)
-- **running** `vega-4b/sup_ts/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method sup_ts --seed 0`)
-- **pending** `vega-4b/sup_ts/typed/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method sup_ts --seed 1`)
+- **running** `laya/feedback_enc_1pass/emotion/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method feedback_enc_1pass --seed 0`)
+- **running** `vega-4b/sup_ts/typed/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method sup_ts --seed 1`)
 - **pending** `vega-4b/sup_ts/typed/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method sup_ts --seed 2`)
 - **pending** `vega-4b/feedback/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback --seed 0`)
 - **pending** `vega-4b/feedback/typed/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback --seed 1`)
@@ -301,9 +299,9 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     laya/feedback_enc/typed/s0 3846s
 - done     laya/sup_enc/typed/s0 4411s
 - done     laya/feedback_enc_1pass/typed/s0 530s
-- running  laya/feedback_enc/emotion/s0 
+- done     laya/feedback_enc/emotion/s0 695s
 - running  laya/sup_enc/emotion/s0 
-- pending  laya/feedback_enc_1pass/emotion/s0 
+- running  laya/feedback_enc_1pass/emotion/s0 
 - done     vega-0.8b/ttt/public 
 - done     vega-0.8b/sup_ts/public/s0 
 - done     vega-0.8b/sup_ts/public/s1 
@@ -400,8 +398,8 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-0.8b/sup_1pass/typed/s1 90s
 - done     vega-0.8b/sup_1pass/typed/s2 95s
 - done     vega-4b/ttt/typed 
-- running  vega-4b/sup_ts/typed/s0 
-- pending  vega-4b/sup_ts/typed/s1 
+- done     vega-4b/sup_ts/typed/s0 255s
+- running  vega-4b/sup_ts/typed/s1 
 - pending  vega-4b/sup_ts/typed/s2 
 - pending  vega-4b/feedback/typed/s0 
 - pending  vega-4b/feedback/typed/s1 
