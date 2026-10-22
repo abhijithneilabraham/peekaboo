@@ -1,6 +1,6 @@
-# Status of the remaining Peekaboo experiments  (Thu Oct 22 05:43:11 2026)
+# Status of the remaining Peekaboo experiments  (Thu Oct 22 05:49:12 2026)
 
-done: 104 · pending: 351 · running: 5  (of 460 steps)
+done: 113 · pending: 342 · running: 5  (of 460 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
@@ -14,18 +14,9 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - **pending** `laya/feedback_enc/emotion/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method feedback_enc --seed 0`)
 - **pending** `laya/sup_enc/emotion/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method sup_enc --seed 0`)
 - **pending** `laya/feedback_enc_1pass/emotion/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method feedback_enc_1pass --seed 0`)
-- **running** `vega-4b/feedback/public/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite public --method feedback --seed 0`)
-- **running** `vega-4b/feedback/public/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite public --method feedback --seed 1`)
-- **running** `vega-4b/feedback/public/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite public --method feedback --seed 2`)
-- **pending** `vega-4b/feedback_1pass/public/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite public --method feedback_1pass --seed 0`)
-- **pending** `vega-4b/feedback_1pass/public/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite public --method feedback_1pass --seed 1`)
-- **pending** `vega-4b/feedback_1pass/public/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite public --method feedback_1pass --seed 2`)
-- **pending** `vega-4b/sup_1pass/public/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite public --method sup_1pass --seed 0`)
-- **pending** `vega-4b/sup_1pass/public/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite public --method sup_1pass --seed 1`)
-- **pending** `vega-4b/sup_1pass/public/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite public --method sup_1pass --seed 2`)
-- **pending** `laya/sup_ts/public/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method sup_ts --seed 0`)
-- **pending** `laya/sup_ts/public/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method sup_ts --seed 1`)
-- **pending** `laya/sup_ts/public/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method sup_ts --seed 2`)
+- **running** `laya/sup_ts/public/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method sup_ts --seed 0`)
+- **running** `laya/sup_ts/public/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method sup_ts --seed 1`)
+- **running** `laya/sup_ts/public/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method sup_ts --seed 2`)
 - **pending** `laya/feedback/public/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method feedback --seed 0`)
 - **pending** `laya/feedback/public/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method feedback --seed 1`)
 - **pending** `laya/feedback/public/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method feedback --seed 2`)
@@ -447,18 +438,18 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-4b/sup_ts/public/s0 436s
 - done     vega-4b/sup_ts/public/s1 441s
 - done     vega-4b/sup_ts/public/s2 441s
-- running  vega-4b/feedback/public/s0 
-- running  vega-4b/feedback/public/s1 
-- running  vega-4b/feedback/public/s2 
-- pending  vega-4b/feedback_1pass/public/s0 
-- pending  vega-4b/feedback_1pass/public/s1 
-- pending  vega-4b/feedback_1pass/public/s2 
-- pending  vega-4b/sup_1pass/public/s0 
-- pending  vega-4b/sup_1pass/public/s1 
-- pending  vega-4b/sup_1pass/public/s2 
-- pending  laya/sup_ts/public/s0 
-- pending  laya/sup_ts/public/s1 
-- pending  laya/sup_ts/public/s2 
+- done     vega-4b/feedback/public/s0 190s
+- done     vega-4b/feedback/public/s1 190s
+- done     vega-4b/feedback/public/s2 190s
+- done     vega-4b/feedback_1pass/public/s0 75s
+- done     vega-4b/feedback_1pass/public/s1 75s
+- done     vega-4b/feedback_1pass/public/s2 75s
+- done     vega-4b/sup_1pass/public/s0 115s
+- done     vega-4b/sup_1pass/public/s1 115s
+- done     vega-4b/sup_1pass/public/s2 115s
+- running  laya/sup_ts/public/s0 
+- running  laya/sup_ts/public/s1 
+- running  laya/sup_ts/public/s2 
 - pending  laya/feedback/public/s0 
 - pending  laya/feedback/public/s1 
 - pending  laya/feedback/public/s2 
