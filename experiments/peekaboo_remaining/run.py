@@ -32,7 +32,7 @@ class Step:
 
 
 SUITES = ('public', 'jevbench', 'decisionbench', 'typed', 'emotion', 'agnews')
-VEGA = (('0.8b', 'results', 8, 2), ('4b', 'results_4b', 12, 3))   # (size, results dir, GB for the cache step, GB for a method step)
+VEGA = (('0.8b', 'results', 8, 1), ('4b', 'results_4b', 12, 1))   # (size, results dir, GB for the cache step, GB for a method step)
 
 
 def plan(out):
@@ -311,7 +311,7 @@ def main():
     import torch
     gpu = torch.cuda.is_available() and os.environ.get('VEGA_DEVICE', 'cuda').startswith('cuda')
     budget = 0.9 * torch.cuda.get_device_properties(0).total_memory / 2 ** 30 if gpu else 0
-    jobs = a.jobs or (10 if gpu else 1)
+    jobs = a.jobs or (16 if gpu else 1)
     print(f'device: {torch.cuda.get_device_name(0) + f" ({budget / 0.9:.0f} GB)" if gpu else "CPU (the 4B will take days; use a GPU)"}; '
           f'{jobs} steps at a time; output {out}', flush=True)
     base_env = dict(os.environ, VEGA_OUT=out, PYTHONUNBUFFERED='1', HF_HUB_DISABLE_XET='1', TOKENIZERS_PARALLELISM='false',
