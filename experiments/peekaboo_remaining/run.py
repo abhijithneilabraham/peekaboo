@@ -32,7 +32,7 @@ class Step:
 
 
 SUITES = ('public', 'jevbench', 'decisionbench', 'typed', 'emotion', 'agnews')
-VEGA = (('0.8b', 'results', 8, 2), ('4b', 'results_4b', 12, 4))   # (size, results dir, GB for the cache step, GB for a method step)
+VEGA = (('0.8b', 'results', 8, 2), ('4b', 'results_4b', 12, 3))   # (size, results dir, GB for the cache step, GB for a method step)
 
 
 def plan(out):
@@ -150,7 +150,7 @@ def plan_v2(out):
                     vm(size, s, m, sd, gr)
         for m in ('sup_ts', 'feedback', 'feedback_1pass', 'sup_1pass'):
             for sd in SEEDS:
-                lm(s, m, sd, 8)
+                lm(s, m, sd, 5)
     # 4. typed-decisions on Vega with the shipped typed_decisions adapter (fitted on this pool) switched off
     for size, res, _, gr in VEGA:
         V(size, 'noship_released/typed', ['adapt.py', '--suite', 'typed', '--method', 'noship_released'], ex(res, 'methods', 'typed', 'noship_released_s0.json'), gr, [f'vega-{size}/cache/typed'])
@@ -163,7 +163,7 @@ def plan_v2(out):
             for sd in SEEDS:
                 for size, res, _, gr in VEGA:
                     vm(size, s, m, sd, gr)
-                lm(s, m, sd, 8)
+                lm(s, m, sd, 5)
     # 6. ablation: no KL term; pooled Peekaboo
     for s in SUITES:
         for sd in SEEDS:
@@ -333,8 +333,8 @@ def main():
             if any(names[n].state != 'done' for n in st.needs):
                 continue
             if active and gpu and used + st.gpu > budget:
-                if st.gpu >= 12:                                 # a big step (a 4B cache) waits at the front of the queue and
-                    break                                        # nothing passes it; small steps may pass each other
+                if st.gpu >= 10:                                 # a big step (a 4B cache, a Laya encoder run) waits at the front of
+                    break                                        # the queue and nothing passes it; small steps may pass each other
                 continue
             start(st, out, base_env); active.append(st); used += st.gpu
         hb['running'] = [st.name for st in active]
