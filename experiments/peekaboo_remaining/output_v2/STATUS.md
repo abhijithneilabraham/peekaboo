@@ -1,24 +1,18 @@
-# Status of the remaining Peekaboo experiments  (Thu Oct 22 09:49:21 2026)
+# Status of the remaining Peekaboo experiments  (Thu Oct 22 09:54:21 2026)
 
-done: 240 · pending: 66 · running: 8  (of 314 steps)
+done: 246 · pending: 60 · running: 8  (of 314 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **running** `vega-4b/feedback_noship/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback_noship --seed 0`)
-- **running** `vega-4b/feedback_noship/typed/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback_noship --seed 1`)
-- **running** `vega-4b/feedback_noship/typed/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback_noship --seed 2`)
-- **running** `vega-4b/sup_ts_noship/typed/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method sup_ts_noship --seed 0`)
 - **running** `vega-4b/sup_ts_noship/typed/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method sup_ts_noship --seed 1`)
 - **running** `vega-4b/sup_ts_noship/typed/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method sup_ts_noship --seed 2`)
-- **running** `vega-4b/feedback_1pass_noship/typed/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback_1pass_noship --seed 1`)
-- **running** `vega-4b/feedback_1pass_noship/typed/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite typed --method feedback_1pass_noship --seed 2`)
-- **pending** `vega-0.8b/feedback_noise20/decisionbench/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite decisionbench --method feedback_noise20 --seed 0`)
-- **pending** `vega-4b/feedback_noise20/decisionbench/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method feedback_noise20 --seed 0`)
-- **pending** `vega-0.8b/feedback_noise20/decisionbench/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite decisionbench --method feedback_noise20 --seed 1`)
-- **pending** `vega-4b/feedback_noise20/decisionbench/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method feedback_noise20 --seed 1`)
-- **pending** `vega-0.8b/feedback_noise20/decisionbench/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite decisionbench --method feedback_noise20 --seed 2`)
-- **pending** `vega-4b/feedback_noise20/decisionbench/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method feedback_noise20 --seed 2`)
+- **running** `vega-0.8b/feedback_noise20/decisionbench/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite decisionbench --method feedback_noise20 --seed 0`)
+- **running** `vega-4b/feedback_noise20/decisionbench/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method feedback_noise20 --seed 0`)
+- **running** `vega-0.8b/feedback_noise20/decisionbench/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite decisionbench --method feedback_noise20 --seed 1`)
+- **running** `vega-4b/feedback_noise20/decisionbench/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method feedback_noise20 --seed 1`)
+- **running** `vega-0.8b/feedback_noise20/decisionbench/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite decisionbench --method feedback_noise20 --seed 2`)
+- **running** `vega-4b/feedback_noise20/decisionbench/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method feedback_noise20 --seed 2`)
 - **pending** `vega-0.8b/feedback_half/decisionbench/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite decisionbench --method feedback_half --seed 0`)
 - **pending** `vega-4b/feedback_half/decisionbench/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method feedback_half --seed 0`)
 - **pending** `vega-0.8b/feedback_half/decisionbench/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite decisionbench --method feedback_half --seed 1`)
@@ -320,21 +314,21 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-0.8b/feedback_1pass_noship/typed/s1 155s
 - done     vega-0.8b/feedback_1pass_noship/typed/s2 140s
 - done     vega-4b/noship_released/typed 140s
-- running  vega-4b/feedback_noship/typed/s0 
-- running  vega-4b/feedback_noship/typed/s1 
-- running  vega-4b/feedback_noship/typed/s2 
-- running  vega-4b/sup_ts_noship/typed/s0 
+- done     vega-4b/feedback_noship/typed/s0 510s
+- done     vega-4b/feedback_noship/typed/s1 495s
+- done     vega-4b/feedback_noship/typed/s2 505s
+- done     vega-4b/sup_ts_noship/typed/s0 625s
 - running  vega-4b/sup_ts_noship/typed/s1 
 - running  vega-4b/sup_ts_noship/typed/s2 
 - done     vega-4b/feedback_1pass_noship/typed/s0 170s
-- running  vega-4b/feedback_1pass_noship/typed/s1 
-- running  vega-4b/feedback_1pass_noship/typed/s2 
-- pending  vega-0.8b/feedback_noise20/decisionbench/s0 
-- pending  vega-4b/feedback_noise20/decisionbench/s0 
-- pending  vega-0.8b/feedback_noise20/decisionbench/s1 
-- pending  vega-4b/feedback_noise20/decisionbench/s1 
-- pending  vega-0.8b/feedback_noise20/decisionbench/s2 
-- pending  vega-4b/feedback_noise20/decisionbench/s2 
+- done     vega-4b/feedback_1pass_noship/typed/s1 165s
+- done     vega-4b/feedback_1pass_noship/typed/s2 175s
+- running  vega-0.8b/feedback_noise20/decisionbench/s0 
+- running  vega-4b/feedback_noise20/decisionbench/s0 
+- running  vega-0.8b/feedback_noise20/decisionbench/s1 
+- running  vega-4b/feedback_noise20/decisionbench/s1 
+- running  vega-0.8b/feedback_noise20/decisionbench/s2 
+- running  vega-4b/feedback_noise20/decisionbench/s2 
 - pending  vega-0.8b/feedback_half/decisionbench/s0 
 - pending  vega-4b/feedback_half/decisionbench/s0 
 - pending  vega-0.8b/feedback_half/decisionbench/s1 
