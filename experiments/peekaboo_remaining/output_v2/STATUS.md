@@ -1,6 +1,6 @@
-# Status of the remaining Peekaboo experiments  (Thu Oct 22 06:37:25 2026)
+# Status of the remaining Peekaboo experiments  (Thu Oct 22 06:42:25 2026)
 
-done: 136 · pending: 257 · running: 3  (of 396 steps)
+done: 138 · pending: 255 · running: 3  (of 396 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
@@ -11,9 +11,7 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - **pending** `laya/feedback_enc/emotion/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method feedback_enc --seed 0`)
 - **pending** `laya/sup_enc/emotion/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method sup_enc --seed 0`)
 - **pending** `laya/feedback_enc_1pass/emotion/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite emotion --method feedback_enc_1pass --seed 0`)
-- **running** `vega-4b/sup_ts/decisionbench/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method sup_ts --seed 2`)
-- **pending** `vega-4b/feedback/decisionbench/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method feedback --seed 0`)
-- **pending** `vega-4b/feedback/decisionbench/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method feedback --seed 1`)
+- **running** `vega-4b/feedback/decisionbench/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method feedback --seed 1`)
 - **pending** `vega-4b/feedback/decisionbench/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method feedback --seed 2`)
 - **pending** `vega-4b/feedback_1pass/decisionbench/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method feedback_1pass --seed 0`)
 - **pending** `vega-4b/feedback_1pass/decisionbench/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite decisionbench --method feedback_1pass --seed 1`)
@@ -401,9 +399,9 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-4b/ttt/decisionbench 
 - done     vega-4b/sup_ts/decisionbench/s0 255s
 - done     vega-4b/sup_ts/decisionbench/s1 240s
-- running  vega-4b/sup_ts/decisionbench/s2 
-- pending  vega-4b/feedback/decisionbench/s0 
-- pending  vega-4b/feedback/decisionbench/s1 
+- done     vega-4b/sup_ts/decisionbench/s2 250s
+- done     vega-4b/feedback/decisionbench/s0 190s
+- running  vega-4b/feedback/decisionbench/s1 
 - pending  vega-4b/feedback/decisionbench/s2 
 - pending  vega-4b/feedback_1pass/decisionbench/s0 
 - pending  vega-4b/feedback_1pass/decisionbench/s1 
