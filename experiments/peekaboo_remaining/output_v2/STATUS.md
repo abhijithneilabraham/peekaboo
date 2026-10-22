@@ -1,13 +1,12 @@
-# Status of the remaining Peekaboo experiments  (Thu Oct 22 02:47:05 2026)
+# Status of the remaining Peekaboo experiments  (Thu Oct 22 02:52:06 2026)
 
-done: 84 · pending: 455 · running: 2  (of 541 steps)
+done: 85 · pending: 454 · running: 2  (of 541 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **running** `laya/feedback_enc/public/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method feedback_enc --seed 0`)
 - **running** `laya/sup_enc/public/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method sup_enc --seed 0`)
-- **pending** `laya/feedback_enc_1pass/public/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method feedback_enc_1pass --seed 0`)
+- **running** `laya/feedback_enc_1pass/public/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method feedback_enc_1pass --seed 0`)
 - **pending** `laya/feedback_enc/public/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method feedback_enc --seed 1`)
 - **pending** `laya/sup_enc/public/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method sup_enc --seed 1`)
 - **pending** `laya/feedback_enc_1pass/public/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite public --method feedback_enc_1pass --seed 1`)
@@ -507,9 +506,9 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-0.8b/replay/agnews 
 - done     vega-4b/replay/agnews 
 - done     laya/replay/agnews 
-- running  laya/feedback_enc/public/s0 
+- done     laya/feedback_enc/public/s0 1090s
 - running  laya/sup_enc/public/s0 
-- pending  laya/feedback_enc_1pass/public/s0 
+- running  laya/feedback_enc_1pass/public/s0 
 - pending  laya/feedback_enc/public/s1 
 - pending  laya/sup_enc/public/s1 
 - pending  laya/feedback_enc_1pass/public/s1 
