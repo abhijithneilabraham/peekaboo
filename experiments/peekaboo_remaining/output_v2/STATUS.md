@@ -1,4 +1,4 @@
-# Status of the remaining Peekaboo experiments  (Thu Oct 22 05:49:12 2026)
+# Status of the remaining Peekaboo experiments  (Thu Oct 22 05:56:03 2026)
 
 done: 113 · pending: 342 · running: 5  (of 460 steps)
 
@@ -435,18 +435,18 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-0.8b/sup_1pass/public/s1 
 - done     vega-0.8b/sup_1pass/public/s2 
 - done     vega-4b/ttt/public 
-- done     vega-4b/sup_ts/public/s0 436s
-- done     vega-4b/sup_ts/public/s1 441s
-- done     vega-4b/sup_ts/public/s2 441s
-- done     vega-4b/feedback/public/s0 190s
-- done     vega-4b/feedback/public/s1 190s
-- done     vega-4b/feedback/public/s2 190s
-- done     vega-4b/feedback_1pass/public/s0 75s
-- done     vega-4b/feedback_1pass/public/s1 75s
-- done     vega-4b/feedback_1pass/public/s2 75s
-- done     vega-4b/sup_1pass/public/s0 115s
-- done     vega-4b/sup_1pass/public/s1 115s
-- done     vega-4b/sup_1pass/public/s2 115s
+- done     vega-4b/sup_ts/public/s0 
+- done     vega-4b/sup_ts/public/s1 
+- done     vega-4b/sup_ts/public/s2 
+- done     vega-4b/feedback/public/s0 
+- done     vega-4b/feedback/public/s1 
+- done     vega-4b/feedback/public/s2 
+- done     vega-4b/feedback_1pass/public/s0 
+- done     vega-4b/feedback_1pass/public/s1 
+- done     vega-4b/feedback_1pass/public/s2 
+- done     vega-4b/sup_1pass/public/s0 
+- done     vega-4b/sup_1pass/public/s1 
+- done     vega-4b/sup_1pass/public/s2 
 - running  laya/sup_ts/public/s0 
 - running  laya/sup_ts/public/s1 
 - running  laya/sup_ts/public/s2 
@@ -584,7 +584,7 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - pending  vega-0.8b/sup_1pass/emotion/s0 
 - pending  vega-0.8b/sup_1pass/emotion/s1 
 - pending  vega-0.8b/sup_1pass/emotion/s2 
-- done     vega-4b/ttt/emotion 370s
+- done     vega-4b/ttt/emotion 
 - pending  vega-4b/sup_ts/emotion/s0 
 - pending  vega-4b/sup_ts/emotion/s1 
 - pending  vega-4b/sup_ts/emotion/s2 
@@ -622,7 +622,7 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - pending  vega-0.8b/sup_1pass/agnews/s0 
 - pending  vega-0.8b/sup_1pass/agnews/s1 
 - pending  vega-0.8b/sup_1pass/agnews/s2 
-- done     vega-4b/ttt/agnews 370s
+- done     vega-4b/ttt/agnews 
 - pending  vega-4b/sup_ts/agnews/s0 
 - pending  vega-4b/sup_ts/agnews/s1 
 - pending  vega-4b/sup_ts/agnews/s2 
