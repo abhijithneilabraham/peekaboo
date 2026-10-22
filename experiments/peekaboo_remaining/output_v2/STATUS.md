@@ -1,30 +1,18 @@
-# Status of the remaining Peekaboo experiments  (Thu Oct 22 09:28:20 2026)
+# Status of the remaining Peekaboo experiments  (Thu Oct 22 09:33:21 2026)
 
-done: 204 · pending: 102 · running: 8  (of 314 steps)
+done: 216 · pending: 90 · running: 8  (of 314 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **running** `vega-0.8b/sup_ts/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method sup_ts --seed 0`)
-- **running** `vega-0.8b/sup_ts/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method sup_ts --seed 1`)
-- **running** `vega-0.8b/sup_ts/agnews/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method sup_ts --seed 2`)
-- **running** `vega-0.8b/feedback/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method feedback --seed 0`)
-- **running** `vega-0.8b/feedback/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method feedback --seed 1`)
-- **running** `vega-0.8b/feedback/agnews/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method feedback --seed 2`)
-- **running** `vega-0.8b/feedback_1pass/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method feedback_1pass --seed 0`)
-- **running** `vega-0.8b/feedback_1pass/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method feedback_1pass --seed 1`)
-- **pending** `vega-0.8b/feedback_1pass/agnews/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method feedback_1pass --seed 2`)
-- **pending** `vega-0.8b/sup_1pass/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method sup_1pass --seed 0`)
-- **pending** `vega-0.8b/sup_1pass/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method sup_1pass --seed 1`)
-- **pending** `vega-0.8b/sup_1pass/agnews/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python adapt.py --suite agnews --method sup_1pass --seed 2`)
-- **pending** `vega-4b/sup_ts/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method sup_ts --seed 0`)
-- **pending** `vega-4b/sup_ts/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method sup_ts --seed 1`)
-- **pending** `vega-4b/sup_ts/agnews/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method sup_ts --seed 2`)
-- **pending** `vega-4b/feedback/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback --seed 0`)
-- **pending** `vega-4b/feedback/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback --seed 1`)
-- **pending** `vega-4b/feedback/agnews/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback --seed 2`)
-- **pending** `vega-4b/feedback_1pass/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback_1pass --seed 0`)
-- **pending** `vega-4b/feedback_1pass/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback_1pass --seed 1`)
+- **running** `vega-4b/sup_ts/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method sup_ts --seed 0`)
+- **running** `vega-4b/sup_ts/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method sup_ts --seed 1`)
+- **running** `vega-4b/sup_ts/agnews/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method sup_ts --seed 2`)
+- **running** `vega-4b/feedback/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback --seed 0`)
+- **running** `vega-4b/feedback/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback --seed 1`)
+- **running** `vega-4b/feedback/agnews/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback --seed 2`)
+- **running** `vega-4b/feedback_1pass/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback_1pass --seed 0`)
+- **running** `vega-4b/feedback_1pass/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback_1pass --seed 1`)
 - **pending** `vega-4b/feedback_1pass/agnews/s2`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method feedback_1pass --seed 2`)
 - **pending** `vega-4b/sup_1pass/agnews/s0`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method sup_1pass --seed 0`)
 - **pending** `vega-4b/sup_1pass/agnews/s1`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python adapt.py --suite agnews --method sup_1pass --seed 1`)
@@ -320,27 +308,27 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     vega-4b/sup_1pass/emotion/s1 115s
 - done     vega-4b/sup_1pass/emotion/s2 125s
 - done     vega-0.8b/ttt/agnews 
-- running  vega-0.8b/sup_ts/agnews/s0 
-- running  vega-0.8b/sup_ts/agnews/s1 
-- running  vega-0.8b/sup_ts/agnews/s2 
-- running  vega-0.8b/feedback/agnews/s0 
-- running  vega-0.8b/feedback/agnews/s1 
-- running  vega-0.8b/feedback/agnews/s2 
-- running  vega-0.8b/feedback_1pass/agnews/s0 
-- running  vega-0.8b/feedback_1pass/agnews/s1 
-- pending  vega-0.8b/feedback_1pass/agnews/s2 
-- pending  vega-0.8b/sup_1pass/agnews/s0 
-- pending  vega-0.8b/sup_1pass/agnews/s1 
-- pending  vega-0.8b/sup_1pass/agnews/s2 
+- done     vega-0.8b/sup_ts/agnews/s0 365s
+- done     vega-0.8b/sup_ts/agnews/s1 360s
+- done     vega-0.8b/sup_ts/agnews/s2 330s
+- done     vega-0.8b/feedback/agnews/s0 310s
+- done     vega-0.8b/feedback/agnews/s1 275s
+- done     vega-0.8b/feedback/agnews/s2 270s
+- done     vega-0.8b/feedback_1pass/agnews/s0 120s
+- done     vega-0.8b/feedback_1pass/agnews/s1 130s
+- done     vega-0.8b/feedback_1pass/agnews/s2 105s
+- done     vega-0.8b/sup_1pass/agnews/s0 80s
+- done     vega-0.8b/sup_1pass/agnews/s1 70s
+- done     vega-0.8b/sup_1pass/agnews/s2 100s
 - done     vega-4b/ttt/agnews 
-- pending  vega-4b/sup_ts/agnews/s0 
-- pending  vega-4b/sup_ts/agnews/s1 
-- pending  vega-4b/sup_ts/agnews/s2 
-- pending  vega-4b/feedback/agnews/s0 
-- pending  vega-4b/feedback/agnews/s1 
-- pending  vega-4b/feedback/agnews/s2 
-- pending  vega-4b/feedback_1pass/agnews/s0 
-- pending  vega-4b/feedback_1pass/agnews/s1 
+- running  vega-4b/sup_ts/agnews/s0 
+- running  vega-4b/sup_ts/agnews/s1 
+- running  vega-4b/sup_ts/agnews/s2 
+- running  vega-4b/feedback/agnews/s0 
+- running  vega-4b/feedback/agnews/s1 
+- running  vega-4b/feedback/agnews/s2 
+- running  vega-4b/feedback_1pass/agnews/s0 
+- running  vega-4b/feedback_1pass/agnews/s1 
 - pending  vega-4b/feedback_1pass/agnews/s2 
 - pending  vega-4b/sup_1pass/agnews/s0 
 - pending  vega-4b/sup_1pass/agnews/s1 
