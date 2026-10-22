@@ -1,14 +1,12 @@
-# Status of the remaining Peekaboo experiments  (Thu Oct 22 03:47:07 2026)
+# Status of the remaining Peekaboo experiments  (Thu Oct 22 03:52:07 2026)
 
-done: 94 · pending: 445 · running: 2  (of 541 steps)
+done: 96 · pending: 443 · running: 2  (of 541 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **running** `laya/sup_enc/jevbench/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite jevbench --method sup_enc --seed 0`)
-- **running** `laya/feedback_enc_1pass/jevbench/s0`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite jevbench --method feedback_enc_1pass --seed 0`)
-- **pending** `laya/feedback_enc/jevbench/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite jevbench --method feedback_enc --seed 1`)
-- **pending** `laya/sup_enc/jevbench/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite jevbench --method sup_enc --seed 1`)
+- **running** `laya/feedback_enc/jevbench/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite jevbench --method feedback_enc --seed 1`)
+- **running** `laya/sup_enc/jevbench/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite jevbench --method sup_enc --seed 1`)
 - **pending** `laya/feedback_enc_1pass/jevbench/s1`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite jevbench --method feedback_enc_1pass --seed 1`)
 - **pending** `laya/feedback_enc/jevbench/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite jevbench --method feedback_enc --seed 2`)
 - **pending** `laya/sup_enc/jevbench/s2`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py train --suite jevbench --method sup_enc --seed 2`)
@@ -507,10 +505,10 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     laya/sup_enc/public/s2 1280s
 - done     laya/feedback_enc_1pass/public/s2 175s
 - done     laya/feedback_enc/jevbench/s0 615s
-- running  laya/sup_enc/jevbench/s0 
-- running  laya/feedback_enc_1pass/jevbench/s0 
-- pending  laya/feedback_enc/jevbench/s1 
-- pending  laya/sup_enc/jevbench/s1 
+- done     laya/sup_enc/jevbench/s0 700s
+- done     laya/feedback_enc_1pass/jevbench/s0 110s
+- running  laya/feedback_enc/jevbench/s1 
+- running  laya/sup_enc/jevbench/s1 
 - pending  laya/feedback_enc_1pass/jevbench/s1 
 - pending  laya/feedback_enc/jevbench/s2 
 - pending  laya/sup_enc/jevbench/s2 
