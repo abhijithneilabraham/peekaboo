@@ -30,6 +30,10 @@ C = {'base': '#9e9e9e', 'theirs': '#e07b39', 'sup': '#4c72b0', 'sup_es': '#7fa6d
 MARK = {'theirs': 'D', 'sup': 's', 'sup_es': 's', 'pk': 'o', 'pk1': 'o', 'enc': 'o', 'enc1': 'o', 'prior': '^', 'logged': 'v', 'pooled': 's', 'kl0': 'x'}
 
 
+PK = lambda model: 'feedback_enc' if model == 'laya' else 'feedback'          # the main Peekaboo arm per model in this grid
+SUP = lambda model: 'sup_enc' if model == 'laya' else 'sup_ts'
+
+
 # ───────────────────────────── access ─────────────────────────────
 def cmp(model, meth, key, suite, vs='released', vkey='records', suffix=''):
     k = f'{model}|{meth}|{key}|{suite}|vs|{vs}' + ('' if vs == 'released' else f'|{vkey}') + suffix
@@ -82,12 +86,13 @@ def fig_gains():
             ('feedback', 'records', 'Peekaboo, eight passes', 'pk'), ('feedback_1pass', 'records', 'Peekaboo, one pass (each row rated once)', 'pk1')]
     forest(axes[0], '0.8b', vega, 'Vega 0.8B')
     forest(axes[1], '4b', [(m, k, '', st) for m, k, _, st in vega], 'Vega 4B')
-    forest(axes[2], 'laya', [('laya_td', 'records', '', 'theirs'), ('sup_ts', 'records_es', '', 'sup'), ('feedback', 'records', '', 'pk'), ('feedback_1pass', 'records', '', 'pk1')], 'Laya, head only')
+    forest(axes[2], 'laya', [('laya_td', 'records', '', 'theirs'), ('sup_1pass', 'records', 'answer-key add-on, one pass (Laya head)', 'sup_es'), ('feedback_1pass', 'records', '', 'pk1')], 'Laya, head only (one pass)')
     for ax in axes:
         ax.set_xlabel('accuracy gain over the released model (points)')
-    h, l = axes[0].get_legend_handles_labels()
+    h, l = axes[0].get_legend_handles_labels(); h2, l2 = axes[2].get_legend_handles_labels()
+    h += [x for x, lab in zip(h2, l2) if lab]; l += [lab for lab in l2 if lab]
     fig.legend(h, l, frameon=False, ncol=2, loc='lower center', bbox_to_anchor=(0.5, -0.02))
-    fig.tight_layout(rect=(0, 0.14, 1, 1)); fig.savefig(os.path.join(FIG, 'gains.pdf'), bbox_inches='tight'); plt.close(fig)
+    fig.tight_layout(rect=(0, 0.16, 1, 1)); fig.savefig(os.path.join(FIG, 'gains.pdf'), bbox_inches='tight'); plt.close(fig)
 
 
 def fig_laya():
@@ -95,7 +100,7 @@ def fig_laya():
     series = [('laya_td', 'records', "Laya's typed-decisions fine-tune (in-domain only on typed-decisions)", 'theirs'),
               ('sup_enc', 'records_es', 'answer-key fine-tune, encoder unfrozen, early-stopped', 'sup'),
               ('feedback_enc', 'records', 'Peekaboo, encoder unfrozen, eight passes', 'enc'), ('feedback_enc_1pass', 'records', 'Peekaboo, encoder unfrozen, one pass', 'enc1'),
-              ('feedback', 'records', 'Peekaboo, head only, eight passes', 'pk')]
+              ('feedback_1pass', 'records', 'Peekaboo, head only, one pass', 'pk')]
     forest(ax, 'laya', series, 'Laya, encoder unfrozen')
     ax.set_xlabel('accuracy gain over released Laya (points)')
     ax.legend(frameon=False, ncol=1, loc='upper center', bbox_to_anchor=(0.5, -0.18), fontsize=8)
@@ -108,14 +113,15 @@ def fig_passes():
     for ax, (model, mname) in zip(axes, MODELS):
         y = np.arange(len(SUITES))[::-1]
         for yi, s in zip(y, SUITES):
-            for dy, (m1, m8, col, lab) in zip((0.18, -0.18), (('feedback_1pass', 'feedback', C['pk'], 'Peekaboo: one pass $\\rightarrow$ eight passes'),
-                                                                 ('sup_1pass', 'sup_ts', C['sup'], 'answer key: one pass $\\rightarrow$ eight passes'))):
+            pairs = ((('feedback_enc_1pass', 'feedback_enc', C['pk'], 'Peekaboo: one pass $\\rightarrow$ eight passes'),) if model == 'laya' else
+                     (('feedback_1pass', 'feedback', C['pk'], 'Peekaboo: one pass $\\rightarrow$ eight passes'), ('sup_1pass', 'sup_ts', C['sup'], 'answer key: one pass $\\rightarrow$ eight passes')))
+            for dy, (m1, m8, col, lab) in zip((0.18, -0.18), pairs):
                 a, b = cmp(model, m1, 'records', s), cmp(model, m8, 'records', s)
                 if a and b:
                     ax.plot([a['gain'], b['gain']], [yi + dy, yi + dy], '-', color=col, lw=1.2)
                     ax.plot(a['gain'], yi + dy, 'o', ms=4, mfc='white', color=col, label=lab if yi == y[0] else None)
                     ax.plot(b['gain'], yi + dy, 'o', ms=4, color=col)
-        ax.axvline(0, color='k', lw=0.7); ax.set_yticks(y); ax.set_yticklabels([SNAME[s] for s in SUITES]); ax.set_title(mname)
+        ax.axvline(0, color='k', lw=0.7); ax.set_yticks(y); ax.set_yticklabels([SNAME[s] for s in SUITES]); ax.set_title(mname + (', encoder unfrozen' if model == 'laya' else ''))
         ax.grid(axis='x', lw=0.4, alpha=0.5); ax.spines['left'].set_visible(False); ax.tick_params(axis='y', length=0)
         ax.set_xlabel('gain over the released model (points)')
     h, l = axes[0].get_legend_handles_labels()
@@ -131,9 +137,9 @@ def fig_realistic():
     suites = [s for s in ('decisionbench', 'typed', 'emotion') if any(cmp(m, a[0], a[1], s) for m, _ in MODELS for a in arms[2:])]
     if not suites:
         return
-    fig, axes = plt.subplots(1, 3, figsize=(11, 3.4), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(10, 3.4), sharey=True)
     y = np.arange(len(arms))[::-1]
-    for ax, (model, mname) in zip(axes, MODELS):
+    for ax, (model, mname) in zip(axes, MODELS[:2]):
         for j, s in enumerate(suites):
             dy = (j - (len(suites) - 1) / 2) * -0.22
             for yi, (meth, key, label, style) in zip(y, arms):
@@ -141,7 +147,7 @@ def fig_realistic():
                 if g:
                     ax.errorbar(g['gain'], yi + dy, xerr=[[g['gain'] - g['lo']], [g['hi'] - g['gain']]], fmt='osD^v<>'[j], ms=4, color=plt.cm.tab10(j),
                                 ecolor=plt.cm.tab10(j), elinewidth=0.9, capsize=1.5, label=SNAME[s] if yi == y[0] else None)
-        ax.axvline(0, color='k', lw=0.7); ax.set_yticks(y); ax.set_yticklabels([a[2] for a in arms] if ax is axes[0] else []); ax.set_title(mname)
+        ax.axvline(0, color='k', lw=0.7); ax.set_yticks(y); ax.set_yticklabels([a[2] for a in arms]); ax.set_title(mname)
         ax.grid(axis='x', lw=0.4, alpha=0.5); ax.spines['left'].set_visible(False); ax.tick_params(axis='y', length=0); ax.set_xlabel('gain over the released model (points)')
     h, l = axes[0].get_legend_handles_labels()
     fig.legend(h, l, frameon=False, ncol=len(suites), loc='lower center', bbox_to_anchor=(0.5, -0.02))
@@ -164,7 +170,7 @@ def fig_anatomy():
             p = N['prior'].get(f'{model}|{s}')
             g = cmp(model, 'feedback', 'records', s); a = cmp(model, 'sup_ts', 'records', s)
             first = yi == y[0] and model == '0.8b'
-            if p:
+            if p and p['feedback'].get('vs_released'):
                 axes[1].plot(p['feedback']['vs_released']['gain'], yi + dy, '^', color=C['prior'], alpha=alpha, ms=5, label='label prior from verdicts' if first else None)
                 axes[1].plot(p['labels']['vs_released']['gain'], yi + dy, '^', mfc='white', color=C['prior'], alpha=alpha, ms=5, label='label prior from labels' if first else None)
             if g:
@@ -186,6 +192,7 @@ def fig_calibration():
         for row, what in enumerate(('ece', 'aurc')):
             ax = axes[row][col_i]
             for i, (meth, key, label, colr) in enumerate(bars):
+                meth = {'feedback': PK(model), 'sup_ts': SUP(model)}.get(meth, meth)
                 if meth == 'baseT':
                     y = [(N['base_T'].get(f'{model}|{s}') or {}).get(key, {}).get(what, np.nan) for s in SUITES]
                 else:
@@ -202,7 +209,7 @@ def fig_reliability():
     fig, axes = plt.subplots(2, 3, figsize=(9, 5.6))
     for row, s in enumerate(('decisionbench', 'typed')):
         for ax, (model, mname) in zip(axes[row], MODELS):
-            for meth, key, label, col in (('released', 'records', 'released model', C['base']), ('feedback', 'records_raw', 'Peekaboo before the honesty fix', C['raw']), ('feedback', 'records', 'Peekaboo', C['pk'])):
+            for meth, key, label, col in (('released', 'records', 'released model', C['base']), (PK(model), 'records_raw', 'Peekaboo before the honesty fix', C['raw']), (PK(model), 'records', 'Peekaboo', C['pk'])):
                 R = A.runs(model, s, meth, key)
                 if not R:
                     continue
@@ -225,10 +232,10 @@ def fig_switch_T():
     fig, axes = plt.subplots(1, 2, figsize=(9, 2.9))
     x = np.arange(len(SUITES)); w = 0.26
     for i, (model, mname) in enumerate(MODELS):
-        Ts = [np.mean([f['T'] for inf in A.infos(model, s, 'feedback') for f in inf.get('folds', []) if f.get('T')] or [np.nan]) for s in SUITES]
+        Ts = [np.mean([f['T'] for inf in A.infos(model, s, PK(model)) for f in inf.get('folds', []) if f.get('T')] or [np.nan]) for s in SUITES]
         axes[0].bar(x + (i - 1) * w, Ts, w, label=mname, color=[C['pk'], C['enc'], C['pooled']][i])
-        on = [(N['switch'].get(f'{model}|feedback|{s}') or {}).get('on', np.nan) for s in SUITES]
-        so = [(N['switch'].get(f'{model}|feedback|{s}') or {}).get('sampled_on') or np.nan for s in SUITES]
+        on = [(N['switch'].get(f'{model}|{PK(model)}|{s}') or {}).get('on', np.nan) for s in SUITES]
+        so = [(N['switch'].get(f'{model}|{PK(model)}|{s}') or {}).get('sampled_on') or np.nan for s in SUITES]
         axes[1].bar(x + (i - 1) * w, on, w, label=mname, color=[C['pk'], C['enc'], C['pooled']][i])
         axes[1].plot(x + (i - 1) * w, so, 'k_', ms=9, mew=1.2, label='same switch on sampled answers (v1)' if i == 0 else None)
     axes[0].axhline(1, color='k', lw=0.6, ls='--'); axes[0].set_ylabel('fitted temperature T'); axes[0].set_title('honesty fix: temperature fitted from verdicts')
@@ -420,7 +427,7 @@ def tab_anatomy():
             if not p and not r:
                 continue
             c = [fg(p['feedback']['vs_released'], ci=False, mark=False) if p else '--', fg(p['labels']['vs_released'], ci=False, mark=False) if p else '--',
-                 fg(p['feedback']['peekaboo_vs'], ci=True, mark=False) if p else '--', str(p['feedback']['params']) if p else '--',
+                 fg(p['feedback']['peekaboo_vs'], ci=True, mark=False) if p and p['feedback'].get('peekaboo_vs') else '--', str(p['feedback']['params']) if p else '--',
                  f"{r['reveals_per_row']:.1f}" if r and r.get('reveals_per_row') else '--', f"{r['p_reveal_8_base_policy']:.2f}" if r and r.get('p_reveal_8_base_policy') is not None else '--',
                  f"{100 * r['binary_share']:.0f}\\%" if r and r.get('binary_share') is not None else '--', f"{r['pass1_reward']:.2f}" if r and r.get('pass1_reward') else '--',
                  f"{r['base_argmax_acc_train']:.2f}" if r and r.get('base_argmax_acc_train') is not None else '--']
@@ -440,29 +447,29 @@ def tab_anatomy():
     L += ['\\bottomrule', '\\end{tabular}', '\\end{table}']
     table(L, 'tables_fixbreak.tex')
     L = ['\\begin{table}[tbp]\\centering\\small', '\\caption{VegaML\'s TTT head only answers rows whose option set matches a fitted head (``covered\'\'); elsewhere its output is the released engine\'s. Peekaboo minus TTT (0.8.0 rule) on covered and uncovered rows, and the answer-key adapter minus TTT on covered rows.}',
-         '\\label{tab:ttt}', '\\begin{tabular}{llrrrr}', '\\toprule', 'model & benchmark & rows covered & Peekaboo $-$ TTT, covered & uncovered & answer key $-$ TTT, covered \\\\', '\\midrule']
+         '\\label{tab:ttt}', '\\resizebox{\\linewidth}{!}{\\begin{tabular}{llrrrr}', '\\toprule', 'model & benchmark & rows covered & Peekaboo $-$ TTT, covered & uncovered & answer key $-$ TTT, covered \\\\', '\\midrule']
     for model, mname in MODELS[:2]:
         for s in SUITES:
             t = N['ttt'].get(f'{model}|{s}')
             if t:
                 L.append(f'{mname} & {SNAME[s]} & {t["rows_covered"]} / {t["rows"]} & {fg(t.get("peekaboo_vs_ttt_covered"), mark=False)} & {fg(t.get("peekaboo_vs_ttt_uncovered"), mark=False)} & {fg(t.get("adapter_vs_ttt_covered"), mark=False)} \\\\')
-    L += ['\\bottomrule', '\\end{tabular}', '\\end{table}']
+    L += ['\\bottomrule', '\\end{tabular}}', '\\end{table}']
     table(L, 'tables_ttt.tex')
     L = ['\\begin{table}[tbp]\\centering\\small', '\\caption{Benchmark artifacts. Gain over the released model with every task, and without the tasks whose gold answer an adapter can learn without reading the input (public: truthfulqa\\_mc1, pubmedqa; DecisionBench: moderation-civil-comments, finqa-score).}',
-         '\\label{tab:artifacts}', '\\begin{tabular}{llrrrr}', '\\toprule', 'model & method & public, all 43 & public, 41 tasks & DecisionBench, all 43 & DecisionBench, 40 tasks \\\\', '\\midrule']
+         '\\label{tab:artifacts}', '\\resizebox{\\linewidth}{!}{\\begin{tabular}{llrrrr}', '\\toprule', 'model & method & public, all 43 & public, 41 tasks & DecisionBench, all 43 & DecisionBench, 40 tasks \\\\', '\\midrule']
     for model, mname in MODELS:
         for meth, key, name in (('feedback', 'records', 'Peekaboo (8)'), ('feedback_1pass', 'records', 'Peekaboo (1)'), ('sup_ts', 'records', 'answer key'), ('ttt', 'records_guard', 'TTT (0.12.3)'), ('feedback_enc', 'records', 'Peekaboo, encoder'), ('laya_td', 'records', 'their fine-tune')):
             c = [fg(cmp(model, meth, key, 'public'), mark=False), fg(cmp(model, meth, key, 'public', suffix='|noartifact'), mark=False),
                  fg(cmp(model, meth, key, 'decisionbench'), mark=False), fg(cmp(model, meth, key, 'decisionbench', suffix='|noartifact'), mark=False)]
             if any(x != '--' for x in c):
                 L.append(f'{mname} & {name} & ' + ' & '.join(c) + ' \\\\')
-    L += ['\\bottomrule', '\\end{tabular}', '\\end{table}']
+    L += ['\\bottomrule', '\\end{tabular}}', '\\end{table}']
     table(L, 'tables_artifacts.tex')
 
 
 def tab_noship():
     L = ['\\begin{table}[tbp]\\centering\\small', '\\caption{typed-decisions on Vega with the shipped \\texttt{typed\\_decisions} adapter, which was fitted with labels on this feedback pool, switched off. Accuracy (mean over seeds) and gain over the corresponding released model.}',
-         '\\label{tab:noship}', '\\begin{tabular}{llrrrr}', '\\toprule', 'model & method & accuracy, adapters on & gain & accuracy, adapters off & gain \\\\', '\\midrule']
+         '\\label{tab:noship}', '\\resizebox{\\linewidth}{!}{\\begin{tabular}{llrrrr}', '\\toprule', 'model & method & accuracy, adapters on & gain & accuracy, adapters off & gain \\\\', '\\midrule']
     for model, mname in MODELS[:2]:
         for on, off, name in (('released', 'noship_released', 'released engine'), ('sup_ts', 'sup_ts_noship', 'answer-key adapter (8)'), ('feedback', 'feedback_noship', 'Peekaboo (8)'), ('feedback_1pass', 'feedback_1pass_noship', 'Peekaboo (1)')):
             a_on = sc(model, on, 'records', 'typed', 'accuracy'); a_off = sc(model, off, 'records', 'typed', 'accuracy')
@@ -470,7 +477,7 @@ def tab_noship():
             g_off = N['compare'].get(f'{model}|{off}|records|typed|vs|noship_released|records') if off != 'noship_released' else None
             if a_on or a_off:
                 L.append(f'{mname} & {name} & {f3(a_on)} & {fg(g_on, mark=False) if g_on else "--"} & {f3(a_off)} & {fg(g_off, mark=False) if g_off else "--"} \\\\')
-    L += ['\\bottomrule', '\\end{tabular}', '\\end{table}']
+    L += ['\\bottomrule', '\\end{tabular}}', '\\end{table}']
     table(L, 'tables_noship.tex')
 
 
@@ -538,6 +545,7 @@ def tex_numbers():
         else:
             base = nm(model, meth, key, s) + 'Vs' + nm(parts[5], parts[6])
         add('gain' + base, f'{v["gain"]:+.1f}'); add('ci' + base, f'[{v["lo"]:+.1f}, {v["hi"]:+.1f}]'); add('p' + base, f'{v["p"]:.3f}')
+        add('abs' + base, f'{abs(v["gain"]):.1f}')
     for k, v in N['scores'].items():
         model, meth, key, s = k.split('|')
         for w in ('accuracy', 'ece', 'nll', 'aurc', 'brier'):
@@ -551,8 +559,9 @@ def tex_numbers():
         model, s = k.split('|')
         for how in ('feedback', 'labels'):
             add('gainPrior' + ('Fb' if how == 'feedback' else 'Lab') + nm(model, s), f'{v[how]["vs_released"]["gain"]:+.1f}')
-            add('gainPkVsPrior' + ('Fb' if how == 'feedback' else 'Lab') + nm(model, s), f'{v[how]["peekaboo_vs"]["gain"]:+.1f}')
-            add('ciPkVsPrior' + ('Fb' if how == 'feedback' else 'Lab') + nm(model, s), f'[{v[how]["peekaboo_vs"]["lo"]:+.1f}, {v[how]["peekaboo_vs"]["hi"]:+.1f}]')
+            if v[how].get('peekaboo_vs'):
+                add('gainPkVsPrior' + ('Fb' if how == 'feedback' else 'Lab') + nm(model, s), f'{v[how]["peekaboo_vs"]["gain"]:+.1f}')
+                add('ciPkVsPrior' + ('Fb' if how == 'feedback' else 'Lab') + nm(model, s), f'[{v[how]["peekaboo_vs"]["lo"]:+.1f}, {v[how]["peekaboo_vs"]["hi"]:+.1f}]')
     for k, v in N['reveal'].items():
         model, meth, s = k.split('|')
         for w, name in (('reveals_per_row', 'reveals'), ('p_reveal_8_base_policy', 'preveal'), ('pass1_reward', 'passone'), ('base_argmax_acc_train', 'baseargmax'), ('binary_share', 'binary'), ('max_pass_reward', 'maxpass')):
@@ -571,12 +580,39 @@ def tex_numbers():
             add('swOnSampled' + nm(model, meth, s), f'{100 * v["sampled_on"]:.0f}')
     for k, v in N['fixbreak'].items():
         model, meth, s = k.split('|')
-        for w in ('fix_rate', 'break_rate', 'fix_rate_rank2', 'fix_rate_rank4plus'):
+        for w, name in (('fix_rate', 'Fix'), ('break_rate', 'Break'), ('fix_rate_rank2', 'FixRankTwo'), ('fix_rate_rank3', 'FixRankThree'), ('fix_rate_rank4plus', 'FixRankFour')):
             if v.get(w) is not None:
-                add(''.join(x.title() for x in w.split('_')).replace('Rate', '') + nm(model, meth, s), f'{100 * v[w]:.0f}')
+                add(name + nm(model, meth, s), f'{100 * v[w]:.0f}')
+    for model in ('0.8b', '4b', 'laya'):
+        for meth in ('feedback', 'feedback_1pass', 'sup_ts', 'feedback_enc', 'sup_enc'):
+            vals = [N['fixbreak'].get(f'{model}|{meth}|{s}') for s in SUITES if s != 'jevbench']
+            vals = [x for x in vals if x]
+            if vals:
+                for w, name in (('fix_rate', 'Fix'), ('break_rate', 'Break'), ('fix_rate_rank2', 'FixRankTwo'), ('fix_rate_rank4plus', 'FixRankFour')):
+                    add(name + 'Mean' + nm(model, meth), f'{100 * np.nanmean([x[w] if x.get(w) is not None else np.nan for x in vals]):.0f}')
+    if N.get('T_range'):
+        add('Tmin', f'{N["T_range"]["min"]:.1f}'); add('Tmax', f'{N["T_range"]["max"]:.1f}'); add('Tmedian', f'{N["T_range"]["median"]:.1f}')
     for k, v in N['balanced'].items():
         model, meth, key, s = k.split('|')
         add('bal' + nm(model, meth, key, s), f'{np.mean(v):.3f}')
+    # a few numbers from the first version's grid (output/analysis.json), prefixed vone: Laya head-only eight-pass arms
+    v1 = os.path.join(PR, 'output', 'analysis.json')
+    if os.path.exists(v1):
+        N1 = json.load(open(v1))
+        for k, v in N1['compare'].items():
+            parts = k.split('|')
+            if v and parts[0] == 'laya' and parts[1] in ('feedback', 'sup_ts', 'feedback_kl0', 'pooled') and parts[2] == 'records' and parts[5] == 'released' and len(parts) == 6:
+                add('gainVone' + nm(*parts[:4]), f'{v["gain"]:+.1f}'); add('ciVone' + nm(*parts[:4]), f'[{v["lo"]:+.1f}, {v["hi"]:+.1f}]')
+            if v and parts[0] == 'laya' and parts[1] == 'feedback' and parts[2] == 'records' and len(parts) == 7 and parts[5] in ('sup_ts', 'laya_td') and parts[6] == 'records':
+                add('gainVone' + nm(*parts[:4]) + 'Vs' + nm(parts[5]), f'{v["gain"]:+.1f}'); add('ciVone' + nm(*parts[:4]) + 'Vs' + nm(parts[5]), f'[{v["lo"]:+.1f}, {v["hi"]:+.1f}]')
+        for k, v in N1['prior'].items():
+            model, s = k.split('|')
+            if model == 'laya':
+                add('gainVonePriorFb' + nm(model, s), f'{v["feedback"]["vs_released"]["gain"]:+.1f}')
+        for k, v in N1['scores'].items():
+            model, meth, key, s = k.split('|')
+            if model == 'laya' and meth in ('feedback', 'sup_ts') and key == 'records' and v.get('accuracy'):
+                add('accVone' + nm(model, meth, key, s), f'{np.mean(v["accuracy"]):.3f}')
     open(os.path.join(HERE, 'numbers.tex'), 'w').write('\n'.join(L) + '\n')
     return len(L)
 

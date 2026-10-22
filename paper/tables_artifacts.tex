@@ -1,0 +1,21 @@
+\begin{table}[tbp]\centering\small
+\caption{Benchmark artifacts. Gain over the released model with every task, and without the tasks whose gold answer an adapter can learn without reading the input (public: truthfulqa\_mc1, pubmedqa; DecisionBench: moderation-civil-comments, finqa-score).}
+\label{tab:artifacts}
+\resizebox{\linewidth}{!}{\begin{tabular}{llrrrr}
+\toprule
+model & method & public, all 43 & public, 41 tasks & DecisionBench, all 43 & DecisionBench, 40 tasks \\
+\midrule
+Vega 0.8B & Peekaboo (8) & +3.7 {\scriptsize[-0.1, +7.5]} & +1.9 {\scriptsize[-1.4, +5.1]} & +11.3 {\scriptsize[+7.0, +16.1]} & +9.3 {\scriptsize[+5.5, +14.0]} \\
+Vega 0.8B & Peekaboo (1) & +1.9 {\scriptsize[-1.1, +5.2]} & +0.5 {\scriptsize[-2.1, +3.1]} & +6.7 {\scriptsize[+3.6, +10.5]} & +5.9 {\scriptsize[+2.8, +9.7]} \\
+Vega 0.8B & answer key & +3.4 {\scriptsize[-0.9, +8.1]} & +1.5 {\scriptsize[-2.3, +5.3]} & +12.3 {\scriptsize[+7.8, +17.5]} & +10.2 {\scriptsize[+6.0, +15.1]} \\
+Vega 0.8B & TTT (0.12.3) & +2.0 {\scriptsize[-0.8, +5.6]} & +1.0 {\scriptsize[-1.4, +3.5]} & +2.3 {\scriptsize[-1.3, +6.8]} & +1.3 {\scriptsize[-1.9, +5.5]} \\
+Vega 4B & Peekaboo (8) & -1.1 {\scriptsize[-3.8, +1.5]} & -1.8 {\scriptsize[-4.5, +0.8]} & +5.7 {\scriptsize[+2.7, +9.3]} & +4.6 {\scriptsize[+2.1, +7.1]} \\
+Vega 4B & Peekaboo (1) & +0.0 {\scriptsize[-2.9, +2.6]} & -0.4 {\scriptsize[-3.6, +2.1]} & +3.2 {\scriptsize[+1.5, +5.4]} & +3.4 {\scriptsize[+1.6, +5.7]} \\
+Vega 4B & answer key & -1.2 {\scriptsize[-4.1, +1.8]} & -2.2 {\scriptsize[-5.0, +0.6]} & +5.1 {\scriptsize[+1.4, +9.1]} & +3.7 {\scriptsize[+0.5, +7.3]} \\
+Vega 4B & TTT (0.12.3) & +0.6 {\scriptsize[-1.6, +3.0]} & +0.1 {\scriptsize[-2.1, +2.2]} & +1.8 {\scriptsize[-0.2, +4.2]} & +1.3 {\scriptsize[-0.6, +3.5]} \\
+Laya & Peekaboo (1) & +0.1 {\scriptsize[-0.1, +0.3]} & +0.1 {\scriptsize[-0.1, +0.3]} & +0.1 {\scriptsize[+0.0, +0.3]} & +0.1 {\scriptsize[+0.0, +0.3]} \\
+Laya & Peekaboo, encoder & +2.6 {\scriptsize[-0.8, +6.0]} & +2.0 {\scriptsize[-1.4, +5.5]} & +14.0 {\scriptsize[+8.8, +19.2]} & +12.9 {\scriptsize[+7.7, +18.1]} \\
+Laya & their fine-tune & +1.0 {\scriptsize[-1.2, +3.5]} & +0.8 {\scriptsize[-1.6, +3.4]} & +3.1 {\scriptsize[-0.4, +7.3]} & +2.7 {\scriptsize[-1.1, +7.1]} \\
+\bottomrule
+\end{tabular}}
+\end{table}

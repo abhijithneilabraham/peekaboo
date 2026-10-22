@@ -1,0 +1,19 @@
+\begin{table}[tbp]\centering\small
+\caption{Which rows change. Share of the released model's wrong rows that a method fixes, by the released model's rank of the gold option, and share of its right rows the method breaks (mean over benchmarks with a training split and over seeds).}
+\label{tab:fixbreak}
+\begin{tabular}{llrrrrr}
+\toprule
+model & method & fixed, all & gold 2nd & gold 3rd & gold 4th+ & broken \\
+\midrule
+Vega 0.8B & Peekaboo (8 passes) & 32\% & 43\% & 23\% & 13\% & 11\% \\
+Vega 0.8B & Peekaboo (1 pass) & 26\% & 37\% & 13\% & 9\% & 8\% \\
+Vega 0.8B & answer key (8 passes) & 40\% & 48\% & 31\% & 23\% & 13\% \\
+Vega 4B & Peekaboo (8 passes) & 25\% & 34\% & 15\% & 8\% & 8\% \\
+Vega 4B & Peekaboo (1 pass) & 18\% & 27\% & 9\% & 4\% & 6\% \\
+Vega 4B & answer key (8 passes) & 32\% & 40\% & 25\% & 16\% & 10\% \\
+Laya & Peekaboo (1 pass) & 0\% & 1\% & 0\% & 0\% & 0\% \\
+Laya & Peekaboo, encoder (8) & 47\% & 58\% & 45\% & 32\% & 16\% \\
+Laya & answer-key encoder (8) & 55\% & 65\% & 55\% & 44\% & 15\% \\
+\bottomrule
+\end{tabular}
+\end{table}

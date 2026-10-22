@@ -13,7 +13,7 @@ finding & response \\
 ``One bit per row'' misdescribed the protocol: eight on-policy passes rate each row up to eight times and reveal the gold answer for most rows. & Every feedback arm now has a one-pass version in which each row is rated once; the one-pass number is reported as the deployment figure. Reveal statistics are measured and reported (Table~\ref{tab:anatomy}). The ``$\log_2 k$ bits against one'' argument is gone. \\
 The expected update of REINFORCE with a 0/1 reward is cross-entropy weighted by $\pi(y)$; the gains are a known effect. & Stated in Section~\ref{sec:method} and cited; the fix / break analysis by gold rank tests the prediction (Table~\ref{tab:fixbreak}). The paper no longer claims a new learning setting. \\
 The switch compared sampled answers, so it measured expected gold probability, not deployed accuracy; it threw away real gains on 641- and 1,200-row calibration sets and kept a loss on emotion. & The switch compares best answers (two verdicts per row). The old statistic is still computed and shown beside it (Figure~\ref{fig:switch_T}). \\
-Laya with the encoder unfrozen was compared with a fine-tune that never saw the benchmark; the matched answer-key encoder fine-tune had been dropped. & The matched arm (\texttt{sup\_enc}: same rows, passes, KL term, encoder unfrozen) is run on every benchmark, with and without early stopping. \texttt{laya-typed-decisions} is presented as in-domain only on typed-decisions. \\
+Laya with the encoder unfrozen was compared with a fine-tune that never saw the benchmark; the matched answer-key encoder fine-tune had been dropped. & The matched arm (\texttt{sup\_enc}: same rows, passes, KL term, encoder unfrozen) is run on every benchmark but AG News, with and without early stopping. \texttt{laya-typed-decisions} is presented as in-domain only on typed-decisions. \\
 Laya's answer-key head was trained without the KL term the paper described. & It now has the same KL term as Vega's adapter. \\
 The answer-key adapter was called an upper bound but was untuned and over-trained by epoch 8. & An early-stopped version (epoch chosen on the calibration rows' labels) is reported next to the same-recipe version; neither is called an upper bound. \\
 Win counts counted statistical ties and used six as the denominator where TTT is defined on five benchmarks; the answer-key arms were not run on JevBench. & Counts are by Holm-adjusted significance within a family, out of the benchmarks where the comparison exists; every answer-key arm is cross-fitted on JevBench. \\
@@ -29,7 +29,7 @@ The no-engine control used an entropy bonus, not the KL term the paper said, and
 $\beta$ was chosen on DecisionBench test rows; $\beta=1$ runs were unreported; the KL pilot did not fully reproduce. & Disclosed in Section~\ref{sec:method} and below. \\
 The reward curve was presented as a bound on live exploration cost; passes 2--8 are in-sample. & Replaced by the pass-1 reward against the released model's best-answer accuracy on the same rows (Table~\ref{tab:anatomy}). \\
 Many prose numbers were hard-coded and several contradicted the tables. & Every number in the text is a macro generated from the records. \\
-The encoder-unfrozen variant was added after the grid was called final. & All arms were run in one grid for this version. \\
+The encoder-unfrozen variant was added after the grid was called final. & Every arm reported from this version's grid was run in one grid; the only numbers quoted from the first version's grid are the Laya head-only eight-pass arms, marked as such. \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -38,7 +38,7 @@ The encoder-unfrozen variant was added after the grid was called final. & All ar
 
 \section{Reproducing the results}
 \label{app:repro}
-\texttt{experiments/peekaboo\_remaining/run.py --grid v2} runs the whole grid: it reads every benchmark once through every model and caches the backbone features and the official records, replays each released model against its official prediction call, then runs every method and seed and writes \texttt{output\_v2/TABLES.md}. Finished steps are skipped, so the run can be resumed. \texttt{analysis.py} computes every interval, control and statistic in this paper from the per-row records, and \texttt{paper/make\_figures.py} produces every table, figure and number macro. The first version's grid (\texttt{--grid v1}) and its results under \texttt{output/} are kept for comparison; its DecisionBench learning-curve study is \texttt{experiments/vega\_policy/reproduce.py}.
+\path{experiments/peekaboo_remaining/run.py --grid v2} runs the whole grid: it reads every benchmark once through every model and caches the backbone features and the official records, replays each released model against its official prediction call, then runs every method and seed and writes \texttt{output\_v2/TABLES.md}. Finished steps are skipped, so the run can be resumed. \texttt{analysis.py} computes every interval, control and statistic in this paper from the per-row records, and \texttt{paper/make\_figures.py} produces every table, figure and number macro. The first version's grid (\texttt{--grid v1}) and its results under \texttt{output/} are kept for comparison; its DecisionBench learning-curve study is run by \path{experiments/vega_policy/reproduce.py}.
 
 \paragraph{Checks.} Replaying each released model on its cached inputs matches the official prediction call to $0$ for Vega and to $5\times10^{-5}$ for Laya (one question per forward pass, as Laya's own call runs it). The released models reproduce their README figures: Vega 0.8B and 4B on the public menu at $\accSmallBasePub$ and $\accBigBasePub$ against the README's 0.556 and 0.717, DecisionBench at $\accSmallBaseDb$ and $\accBigBaseDb$ against 0.509 and 0.633; Laya and laya-typed-decisions on typed-decisions at $\accLayaBaseTyped$ and $\accLayaTdTyped$ against 0.362 and 0.766. Results on the same seed differ across machines by up to 3 points for a single run (floating-point non-determinism in feature extraction and training kernels); the three-seed means are what reproduce.
 
@@ -46,6 +46,12 @@ The encoder-unfrozen variant was added after the grid was called final. & All ar
 \label{app:tasks}
 \input{tables_tasks.tex}
 \input{tables_tasks_db.tex}
+
+\begin{figure}[H]\centering
+\includegraphics[width=\linewidth]{tasks_db.pdf}
+\caption{DecisionBench, gain of eight-pass \pk{} over released Vega on each of the 43 tasks (25 test rows each), sorted by the 0.8B gain. $^*$: tasks with a construction artifact.}
+\label{fig:tasks_db}
+\end{figure}
 \FloatBarrier
 
 \section{Hyper-parameters}

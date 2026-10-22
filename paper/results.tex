@@ -1,0 +1,120 @@
+\section{Results}
+\label{sec:results}
+
+\subsection{Eight passes: verdicts against labels, and against the vendors' own recipes}
+\label{sec:eight}
+
+\begin{figure}[t]\centering
+\includegraphics[width=\linewidth]{gains.pdf}
+\caption{Gain over the released model on the six benchmarks, in accuracy points with 95\% intervals (seeds and row clusters resampled). Each row is a benchmark; each marker a method. Orange diamonds: the model's own labelled-data recipe (VegaML's TTT head under the 0.12.3 rule; Laya's typed-decisions fine-tune, in-domain only on typed-decisions). Blue squares: our add-on trained on the labels, early-stopped. Dark green: \pk{} with eight passes; light green: \pk{} with one pass, each row rated once. On Laya the head-only arms were run for one pass only (light blue: the labelled head, one pass). On JevBench every method is cross-fitted.}
+\label{fig:gains}
+\end{figure}
+
+\input{tables_acc.tex}
+\input{tables_gain.tex}
+\input{tables_h2h.tex}
+
+Tables~\ref{tab:acc} and \ref{tab:gain} give accuracy and gain over the released model for every arm; Table~\ref{tab:h2h} the paired head-to-heads; Figure~\ref{fig:gains} the picture. Under the eight-pass protocol the verdict-trained add-on lands close to the same add-on trained on labels, and mostly below it. On DecisionBench, \pk{} gains $\gainSmallPkDb$ points at 0.8B and $\gainBigPkDb$ at 4B; the answer-key adapter with the same recipe gains $\gainSmallSupDb$ and $\gainBigSupDb$, and early-stopped on its calibration labels $\gainSmallSupEsDb$ and $\gainBigSupEsDb$. The paired difference against the early-stopped adapter is $\gainSmallPkDbVsSupEs$ $\ciSmallPkDbVsSupEs$ at 0.8B and $\gainBigPkDbVsSupEs$ $\ciBigPkDbVsSupEs$ at 4B. On typed-decisions it is $\gainSmallPkTypedVsSupEs$ and $\gainBigPkTypedVsSupEs$, on the public menu $\gainSmallPkPubVsSupEs$ and $\gainBigPkPubVsSupEs$, on AG News $\gainSmallPkAgVsSupEs$ and $\gainBigPkAgVsSupEs$. Emotion is where labels pull furthest ahead at this capacity: $\gainSmallPkEmoVsSupEs$ $\ciSmallPkEmoVsSupEs$ and $\gainBigPkEmoVsSupEs$ $\ciBigPkEmoVsSupEs$. Against the same-recipe adapter without early stopping every interval includes zero except emotion at 0.8B ($\gainSmallPkEmoVsSup$) and typed-decisions at 4B ($\gainBigPkTypedVsSup$) (Table~\ref{tab:h2h}), which is what the $\pi(y)$ weighting predicts for a protocol that reveals most labels: the two arms are then optimising nearly the same objective. The first version read these gaps as ``the bit is nearly as good as the label''. The accurate reading is that eight rounds of verdicts on the same rows are nearly as good as the labels, because they mostly are the labels (Section~\ref{sec:anatomy}); the one-pass numbers below are the ones that measure a bit.
+
+\paragraph{Against VegaML's TTT head.}
+Under the 0.12.3 rule, which keeps a head only where it beats the engine on its own fit rows, the TTT head gains $\gainSmallTttGuardPub$ and $\gainBigTttGuardPub$ on the public menu (under the 0.8.0 rule it lost $\gainSmallTttPub$ and $\gainBigTttPub$ points, the losses our first version counted as wins). \pk{} minus the guarded TTT head is $\gainSmallPkPubVsTttGuard$ $\ciSmallPkPubVsTttGuard$ at 0.8B and $\gainBigPkPubVsTttGuard$ $\ciBigPkPubVsTttGuard$ at 4B; on DecisionBench $\gainSmallPkDbVsTttGuard$ $\ciSmallPkDbVsTttGuard$ and $\gainBigPkDbVsTttGuard$ $\ciBigPkDbVsTttGuard$; on typed-decisions $\gainSmallPkTypedVsTttGuard$ and $\gainBigPkTypedVsTttGuard$; on AG News $\gainSmallPkAgVsTttGuard$ $\ciSmallPkAgVsTttGuard$ and $\gainBigPkAgVsTttGuard$ $\ciBigPkAgVsTttGuard$; on emotion $\gainSmallPkEmoVsTttGuard$ and $\gainBigPkEmoVsTttGuard$. So the verdict-trained adapter is ahead of VegaML's labelled recipe on DecisionBench by a wide margin and on AG News by about a point, level on the public menu and typed-decisions, and well behind on emotion. On DecisionBench part of the margin is coverage: the TTT head answers only $\tttCoveredSmallDb$ of 1,075 rows (Table~\ref{tab:ttt}). At 0.8B almost all of the margin sits on the rows it leaves to the engine ($\gainPeekabooVsTttUncoveredSmallDb$ there against $\gainPeekabooVsTttCoveredSmallDb$ $\ciPeekabooVsTttCoveredSmallDb$ on covered rows); at 4B \pk{} is ahead on both ($\gainPeekabooVsTttCoveredBigDb$ $\ciPeekabooVsTttCoveredBigDb$ covered, $\gainPeekabooVsTttUncoveredBigDb$ uncovered). The labelled adapter has the same advantage over TTT there ($\gainAdapterVsTttCoveredSmallDb$, $\gainAdapterVsTttCoveredBigDb$ on covered rows), so this is a property of an in-engine adapter that reads the option text, not of the feedback signal. Emotion goes to TTT by a wide margin at both sizes: a six-way single-label task with 3,200 labelled rows is where a logistic head on good features is at its best.
+
+\paragraph{JevBench.}
+With every arm cross-fitted, the answer-key adapter is defined on JevBench too, and it changes the first version's claim that \pk{} was the only method to improve Vega 4B there. At 4B \pk{} gains $\gainBigPkJev$ $\ciBigPkJev$ and the labelled adapter $\gainBigSupJev$ $\ciBigSupJev$; at 0.8B both lose ($\gainSmallPkJev$ and $\gainSmallSupJev$), and the switch returns \pk{} to the released model ($\gainSmallPkSwJev$). JevBench has 231 rows and 38-to-42-row calibration folds; none of its intervals is narrow.
+
+\subsection{One rating per row, and feedback as a deployment delivers it}
+\label{sec:realistic}
+
+\begin{figure}[t]\centering
+\includegraphics[width=\linewidth]{passes.pdf}
+\caption{One pass (open markers) against eight (filled), for \pk{} (green) and the answer-key add-on (blue), as gain over the released model. One pass rates each row once and takes one eighth of the gradient steps. Laya: the encoder-unfrozen \pk{} only.}
+\label{fig:passes}
+\end{figure}
+
+\input{tables_realistic.tex}
+
+\begin{figure}[t]\centering
+\includegraphics[width=\linewidth]{realistic.pdf}
+\caption{Feedback as a deployment delivers it, on Vega: gain over the released model with 95\% intervals for the clean eight-pass and one-pass arms, the two logged arms (one verdict per row on the released model's best or sampled answers, trained off-policy), and eight-pass \pk{} with flipped, missing or complaint-skewed verdicts. Three seeds on DecisionBench, one on typed-decisions and emotion.}
+\label{fig:realistic}
+\end{figure}
+
+Figure~\ref{fig:passes} shows what a single pass keeps. On DecisionBench one-pass \pk{} gains $\gainSmallPkOneDb$ $\ciSmallPkOneDb$ at 0.8B and $\gainBigPkOneDb$ $\ciBigPkOneDb$ at 4B, against $\gainSmallPkDb$ and $\gainBigPkDb$ with eight passes; the one-pass labelled adapter gains $\gainSmallSupOneDb$ and $\gainBigSupOneDb$. At matched epochs the gap between verdicts and labels is $\gainSmallPkOneDbVsSupOne$ $\ciSmallPkOneDbVsSupOne$ and $\gainBigPkOneDbVsSupOne$ $\ciBigPkOneDbVsSupOne$, wider than with eight passes. On typed-decisions one pass gives $\gainSmallPkOneTyped$ and $\gainBigPkOneTyped$ (labels: $\gainSmallSupOneTyped$, $\gainBigSupOneTyped$; verdicts significantly behind at both sizes); on the public menu $\gainSmallPkOnePub$ and $\gainBigPkOnePub$; on emotion $\gainSmallPkOneEmo$ and $\gainBigPkOneEmo$; on AG News $\gainSmallPkOneAg$ and $\gainBigPkOneAg$. One pass keeps about half to two thirds of the eight-pass gain on DecisionBench and the public menu and more on emotion.
+
+One pass confounds two things: each row is rated once, and the model takes one eighth of the gradient steps. The logged arms separate them. Each row of the pool is answered once by the released model, rated once, and the add-on is then trained on that fixed log for eight passes, off-policy. With the released model's sampled answers and clipped importance weights, this recovers most of the eight-pass on-policy gain: $\gainSmallLogIpsDb$ $\ciSmallLogIpsDb$ on DecisionBench at 0.8B and $\gainBigLogIpsDb$ at 4B, against $\gainSmallPkDb$ and $\gainBigPkDb$; on typed-decisions and emotion it is level with eight on-policy passes ($\gainSmallLogIpsTypedVsPk$, $\gainSmallLogIpsEmoVsPk$ at 0.8B; $\gainBigLogIpsTypedVsPk$, $\gainBigLogIpsEmoVsPk$ at 4B), and above one on-policy pass everywhere it was run. So most of the difference between one pass and eight is optimisation, not information: a single verdict per row, trained to convergence, carries most of what eight on-policy verdicts do on these models. It is still not the label. Against the early-stopped labelled adapter the logged arm is $\gainSmallLogIpsDbVsSupEs$ $\ciSmallLogIpsDbVsSupEs$ on DecisionBench at 0.8B, $\gainSmallLogIpsTypedVsSupEs$ on typed-decisions and $\gainSmallLogIpsEmoVsSupEs$ on emotion; at 4B $\gainBigLogIpsDbVsSupEs$, $\gainBigLogIpsTypedVsSupEs$ and $\gainBigLogIpsEmoVsSupEs$.
+
+Table~\ref{tab:realistic} and Figure~\ref{fig:realistic} collect the deployment question. A system that serves its best answer, rather than a sample, logs only that answer's verdict: a 1 is a label, a 0 rules one option out. Learning from that log gains $\gainSmallLogArgDb$ $\ciSmallLogArgDb$ on DecisionBench at 0.8B and $\gainBigLogArgDb$ $\ciBigLogArgDb$ at 4B, $\gainSmallLogArgTyped$ and $\gainBigLogArgTyped$ on typed-decisions, $\gainSmallLogArgEmo$ and $\gainBigLogArgEmo$ on emotion. Logging sampled answers instead, which costs some accuracy while the log is collected, is worth $\gainSmallLogIpsDbVsLogArg$ and $\gainBigLogIpsDbVsLogArg$ points more on DecisionBench and $\gainSmallLogIpsEmoVsLogArg$ on emotion at 0.8B, and less on typed-decisions at 4B ($\gainBigLogIpsTypedVsLogArg$). The eight-pass arm is robust to the kinds of damage real feedback has: with 20\% of verdicts flipped it gains $\gainSmallNoiseDb$ and $\gainBigNoiseDb$ on DecisionBench, with half of the answers unrated $\gainSmallHalfDb$ and $\gainBigHalfDb$, and when every wrong answer is reported but only one in five right ones $\gainSmallComplDb$ and $\gainBigComplDb$; the same holds on typed-decisions and emotion, with one exception, emotion at 4B with half of the answers unrated ($\gainBigHalfEmo$, one seed; Table~\ref{tab:realistic}). Rewards are still computed from the gold answer in all of these; a human who is wrong about what was right is not simulated, beyond the flipped verdicts.
+
+\subsection{What the gain is made of}
+\label{sec:anatomy}
+
+\begin{figure}[t]\centering
+\includegraphics[width=\linewidth]{anatomy.pdf}
+\caption{Left: share of the released model's wrong rows that eight-pass \pk{} and the answer-key adapter fix, by the released model's rank of the gold option (mean over benchmarks). Right: gain over the released model of a per-task label prior with no input features, trained from verdicts (filled triangles) or labels (open), beside \pk{} and the answer-key adapter.}
+\label{fig:anatomy}
+\end{figure}
+
+\input{tables_anatomy.tex}
+\input{tables_fixbreak.tex}
+\input{tables_ttt.tex}
+\input{tables_artifacts.tex}
+
+\paragraph{How much the protocol reveals.}
+Table~\ref{tab:anatomy} (right) counts what eight on-policy passes tell the learner. On DecisionBench at 0.8B each training row produces $\revealsSmallPkDb$ reward-1 events on average, each of which names the gold answer; from the released model's own probabilities, 8 draws would hit the gold at least once on a share $\prevealSmallPkDb$ of the rows, and $\binarySmallPkDb$ of the rows have two options, where any verdict is the label. On typed-decisions the figures are $\revealsSmallPkTyped$ reveals per row and $\prevealSmallPkTyped$; on emotion $\revealsSmallPkEmo$ and $\prevealSmallPkEmo$. The first pass's reward, which is the only out-of-sample one, is $\passoneSmallPkDb$ on DecisionBench against the released model's best-answer accuracy of $\baseargmaxSmallPkDb$ on the same rows: the exploration a live system would pay for is a few points of accuracy during the first pass, and nothing afterwards if it then serves the argmax.
+
+\paragraph{A label prior with no input.}
+Per-task log-offsets on the released probabilities, one per (task, option text), trained with \pk{}'s own loop from verdicts, gain $\gainPriorFbSmallTyped$ on typed-decisions at 0.8B and $\gainPriorFbBigTyped$ at 4B, against \pk{}'s $\gainSmallPkTyped$ and $\gainBigPkTyped$; \pk{} minus the prior is $\gainPkVsPriorFbSmallTyped$ $\ciPkVsPriorFbSmallTyped$ and $\gainPkVsPriorFbBigTyped$ $\ciPkVsPriorFbBigTyped$. About two thirds of the typed-decisions gain at 0.8B, and all of it at 4B, is a prior shift that 71 numbers can learn from verdicts. On the public menu the prior gains $\gainPriorFbSmallPub$ and $\gainPriorFbBigPub$ (\pk{} minus prior $\gainPkVsPriorFbSmallPub$, $\gainPkVsPriorFbBigPub$). On DecisionBench the prior gains $\gainPriorFbSmallDb$ and $\gainPriorFbBigDb$ against \pk{}'s $\gainSmallPkDb$ and $\gainBigPkDb$, so there the adapter learns something the option text alone does not give (\pk{} minus prior $\gainPkVsPriorFbSmallDb$ $\ciPkVsPriorFbSmallDb$, $\gainPkVsPriorFbBigDb$ $\ciPkVsPriorFbBigDb$); on emotion the prior gains $\gainPriorFbSmallEmo$ and $\gainPriorFbBigEmo$ against $\gainSmallPkEmo$ and $\gainBigPkEmo$. DecisionBench and emotion are the benchmarks on which the paper's claim about learning from verdicts rests; typed-decisions and the public menu are largely prior correction, which verdicts also deliver, but which a 71-parameter model delivers too.
+
+\paragraph{Which rows change.}
+Table~\ref{tab:fixbreak} and Figure~\ref{fig:anatomy} (left) test the prediction of the $\pi(y)$ weighting. Over the benchmarks with a training split, eight-pass \pk{} fixes $\FixMeanSmallPk$\% of the released model's wrong rows at 0.8B and breaks $\BreakMeanSmallPk$\% of its right ones; the labelled adapter fixes $\FixMeanSmallSup$\% and breaks $\BreakMeanSmallSup$\%. Where the released model ranked the gold option second, \pk{} fixes $\FixRankTwoMeanSmallPk$\% of rows against the adapter's $\FixRankTwoMeanSmallSup$\%; where it ranked it fourth or lower, $\FixRankFourMeanSmallPk$\% against $\FixRankFourMeanSmallSup$\%. The verdict-trained adapter is the more conservative learner: it fixes fewer of the deep errors, as a $\pi(y)$-weighted objective must, and breaks fewer correct answers. The near-parity of the headline accuracies is those two differences cancelling.
+
+\paragraph{Artifacts.}
+Table~\ref{tab:artifacts} repeats the public-menu and DecisionBench gains without the four tasks whose gold answer can be learned from the option list alone. On the public menu at 0.8B \pk{}'s gain goes from $\gainSmallPkPub$ to $\gainSmallPkPubClean$ $\ciSmallPkPubClean$; at 4B from $\gainBigPkPub$ to $\gainBigPkPubClean$. On DecisionBench from $\gainSmallPkDb$ to $\gainSmallPkDbClean$ $\ciSmallPkDbClean$ and from $\gainBigPkDb$ to $\gainBigPkDbClean$ $\ciBigPkDbClean$. The labelled adapter and TTT profit from the same tasks, so the comparisons between methods move little; the gains over the released model are what the artifacts inflate. The per-task tables in Appendix~\ref{app:tasks} show where the rest of the DecisionBench gain sits.
+
+\subsection{Calibration}
+\label{sec:calibration}
+
+\begin{figure}[t]\centering
+\includegraphics[width=\linewidth]{calibration.pdf}
+\caption{ECE (top) and area under the risk-coverage curve (bottom), lower is better, for the released model, the released model with a temperature fitted from verdicts on its own calibration rows, \pk{} before and after the honesty fix, and the answer-key adapter with a label-fitted temperature. Laya: the encoder-unfrozen arms.}
+\label{fig:cal}
+\end{figure}
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.9\linewidth]{reliability.pdf}
+\caption{Reliability diagrams (10 bins on the confidence of the predicted option) on DecisionBench and typed-decisions: released model, \pk{} before the honesty fix, \pk{} after it (Laya: encoder unfrozen).}
+\label{fig:rel}
+\end{figure}
+
+\input{tables_cal.tex}
+
+Before the honesty fix the trained add-on is badly over-confident: ECE $\eceSmallPkRawDb$ on DecisionBench at 0.8B, $\eceBigPkRawDb$ at 4B, $\eceSmallPkRawEmo$ and $\eceBigPkRawEmo$ on emotion (Table~\ref{tab:cal}, Figure~\ref{fig:rel}). One temperature fitted from verdicts brings these to $\eceSmallPkDb$, $\eceBigPkDb$, $\eceSmallPkEmo$ and $\eceBigPkEmo$. The control the first version lacked is the released model with the same temperature fitted on its own calibration rows: its ECE is $\eceBaseTFbSmallDb$ at 0.8B and $\eceBaseTFbBigDb$ at 4B on DecisionBench, against the released model's $\eceSmallBaseDb$ and $\eceBigBaseDb$. Much of \pk{}'s ECE advantage over the released model is therefore the temperature, not the adapter, and we no longer claim otherwise. On proper scores and on ranking the picture is less flattering to the verdict-trained arm: on DecisionBench at 0.8B its NLL is $\nllSmallPkDb$ against the labelled adapter's $\nllSmallSupDb$, its AURC $\aurcSmallPkDb$ against $\aurcSmallSupDb$ (released model: $\nllSmallBaseDb$, $\aurcSmallBaseDb$). The temperature leaves the ranking of rows by confidence unchanged, so AURC measures what the adapter itself did to the confidence ordering; against the released model it is better on DecisionBench, typed-decisions and emotion at both sizes, and worse on JevBench at both sizes and on the public menu at 4B (Figure~\ref{fig:cal}). The fitted temperatures range from $\Tmin$ to $\Tmax$ with a median of $\Tmedian$ (Figure~\ref{fig:switch_T}); part of each is inherited from the released model, which itself prefers a temperature above 1 on most benchmarks ($\TBaseTFbSmallDb$ on DecisionBench at 0.8B).
+
+\subsection{The KL term and the switch}
+\label{sec:ablation}
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.9\linewidth]{switch_T.pdf}
+\caption{Left: the temperature fitted from verdicts per model and benchmark (dashed line at $T = 1$; Laya: encoder unfrozen). Right: the share of runs in which the switch, comparing best answers on the calibration rows, kept the add-on; black ticks show the first version's switch on the same runs, which compared sampled answers.}
+\label{fig:switch_T}
+\end{figure}
+
+Removing the KL term costs eight-pass \pk{} $\gainSmallPkDbVsKlzero$ $\ciSmallPkDbVsKlzero$ points on DecisionBench at 0.8B and $\gainBigPkDbVsKlzero$ $\ciBigPkDbVsKlzero$ at 4B (positive means the KL term helps; Table~\ref{tab:h2h}), $\gainSmallPkTypedVsKlzero$ and $\gainBigPkTypedVsKlzero$ on typed-decisions, $\gainSmallPkPubVsKlzero$ and $\gainBigPkPubVsKlzero$ on the public menu, and $\gainSmallPkEmoVsKlzero$ and $\gainBigPkEmoVsKlzero$ on emotion. The term is worth a point or two in most cells and is decisive in one, emotion at 4B, where the run without it collapsed. Outside DecisionBench the no-KL arm has one seed, so these cells say little on their own; the first version's ``where the method lives'' was too strong.
+
+The switch now compares best answers. Where eight-pass \pk{} hurts, on JevBench at 0.8B, it keeps the add-on in none of the folds, so the gain with the switch is $\gainSmallPkSwJev$ against $\gainSmallPkJev$ without. At 0.8B it keeps the add-on in every run on every other benchmark, and at 4B on DecisionBench, the public menu and emotion. It costs a real gain in one place, JevBench at 4B, where it keeps the add-on in $\swOnBigPkJev$\% of folds and gives up $\absBigPkSwJevVsPk$ points, and drops a small, non-significant gain on typed-decisions at 4B ($\gainBigPkSwTypedVsPk$). The first version's switch, computed on the same runs, kept the add-on in $\swOnSampledBigPkDb$\% of the DecisionBench runs at 4B where the new one keeps $\swOnBigPkDb$\%; the two statistics disagree in the direction Section~\ref{sec:switch} describes.
+
+\subsection{Laya: head, encoder, and the matched fine-tune}
+\label{sec:laya}
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.85\linewidth]{laya.pdf}
+\caption{Laya with the encoder unfrozen: gain over released Laya of the typed-decisions fine-tune (in-domain only on typed-decisions), the matched answer-key fine-tune (same rows, passes and KL term, early-stopped), \pk{} with eight passes and with one pass, and head-only \pk{} with one pass. Encoder arms have three seeds on the public menu and JevBench, two on DecisionBench and one on typed-decisions and emotion; AG News was not run.}
+\label{fig:laya}
+\end{figure}
+
+With the encoder frozen, a trainable copy of Laya's head learns a prior shift and little else; in the first version's grid, eight passes gave $\gainVoneLayaPkTyped$ points on typed-decisions where a 71-offset prior from the same verdicts gave $\gainVonePriorFbLayaTyped$, and in this grid one pass gives $\gainLayaPkOneTyped$. With the encoder unfrozen, verdicts move the whole model: $\gainLayaPkEncTyped$ $\ciLayaPkEncTyped$ on typed-decisions with eight passes, $\gainLayaPkEncOneTyped$ with one, $\gainLayaPkEncEmo$ on emotion, $\gainLayaPkEncDb$ on DecisionBench and $\gainLayaPkEncPub$ on the public menu. The comparison the first version lacked is the same fine-tune on labels: cross-entropy, same rows, passes and KL term, encoder unfrozen. It gains $\gainLayaSupEncTyped$ on typed-decisions, $\gainLayaSupEncEmo$ on emotion, $\gainLayaSupEncDb$ on DecisionBench and $\gainLayaSupEncPub$ on the public menu; \pk{} minus this arm is $\gainLayaPkEncTypedVsSupEnc$ $\ciLayaPkEncTypedVsSupEnc$ on typed-decisions, $\gainLayaPkEncEmoVsSupEnc$ $\ciLayaPkEncEmoVsSupEnc$ on emotion, $\gainLayaPkEncDbVsSupEnc$ on DecisionBench and $\gainLayaPkEncPubVsSupEnc$ on the public menu. At matched capacity and data, labels beat eight rounds of verdicts clearly on typed-decisions and emotion; on DecisionBench and the public menu the gap is one to two points and within the noise, and on JevBench the verdict-trained encoder is ahead ($\gainLayaPkEncJevVsSupEnc$ $\ciLayaPkEncJevVsSupEnc$). With one pass the encoder arm falls well behind the labelled one: $\gainLayaPkEncOneTypedVsSupEnc$ on typed-decisions, $\gainLayaPkEncOneEmoVsSupEnc$ on emotion, $\gainLayaPkEncOneDbVsSupEnc$ on DecisionBench. On Laya the logged arms were not run. On typed-decisions the matched fine-tune reaches $\accLayaSupEncTyped$ against the released \texttt{laya-typed-decisions} checkpoint's $\accLayaTdTyped$, so our labelled arm is a fair stand-in for Laya's own recipe. Away from typed-decisions the released fine-tune is a transfer model that never saw the benchmark, and in-domain training of any kind beats it: \pk{} with the encoder is $\gainLayaPkEncEmoVsTd$ above it on emotion and $\gainLayaPkEncDbVsTd$ on DecisionBench, the labelled encoder arm $\gainLayaSupEncEmoVsTd$ and $\gainLayaSupEncDbVsTd$. Those numbers say that fine-tuning on a benchmark's own rows helps on that benchmark; they say nothing about verdicts against labels, and we do not use them to.
+
+\subsection{typed-decisions without Vega's shipped adapter}
+\label{sec:noship}
+\input{tables_noship.tex}
+Vega's released \texttt{typed\_decisions} adapter was fitted on the pool our methods learn from, so on this benchmark ``released Vega'' already carries those labels. With the shipped adapters switched off the released engine scores $\accSmallNoshipBaseTyped$ at 0.8B and $\accBigNoshipBaseTyped$ at 4B (Table~\ref{tab:noship}). From that start eight-pass \pk{} gains $\gainSmallPkNoshipTypedVsNoshipBase$ $\ciSmallPkNoshipTypedVsNoshipBase$ and $\gainBigPkNoshipTypedVsNoshipBase$ $\ciBigPkNoshipTypedVsNoshipBase$, the labelled adapter $\gainSmallSupNoshipTypedVsNoshipBase$ and $\gainBigSupNoshipTypedVsNoshipBase$, and one-pass \pk{} $\gainSmallPkOneNoshipTypedVsNoshipBase$ and $\gainBigPkOneNoshipTypedVsNoshipBase$. The gap between verdicts and labels, $\gainSmallPkNoshipTypedVsSupNoship$ at 0.8B and $\gainBigPkNoshipTypedVsSupNoship$ at 4B, is far wider than with the shipped adapter on, which is the clearest demonstration in the paper of what the $\pi(y)$ weighting means: when the released model puts little probability on the gold answer, a verdict on a sampled answer rarely finds it, and labels do.

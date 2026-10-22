@@ -1,0 +1,17 @@
+\begin{table}[t]\centering\small
+\caption{The six benchmarks. ``Feedback rows'' are the rows whose verdicts a method may learn from (80\%) and calibrate on (20\%); no test row is ever used for learning.}
+\label{tab:bench}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llrrp{7.4cm}}
+\toprule
+benchmark & reported by & test rows & feedback rows & rows and pool \\
+\midrule
+43 public tasks & Vega & 2{,}535 & 2{,}134 & 43 public datasets as typed questions, up to 60 test rows each; feedback: VegaML's 50 fit rows per task, drawn class by class; macro-averaged over tasks \\
+JevBench & Vega & 231 & (5-fold) & rules, policies and judgment calls in 18 families, paraphrase groups; no training split, every method cross-fits \\
+DecisionBench & Vega & 1{,}075 & 3{,}205 & 43 tasks in 28 domains; the README's 25-row slice per task is the test set, other rows of the same tasks the pool \\
+typed-decisions & Laya & 2{,}000 & 6{,}000 & 400 test and 1,200 training cases, five decisions each; the pool is the public training split, also the training data of Vega's shipped adapter \\
+emotion & (ours) & 1{,}503 & 4{,}000 & six emotions of a tweet; pool: training rows drawn at random (natural class mix) \\
+AG News & (ours) & 1{,}912 & 4{,}000 & four news sections; pool: training rows drawn at random \\
+\bottomrule
+\end{tabular}
+\end{table}

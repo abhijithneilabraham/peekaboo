@@ -1,0 +1,55 @@
+\begin{table}[tbp]\centering\scriptsize
+\caption{DecisionBench per task (25 test rows each): accuracy of the released model and gain in points of Peekaboo (8 passes), the answer-key adapter and TTT (0.8.0 rule). $^*$: tasks with a construction artifact.}
+\label{tab:tasks_db}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+task & \multicolumn{4}{c}{Vega 0.8B} & \multicolumn{4}{c}{Vega 4B} \\
+ & base & Pk & key & TTT & base & Pk & key & TTT \\
+\midrule
+tool-action-impact & 0.68 & +1 & +1 & +4 & 0.60 & +7 & +15 & +12 \\
+agent-skill-ranking & 0.40 & +16 & +8 & +0 & 0.64 & +1 & +0 & +0 \\
+tool-call-routing & 0.52 & +0 & -5 & +0 & 0.52 & +5 & +0 & +0 \\
+tool-safety-gate & 0.32 & +61 & +64 & +60 & 0.96 & -3 & +4 & +0 \\
+runtime-outcome-verification & 0.48 & -3 & -3 & +4 & 0.44 & +3 & +0 & +8 \\
+browser-action-selection & 0.52 & +8 & +16 & +0 & 0.76 & -3 & -9 & +0 \\
+browser-target-selection & 0.12 & +7 & +5 & +0 & 0.32 & +3 & -5 & +0 \\
+codebase-result-ranking & 0.48 & +7 & -3 & +0 & 0.52 & +4 & -7 & +0 \\
+semantic-line-match & 0.96 & +0 & -5 & +0 & 0.96 & -1 & -5 & -4 \\
+agent-readiness-assessment & 0.72 & +8 & +12 & +0 & 0.80 & +11 & +11 & +0 \\
+agent-call-retention & 0.92 & +1 & -4 & -4 & 0.68 & +25 & +32 & +28 \\
+agent-result-retention & 1.00 & +0 & +0 & +0 & 0.92 & +8 & +8 & +0 \\
+database-row-classification & 0.44 & +7 & -5 & +0 & 0.40 & +4 & -3 & +0 \\
+relevance\_score & 0.36 & -7 & +5 & +8 & 0.52 & -8 & -8 & -4 \\
+claim-evidence-verification & 0.52 & +8 & +5 & -4 & 0.80 & +5 & +0 & -12 \\
+trading-action-selection & 0.40 & +5 & -3 & +0 & 0.36 & +9 & +9 & +0 \\
+finqa-numerical-reasoning$^*$ & 0.16 & +39 & +49 & +0 & 0.44 & +13 & +21 & +0 \\
+route & 0.40 & +4 & +8 & +0 & 0.76 & -3 & -7 & +0 \\
+game-goal-selection & 0.40 & +17 & +11 & +0 & 0.52 & +7 & +12 & +0 \\
+platformer-control-selection & 0.16 & +11 & +5 & +4 & 0.36 & -4 & +8 & +4 \\
+strategy-command-selection & 0.16 & +17 & +19 & +0 & 0.32 & +3 & +8 & +0 \\
+route & 0.76 & -9 & +0 & +0 & 0.80 & +1 & +0 & +0 \\
+home-alert-triage & 0.44 & +37 & +40 & +0 & 0.64 & +24 & +23 & +0 \\
+graph-edge-selection & 0.32 & +19 & +20 & +0 & 0.80 & +7 & -4 & +0 \\
+workflow\_decision & 0.48 & +11 & +8 & +20 & 0.84 & +4 & -1 & +8 \\
+workflow\_decision & 0.72 & +3 & +3 & +4 & 0.88 & -4 & -4 & -12 \\
+folio-logical-inference & 0.44 & -9 & -9 & -24 & 0.60 & -5 & -9 & -24 \\
+musique-evidence-sufficiency & 0.60 & -8 & -1 & -24 & 0.60 & -3 & -7 & -24 \\
+musique-multihop-answer & 0.52 & +27 & +33 & +0 & 0.40 & +27 & +33 & +0 \\
+contains\_threat$^*$ & 0.76 & +24 & +24 & +0 & 1.00 & +0 & +0 & +0 \\
+toxicity\_severity$^*$ & 0.20 & +49 & +48 & +48 & 0.20 & +51 & +49 & +24 \\
+bounded\_value & 0.88 & +1 & +4 & +0 & 1.00 & +0 & -3 & +0 \\
+canonical\_entity & 0.72 & +21 & +21 & +0 & 0.96 & -4 & -5 & +0 \\
+drone-tactical-action & 0.16 & +36 & +52 & +0 & 0.64 & +3 & +11 & +0 \\
+robot-skill-selection & 0.40 & +7 & +13 & +0 & 0.48 & +1 & -7 & +0 \\
+search-plan-routing & 0.56 & +19 & +15 & +0 & 0.72 & +11 & +4 & +0 \\
+social-post-filtering & 0.56 & +16 & +16 & +12 & 0.84 & +4 & +1 & -12 \\
+tool\_route & 0.84 & +4 & +1 & +0 & 0.92 & +0 & +0 & +0 \\
+code-change-risk & 0.44 & +16 & +21 & +0 & 0.52 & +8 & +12 & -4 \\
+tax-document-page-classification & 0.04 & +1 & +12 & +0 & 0.12 & +0 & +3 & +0 \\
+patent\_section & 0.40 & -4 & -1 & -12 & 0.28 & +8 & +16 & +4 \\
+relevance & 0.76 & -4 & +4 & -12 & 0.76 & +4 & +0 & +8 \\
+dom-ad-detection & 0.76 & +21 & +24 & +8 & 0.76 & +24 & +24 & +16 \\
+\bottomrule
+\end{tabular}
+\end{table}

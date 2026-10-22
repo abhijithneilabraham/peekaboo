@@ -431,7 +431,12 @@ def main():
                      ('sup_ts_noship', 'noship_released', 'records', 'records'), ('feedback_1pass_noship', 'noship_released', 'records', 'records'),
                      ('logged_argmax', 'feedback_1pass', 'records', 'records'), ('logged_ips', 'feedback_1pass', 'records', 'records'),
                      ('feedback_noise20', 'feedback', 'records', 'records'), ('feedback_half', 'feedback', 'records', 'records'), ('feedback_complaints', 'feedback', 'records', 'records'),
-                     ('feedback', 'feedback', 'records_switch', 'records')]
+                     ('feedback', 'feedback', 'records_switch', 'records'),
+                     # (a, b, ka, kb): a minus b
+                     ('sup_enc', 'laya_td', 'records', 'records'), ('sup_enc', 'laya_td', 'records_es', 'records'), ('sup_enc', 'feedback_enc_1pass', 'records', 'records'),
+                     ('sup_ts', 'ttt', 'records', 'records_guard'), ('sup_ts', 'ttt', 'records_es', 'records_guard'), ('feedback_1pass', theirs, 'records', 'records_guard'),
+                     ('logged_argmax', 'sup_1pass', 'records', 'records'), ('logged_argmax', 'feedback', 'records', 'records'), ('sup_1pass', 'sup_ts', 'records', 'records'),
+                     ('feedback_enc_1pass', 'laya_td', 'records', 'records'), ('feedback_enc_1pass', 'sup_enc', 'records', 'records'), ('sup_ts_noship', 'sup_ts', 'records', 'records')]
             for a, b, ka, kb in pairs:
                 v = C(m, s, b, a, kb, ka)       # a minus b
                 if v:

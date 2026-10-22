@@ -1,0 +1,41 @@
+\begin{table}[tbp]\centering\scriptsize
+\caption{Gain over the released model in accuracy points, with 95\% intervals that resample seeds and row clusters; $\dagger$ marks differences that survive Holm adjustment within the method's family. JevBench has no training split: every method learns by 5-fold cross-fitting there, and pooled Peekaboo never sees it.}
+\label{tab:gain}
+\setlength{\tabcolsep}{2.5pt}
+\resizebox{\linewidth}{!}{\begin{tabular}{llrrrrrrr}
+\toprule
+model & method & learns from & public & JevBench & DecisionB. & typed-dec. & emotion & AG News \\
+\midrule
+Vega 0.8B & released model & none & -- & -- & -- & -- & -- & -- \\
+ & TTT head, 0.8.0 rule & answer key & -4.1 & $\cdot$ & +2.1 & +5.3 & +12.3 & -0.2 \\
+ & TTT head, 0.12.3 rule & answer key & +2.0 & $\cdot$ & +2.3 & +5.2 & +12.3 & +0.0 \\
+ & answer-key adapter, same recipe & answer key & +3.4 & -0.9 & +12.3 & +7.0 & +11.1 & +0.0 \\
+ & answer-key adapter, early-stopped & answer key & +4.7 & -0.7 & +13.2 & +7.4 & +10.8 & +1.6 \\
+ & answer-key adapter, one pass & answer key & +3.6 & -0.6 & +10.0 & +6.8 & +6.6 & +1.6 \\
+ & \textbf{Peekaboo}, eight passes & verdicts & +3.7 & -2.3 & +11.3$^{\dagger}$ & +6.2$^{\dagger}$ & +5.9$^{\dagger}$ & +1.1 \\
+ & \textbf{Peekaboo}, one pass & verdicts & +1.9 & -0.6 & +6.7$^{\dagger}$ & +4.1$^{\dagger}$ & +5.0$^{\dagger}$ & +1.3$^{\dagger}$ \\
+ & logged best answers, rated once & verdicts & $\cdot$ & $\cdot$ & +7.4 & +6.0 & +3.5 & $\cdot$ \\
+ & Peekaboo, no KL term & verdicts & +2.5 & -2.9 & +10.0 & +4.2 & +5.4 & +1.5 \\
+\addlinespace
+Vega 4B & released model & none & -- & -- & -- & -- & -- & -- \\
+ & TTT head, 0.8.0 rule & answer key & -3.9 & $\cdot$ & +0.4 & +2.8 & +12.2 & -1.3 \\
+ & TTT head, 0.12.3 rule & answer key & +0.6 & $\cdot$ & +1.8 & +2.6 & +12.2 & -1.3 \\
+ & answer-key adapter, same recipe & answer key & -1.2 & +3.9 & +5.1 & +4.0 & +6.5 & -0.3 \\
+ & answer-key adapter, early-stopped & answer key & +0.8 & +1.0 & +5.1 & +3.0 & +8.8 & +0.3 \\
+ & answer-key adapter, one pass & answer key & +0.5 & -0.0 & +4.7 & +4.6 & +5.7 & +0.3 \\
+ & \textbf{Peekaboo}, eight passes & verdicts & -1.1 & +2.9 & +5.7$^{\dagger}$ & +1.7 & +5.4$^{\dagger}$ & +0.2 \\
+ & \textbf{Peekaboo}, one pass & verdicts & +0.0 & -0.3 & +3.2$^{\dagger}$ & +2.0$^{\dagger}$ & +3.2$^{\dagger}$ & +0.2 \\
+ & logged best answers, rated once & verdicts & $\cdot$ & $\cdot$ & +1.8 & +4.0 & +3.6 & $\cdot$ \\
+ & Peekaboo, no KL term & verdicts & -0.5 & +2.6 & +3.5 & +1.3 & -5.6 & +0.0 \\
+\addlinespace
+Laya & released model & none & -- & -- & -- & -- & -- & -- \\
+ & laya-typed-decisions (fine-tune on typed-decisions) & answer key & +1.0 & -3.5 & +3.1 & +40.0 & +0.5 & +0.0 \\
+ & answer-key head, one pass & answer key & +0.1 & +0.0 & -0.3 & +5.0 & $\cdot$ & $\cdot$ \\
+ & \textbf{Peekaboo}, head only, one pass & verdicts & +0.1 & +0.0 & +0.1 & +0.2 & $\cdot$ & $\cdot$ \\
+ & answer-key fine-tune, encoder unfrozen & answer key & +4.6 & -4.0 & +15.4 & +38.8 & +30.0 & $\cdot$ \\
+ & answer-key fine-tune, encoder unfrozen, early-stopped & answer key & +4.3 & +1.9 & +14.8 & +38.8 & +30.6 & $\cdot$ \\
+ & \textbf{Peekaboo}, encoder unfrozen, eight passes & verdicts & +2.6 & -1.7 & +14.0$^{\dagger}$ & +32.3$^{\dagger}$ & +22.2$^{\dagger}$ & $\cdot$ \\
+ & \textbf{Peekaboo}, encoder unfrozen, one pass & verdicts & +2.1 & -0.3 & +7.7 & +22.6 & +9.9 & $\cdot$ \\
+\bottomrule
+\end{tabular}}
+\end{table}

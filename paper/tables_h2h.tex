@@ -1,40 +1,37 @@
-% ---- head to head
-\begin{table}[tbp]\centering\small
-\caption{Peekaboo head to head, in accuracy points with a paired 95\% bootstrap CI. Positive means Peekaboo is better. ``their improvement'' is VegaML's TTT head for Vega and the released laya-typed-decisions fine-tune for Laya, both trained with the answer key.}
+\begin{table}[tbp]\centering\scriptsize
+\caption{Head to head, in accuracy points with 95\% intervals (seeds and row clusters resampled). Positive means the first method is better. $\dagger$: survives Holm adjustment within the row's family; NI: non-inferior at a 2-point margin (lower bound above $-2$). TTT is scored under the vegaml 0.12.3 rule; for Laya ``their method'' is the typed-decisions fine-tune, in-domain only on typed-decisions.}
 \label{tab:h2h}
 \setlength{\tabcolsep}{3pt}
-\begin{tabular}{llrrr}
+\resizebox{\linewidth}{!}{\begin{tabular}{llrrrrrr}
 \toprule
-model & benchmark & vs. base & vs. their improvement & vs. answer-key adapter \\
+model & comparison & public & JevBench & DecisionB. & typed-dec. & emotion & AG News \\
 \midrule
-Vega 0.8B & 43 public tasks & +3.4 {\scriptsize[+1.7, +4.9]} & +5.7 {\scriptsize[+3.8, +7.5]} & +0.6 {\scriptsize[-0.6, +1.9]} \\
- & JevBench & -3.3 {\scriptsize[-7.1, +0.4]} & -- & -- \\
- & DecisionBench & +10.4 {\scriptsize[+8.0, +12.8]} & +8.2 {\scriptsize[+5.8, +10.7]} & -1.5 {\scriptsize[-3.4, +0.2]} \\
- & typed-decisions & +5.9 {\scriptsize[+4.2, +7.7]} & +0.4 {\scriptsize[-1.5, +2.5]} & -0.9 {\scriptsize[-1.9, +0.1]} \\
- & emotion & +2.5 {\scriptsize[+0.4, +4.6]} & -4.5 {\scriptsize[-6.6, -2.3]} & -3.7 {\scriptsize[-5.3, -2.1]} \\
- & AG News & +0.7 {\scriptsize[-0.0, +1.4]} & +1.0 {\scriptsize[-0.1, +2.1]} & +0.0 {\scriptsize[-0.8, +0.8]} \\
-\addlinespace
-Vega 4B & 43 public tasks & +0.1 {\scriptsize[-1.3, +1.3]} & +3.9 {\scriptsize[+2.2, +5.6]} & +1.1 {\scriptsize[+0.0, +2.1]} \\
- & JevBench & +4.5 {\scriptsize[+0.3, +9.0]} & -- & -- \\
- & DecisionBench & +6.7 {\scriptsize[+4.6, +8.8]} & +5.8 {\scriptsize[+3.7, +7.8]} & +1.5 {\scriptsize[-0.2, +3.1]} \\
- & typed-decisions & +3.4 {\scriptsize[+2.0, +4.9]} & +1.0 {\scriptsize[-0.7, +2.7]} & -1.1 {\scriptsize[-1.9, -0.2]} \\
- & emotion & -2.3 {\scriptsize[-4.1, -0.4]} & -9.5 {\scriptsize[-11.6, -7.3]} & -3.5 {\scriptsize[-5.4, -1.7]} \\
- & AG News & +0.1 {\scriptsize[-0.4, +0.5]} & +0.9 {\scriptsize[-0.1, +1.9]} & +0.6 {\scriptsize[-0.2, +1.4]} \\
-\addlinespace
-Laya, head only & 43 public tasks & +0.1 {\scriptsize[-0.3, +0.5]} & -0.8 {\scriptsize[-2.1, +0.5]} & +0.8 {\scriptsize[+0.0, +1.7]} \\
- & JevBench & -0.4 {\scriptsize[-1.3, +0.0]} & +4.8 {\scriptsize[-0.4, +9.5]} & -- \\
- & DecisionBench & +0.4 {\scriptsize[+0.0, +0.8]} & -3.3 {\scriptsize[-5.8, -0.9]} & +1.6 {\scriptsize[-0.6, +3.7]} \\
- & typed-decisions & +13.2 {\scriptsize[+11.0, +15.4]} & -26.9 {\scriptsize[-28.9, -24.8]} & -5.1 {\scriptsize[-7.0, -3.4]} \\
- & emotion & -0.1 {\scriptsize[-0.4, +0.2]} & -0.7 {\scriptsize[-1.9, +0.4]} & +5.6 {\scriptsize[+4.1, +7.0]} \\
- & AG News & +0.0 {\scriptsize[-0.0, +0.1]} & +0.0 {\scriptsize[-0.6, +0.6]} & +0.0 {\scriptsize[-0.2, +0.2]} \\
-\addlinespace
-Laya, encoder unfrozen & 43 public tasks & +3.0 {\scriptsize[+1.7, +4.4]} & +2.1 {\scriptsize[+0.7, +3.6]} & +3.7 {\scriptsize[+2.4, +5.1]} \\
- & JevBench & -3.0 {\scriptsize[-8.1, +2.2]} & +2.2 {\scriptsize[-3.3, +7.5]} & -- \\
- & DecisionBench & +15.8 {\scriptsize[+13.2, +18.7]} & +12.1 {\scriptsize[+9.6, +14.8]} & +17.0 {\scriptsize[+14.4, +19.5]} \\
- & typed-decisions & +32.3 {\scriptsize[+29.8, +34.8]} & -7.9 {\scriptsize[-9.4, -6.3]} & +14.0 {\scriptsize[+12.1, +15.8]} \\
- & emotion & +22.0 {\scriptsize[+19.8, +24.3]} & +21.3 {\scriptsize[+19.1, +23.6]} & +27.6 {\scriptsize[+25.6, +29.7]} \\
- & AG News & -0.7 {\scriptsize[-1.5, +0.2]} & -0.7 {\scriptsize[-1.4, +0.1]} & -0.7 {\scriptsize[-1.5, +0.2]} \\
+\multicolumn{8}{l}{\textit{Vega 0.8B}} \\
+ & Peekaboo (8 passes) vs. their method & +1.7 {\scriptsize[-1.6, +5.0]} & -- & +9.0 {\scriptsize[+5.4, +12.6]} & +0.9 {\scriptsize[-0.7, +2.7]} & -6.4 {\scriptsize[-8.4, -4.3]} & +1.1 {\scriptsize[+0.1, +2.0]} \\
+ & Peekaboo (8) vs. answer key, same recipe (8) & +0.3 {\scriptsize[-2.8, +3.6]} & -1.4 {\scriptsize[-6.1, +3.0]} & -1.0 {\scriptsize[-3.0, +1.0]} & -0.9 {\scriptsize[-2.2, +0.5]} & -5.2 {\scriptsize[-7.1, -3.3]}$^{\dagger}$ & +1.0 {\scriptsize[-0.1, +2.1]} NI \\
+ & Peekaboo (8) vs. answer key, early-stopped & -1.1 {\scriptsize[-4.0, +2.0]} & -1.6 {\scriptsize[-7.0, +3.5]} & -1.9 {\scriptsize[-4.1, +0.3]} & -1.3 {\scriptsize[-2.6, +0.1]} & -4.9 {\scriptsize[-6.8, -3.0]} & -0.5 {\scriptsize[-1.3, +0.2]} NI \\
+ & Peekaboo (1 pass) vs. answer key (1 pass) & -1.7 {\scriptsize[-3.7, +0.5]} & -0.0 {\scriptsize[-1.0, +1.0]} NI & -3.2 {\scriptsize[-5.8, -0.6]} & -2.7 {\scriptsize[-4.1, -1.2]} & -1.7 {\scriptsize[-3.0, -0.4]} & -0.3 {\scriptsize[-0.9, +0.4]} NI \\
+ & Peekaboo, 1 pass vs. 8 passes & -1.8 {\scriptsize[-4.4, +0.8]} & +1.7 {\scriptsize[-3.2, +7.2]} & -4.6 {\scriptsize[-8.1, -1.4]} & -2.1 {\scriptsize[-3.6, -0.4]} & -0.9 {\scriptsize[-2.4, +0.5]} & +0.2 {\scriptsize[-0.5, +1.0]} \\
+ & logged best answers vs. Peekaboo (1 pass) & -- & -- & +0.7 {\scriptsize[-2.4, +3.7]} & +1.9 {\scriptsize[+0.3, +3.5]} NI & -1.5 {\scriptsize[-4.1, +0.7]} & -- \\
+ & KL term vs. none & +1.1 {\scriptsize[-1.5, +3.9]} & +0.6 {\scriptsize[-2.4, +3.7]} & +1.2 {\scriptsize[-0.6, +3.0]} & +1.9 {\scriptsize[+0.3, +3.5]} & +0.5 {\scriptsize[-1.0, +1.8]} & -0.5 {\scriptsize[-1.3, +0.3]} \\
+ & with the switch vs. without & +0.0 {\scriptsize[-2.2, +2.3]} & +2.3 {\scriptsize[-2.9, +7.7]} & +0.0 {\scriptsize[-1.2, +1.1]} & +0.0 {\scriptsize[-1.2, +1.3]} & +0.0 {\scriptsize[-1.1, +1.1]} & +0.0 {\scriptsize[-0.7, +0.7]} \\
+\midrule
+\multicolumn{8}{l}{\textit{Vega 4B}} \\
+ & Peekaboo (8 passes) vs. their method & -1.8 {\scriptsize[-4.3, +0.7]} & -- & +4.0 {\scriptsize[+1.5, +6.5]} & -0.9 {\scriptsize[-2.6, +0.9]} & -6.8 {\scriptsize[-8.9, -4.7]} & +1.5 {\scriptsize[+0.4, +2.6]} \\
+ & Peekaboo (8) vs. answer key, same recipe (8) & +0.0 {\scriptsize[-2.0, +2.0]} & -1.0 {\scriptsize[-5.0, +2.8]} & +0.6 {\scriptsize[-1.6, +2.7]} NI & -2.3 {\scriptsize[-3.8, -0.8]}$^{\dagger}$ & -1.1 {\scriptsize[-3.2, +1.0]} & +0.6 {\scriptsize[-0.1, +1.3]} NI \\
+ & Peekaboo (8) vs. answer key, early-stopped & -2.0 {\scriptsize[-4.0, -0.2]} & +1.9 {\scriptsize[-2.7, +6.6]} & +0.6 {\scriptsize[-1.2, +2.3]} NI & -1.4 {\scriptsize[-2.9, +0.4]} & -3.5 {\scriptsize[-5.3, -1.7]} & -0.1 {\scriptsize[-0.8, +0.5]} NI \\
+ & Peekaboo (1 pass) vs. answer key (1 pass) & -0.5 {\scriptsize[-3.0, +1.4]} & -0.3 {\scriptsize[-1.4, +0.7]} NI & -1.4 {\scriptsize[-3.8, +0.8]} & -2.6 {\scriptsize[-4.0, -1.2]} & -2.5 {\scriptsize[-3.7, -1.2]} & -0.1 {\scriptsize[-0.7, +0.5]} NI \\
+ & Peekaboo, 1 pass vs. 8 passes & +1.2 {\scriptsize[-1.3, +3.5]} & -3.2 {\scriptsize[-8.7, +2.4]} & -2.5 {\scriptsize[-5.8, +0.0]} & +0.3 {\scriptsize[-1.2, +1.9]} & -2.2 {\scriptsize[-3.8, -0.5]} & +0.0 {\scriptsize[-0.6, +0.5]} \\
+ & logged best answers vs. Peekaboo (1 pass) & -- & -- & -1.4 {\scriptsize[-4.4, +1.9]} & +2.0 {\scriptsize[+0.7, +3.4]} NI & +0.4 {\scriptsize[-1.9, +2.6]} NI & -- \\
+ & KL term vs. none & -0.6 {\scriptsize[-2.8, +1.4]} & +0.3 {\scriptsize[-3.1, +3.8]} & +2.2 {\scriptsize[+0.4, +4.2]} & +0.4 {\scriptsize[-1.5, +2.3]} & +11.0 {\scriptsize[+8.5, +13.5]}$^{\dagger}$ & +0.2 {\scriptsize[-0.2, +0.8]} \\
+ & with the switch vs. without & +0.0 {\scriptsize[-1.3, +1.2]} & -2.7 {\scriptsize[-8.1, +2.5]} & +0.0 {\scriptsize[-1.1, +1.2]} & -0.7 {\scriptsize[-3.0, +1.5]} & +0.0 {\scriptsize[-1.5, +1.6]} & +0.0 {\scriptsize[-0.5, +0.4]} \\
+\midrule
+\multicolumn{8}{l}{\textit{Laya}} \\
+ & Peekaboo, head (1) vs. answer-key head (1) & +0.0 {\scriptsize[-0.3, +0.3]} NI & +0.0 {\scriptsize[+0.0, +0.0]} NI & +0.4 {\scriptsize[+0.1, +0.7]} NI & -4.8 {\scriptsize[-7.5, -2.0]} & -- & -- \\
+ & Peekaboo, encoder (8) vs. their fine-tune & +1.6 {\scriptsize[-2.1, +5.3]} & +1.7 {\scriptsize[-4.7, +8.8]} & +10.9 {\scriptsize[+4.7, +16.7]}$^{\dagger}$ & -7.6 {\scriptsize[-9.8, -5.4]}$^{\dagger}$ & +21.6 {\scriptsize[+19.4, +24.0]}$^{\dagger}$ & -- \\
+ & Peekaboo, encoder (8) vs. answer-key encoder, same recipe & -2.1 {\scriptsize[-5.1, +0.7]} & +2.3 {\scriptsize[-3.9, +7.9]} & -1.4 {\scriptsize[-5.1, +2.0]} & -6.5 {\scriptsize[-8.7, -4.1]}$^{\dagger}$ & -7.9 {\scriptsize[-9.6, -6.1]}$^{\dagger}$ & -- \\
+ & Peekaboo, encoder (8) vs. answer-key encoder, early-stopped & -1.8 {\scriptsize[-4.7, +0.9]} & -3.6 {\scriptsize[-8.7, +1.4]} & -0.9 {\scriptsize[-4.5, +2.0]} & -6.5 {\scriptsize[-8.7, -4.3]} & -8.4 {\scriptsize[-10.2, -6.7]} & -- \\
+ & Peekaboo, encoder: 1 pass vs. 8 & -0.4 {\scriptsize[-3.0, +2.1]} & +1.4 {\scriptsize[-4.4, +6.9]} & -6.3 {\scriptsize[-11.1, -1.9]} & -9.7 {\scriptsize[-12.1, -7.1]} & -12.2 {\scriptsize[-14.2, -10.3]} & -- \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
-

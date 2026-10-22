@@ -1,0 +1,28 @@
+\begin{table}[tbp]\centering\scriptsize
+\caption{What the gain is made of. Left: gain over the released model of a per-task label prior with no input features (log-offsets on the released probabilities), trained from verdicts with Peekaboo's loop and from labels; and Peekaboo minus that prior. Right: how often eight on-policy passes reveal the gold answer: reward-1 events per training row (each one names the gold answer), the share of rows the base policy would reveal in 8 draws, the share of two-option rows, and the first pass's reward against the released model's best-answer accuracy on the same rows.}
+\label{tab:anatomy}
+\setlength{\tabcolsep}{2.5pt}
+\resizebox{\linewidth}{!}{\begin{tabular}{llrrrr|rrrrr}
+\toprule
+model & benchmark & prior (verdicts) & prior (labels) & Peekaboo $-$ prior & params & reveals / row & $P$(revealed, 8 draws) & 2-option rows & pass-1 reward & base best-answer acc. \\
+\midrule
+Vega 0.8B & 43 public tasks & +3.4 & +2.3 & +0.2 {\scriptsize[-3.0, +3.1]} & 536 & 5.1 & 0.88 & 30\% & 0.50 & 0.55 \\
+ & JevBench & -- & -- & -- & -- & 4.7 & -- & -- & 0.49 & -- \\
+ & DecisionBench & +1.0 & +2.7 & +10.3 {\scriptsize[+6.3, +14.7]} & 28584 & 4.9 & 0.76 & 21\% & 0.48 & 0.50 \\
+ & typed-decisions & +4.3 & +5.0 & +1.9 {\scriptsize[+0.1, +3.6]} & 71 & 6.1 & 0.94 & 30\% & 0.72 & 0.72 \\
+ & emotion & +1.9 & +3.1 & +3.9 {\scriptsize[+2.1, +5.7]} & 6 & 4.9 & 0.85 & 0\% & 0.57 & 0.56 \\
+ & AG News & +1.4 & +1.5 & -0.3 {\scriptsize[-1.2, +0.5]} & 4 & 7.5 & 0.97 & 0\% & 0.92 & 0.92 \\
+\midrule
+Vega 4B & 43 public tasks & +0.1 & -0.2 & -1.2 {\scriptsize[-3.6, +0.9]} & 536 & 6.1 & 0.92 & 30\% & 0.68 & 0.70 \\
+ & JevBench & -- & -- & -- & -- & 5.9 & -- & -- & 0.64 & -- \\
+ & DecisionBench & +1.0 & +0.9 & +4.7 {\scriptsize[+2.0, +7.8]} & 28584 & 5.6 & 0.82 & 21\% & 0.62 & 0.61 \\
+ & typed-decisions & +1.8 & +3.9 & -0.2 {\scriptsize[-1.8, +1.6]} & 71 & 6.4 & 0.96 & 30\% & 0.75 & 0.79 \\
+ & emotion & +2.5 & +2.6 & +2.9 {\scriptsize[+1.1, +4.7]} & 6 & 4.8 & 0.84 & 0\% & 0.57 & 0.57 \\
+ & AG News & +0.2 & +0.2 & +0.0 {\scriptsize[-0.4, +0.6]} & 4 & 7.4 & 0.96 & 0\% & 0.92 & 0.93 \\
+\midrule
+Laya & typed-decisions & +15.3 & +17.4 & -- & 71 & -- & -- & -- & -- & -- \\
+ & emotion & -1.4 & -3.3 & -- & 6 & -- & -- & -- & -- & -- \\
+ & AG News & -0.6 & -0.1 & -- & 4 & -- & -- & -- & -- & -- \\
+\bottomrule
+\end{tabular}}
+\end{table}

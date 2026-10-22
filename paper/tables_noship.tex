@@ -1,0 +1,18 @@
+\begin{table}[tbp]\centering\small
+\caption{typed-decisions on Vega with the shipped \texttt{typed\_decisions} adapter, which was fitted with labels on this feedback pool, switched off. Accuracy (mean over seeds) and gain over the corresponding released model.}
+\label{tab:noship}
+\resizebox{\linewidth}{!}{\begin{tabular}{llrrrr}
+\toprule
+model & method & accuracy, adapters on & gain & accuracy, adapters off & gain \\
+\midrule
+Vega 0.8B & released engine & 0.666 & -- & 0.377 & -- \\
+Vega 0.8B & answer-key adapter (8) & 0.737 {\scriptsize$\pm$0.002} & +7.0 {\scriptsize[+5.0, +9.1]} & 0.693 {\scriptsize$\pm$0.013} & +31.6 {\scriptsize[+28.9, +34.4]} \\
+Vega 0.8B & Peekaboo (8) & 0.728 {\scriptsize$\pm$0.007} & +6.2 {\scriptsize[+4.2, +8.2]} & 0.507 {\scriptsize$\pm$0.028} & +13.0 {\scriptsize[+9.8, +16.5]} \\
+Vega 0.8B & Peekaboo (1) & 0.708 {\scriptsize$\pm$0.003} & +4.1 {\scriptsize[+2.2, +6.1]} & 0.498 {\scriptsize$\pm$0.007} & +12.1 {\scriptsize[+10.1, +14.2]} \\
+Vega 4B & released engine & 0.729 & -- & 0.440 & -- \\
+Vega 4B & answer-key adapter (8) & 0.769 {\scriptsize$\pm$0.001} & +4.0 {\scriptsize[+2.5, +5.6]} & 0.748 {\scriptsize$\pm$0.006} & +30.8 {\scriptsize[+27.8, +33.9]} \\
+Vega 4B & Peekaboo (8) & 0.746 {\scriptsize$\pm$0.010} & +1.7 {\scriptsize[-0.1, +3.6]} & 0.685 {\scriptsize$\pm$0.027} & +24.6 {\scriptsize[+21.0, +28.5]} \\
+Vega 4B & Peekaboo (1) & 0.749 {\scriptsize$\pm$0.004} & +2.0 {\scriptsize[+0.7, +3.5]} & 0.661 {\scriptsize$\pm$0.004} & +22.2 {\scriptsize[+19.4, +25.0]} \\
+\bottomrule
+\end{tabular}}
+\end{table}

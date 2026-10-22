@@ -1,6 +1,6 @@
 # The paper
 
-`main.tex` is the current version (v2, after the review in `reports/critique.zip`); `main_v1.tex` is the first version it replaced.
+`main.tex` is the current version (v2, after the review in `reports/critique.zip`). The first version, its figure script and its PDF are at commit `cd52a9f`.
 
 ## Regenerating everything from the results
 
