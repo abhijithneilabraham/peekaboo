@@ -139,7 +139,7 @@ def plan_v2(out):
     for s in SUITES:
         for sd in SEEDS:
             for m in ('feedback_enc', 'sup_enc', 'feedback_enc_1pass'):
-                lm(s, m, sd, 10)
+                lm(s, m, sd, 16)
     # 3. the main comparison: TTT (both rules), the answer-key add-on (+ early stopping), Peekaboo, both 8-pass and 1-pass
     for s in SUITES:
         for size, res, _, gr in VEGA:
