@@ -76,17 +76,19 @@ def build_items(suite, quick=False):
     if suite in ('emotion', 'agnews'):               # large public datasets with real training splits: dair-ai/emotion is the
         key = {'emotion': 'emotion', 'agnews': 'ag_news'}[suite]   # dataset of Vega's fine-tuning recipe, AG News one Laya reports
         natural = os.environ.get('POOL_DRAW', 'natural') == 'natural'
-        # v2: the feedback pool keeps the training split's natural class mix (a deployment's traffic), drawn at random.
-        # VegaML's loader draws fit rows class by class (round robin), which gave v1 a class-balanced pool against a
-        # naturally distributed test set; asking it for the whole split returns every usable row, from which we sample.
-        n_fit = 80 if quick else (10 ** 6 if natural else 4000)
-        r = load_task(BT.BY_KEY[key], n_eval=40 if quick else 2000, n_fit=n_fit, seed=SEED)   # VegaML's own loader and question
+        r = load_task(BT.BY_KEY[key], n_eval=40 if quick else 2000, n_fit=80 if quick else 4000, seed=SEED)   # VegaML's own loader and question
         if r.get('skipped'):
             raise RuntimeError(f'{suite}: {r["skipped"]}')
-        fit = r['fit']
+        fit = r['fit']                                # v1: VegaML's class-by-class (round robin) draw, a class-balanced pool
         if natural and not quick:
+            # v2: the feedback pool keeps the training split's natural class mix (a deployment's traffic). Asking the
+            # loader for the whole split returns every usable training row; a random 4,000 of them (never a row whose
+            # id a test row carries) is the pool. The test rows are the same as v1's.
+            r2 = load_task(BT.BY_KEY[key], n_eval=0, n_fit=10 ** 6, seed=SEED)
+            test_ids = {it['id'] for it in r['items']}
+            allrows = [it for it in r2['fit'] if it['id'] not in test_ids]
             rng = np.random.default_rng(SEED)
-            fit = [fit[i] for i in sorted(rng.choice(len(fit), size=min(4000, len(fit)), replace=False))]
+            fit = [allrows[i] for i in sorted(rng.choice(len(allrows), size=min(4000, len(allrows)), replace=False))]
         out = []
         for split, rows in (('test', r['items']), ('pool', fit)):
             for it in rows:
