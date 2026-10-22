@@ -1,15 +1,14 @@
-# Status of the remaining Peekaboo experiments  (Thu Oct 22 01:52:28 2026)
+# Status of the remaining Peekaboo experiments  (Thu Oct 22 01:57:29 2026)
 
-done: 56 · pending: 482 · running: 3  (of 541 steps)
+done: 57 · pending: 480 · running: 4  (of 541 steps)
 
 NOT COMPLETE. Fix the cause of the first failed step (see its log), then run `python run.py` again;
 finished steps are skipped. Do not change methods, settings, seeds, splits or metrics. See CLAUDE.md.
 
-- **running** `vega-4b/cache/public`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite public`)
 - **running** `vega-4b/cache/decisionbench`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite decisionbench`)
 - **running** `vega-4b/cache/typed`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite typed`)
-- **pending** `laya/cache/typed`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py cache --suite typed`)
-- **pending** `laya_td/cache/typed`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya_td python laya_peekaboo.py cache --suite typed`)
+- **running** `laya/cache/typed`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya python laya_peekaboo.py cache --suite typed`)
+- **running** `laya_td/cache/typed`    (from `.`: `VEGA_OUT=<output> VEGA_SIZE=laya_td python laya_peekaboo.py cache --suite typed`)
 - **pending** `vega-4b/cache/emotion`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite emotion`)
 - **pending** `vega-0.8b/cache/agnews`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=0.8b python suite_cache.py --suite agnews`)
 - **pending** `vega-4b/cache/agnews`    (from `../vega_policy`: `VEGA_OUT=<output> VEGA_SIZE=4b python suite_cache.py --suite agnews`)
@@ -494,7 +493,7 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 <details><summary>all steps</summary>
 
 - done     vega-0.8b/cache/public 
-- running  vega-4b/cache/public 
+- done     vega-4b/cache/public 400s
 - done     laya/cache/public 
 - done     laya_td/cache/public 
 - done     vega-0.8b/cache/jevbench 
@@ -507,8 +506,8 @@ finished steps are skipped. Do not change methods, settings, seeds, splits or me
 - done     laya_td/cache/decisionbench 
 - done     vega-0.8b/cache/typed 
 - running  vega-4b/cache/typed 
-- pending  laya/cache/typed 
-- pending  laya_td/cache/typed 
+- running  laya/cache/typed 
+- running  laya_td/cache/typed 
 - done     vega-0.8b/cache/emotion 
 - pending  vega-4b/cache/emotion 
 - done     laya/cache/emotion 
