@@ -351,7 +351,7 @@ def tab_main():
 
 def tab_h2h():
     L = ['\\begin{table}[tbp]\\centering\\scriptsize', '\\caption{Head to head, in accuracy points with 95\\% intervals (seeds and row clusters resampled). Positive means the first method is better. '
-         '$\\dagger$: survives Holm adjustment within the row\'s family; NI: non-inferior at a 2-point margin (lower bound above $-2$). TTT is scored under the vegaml 0.12.3 rule; for Laya ``their method\'\' is the typed-decisions fine-tune, in-domain only on typed-decisions. The Laya head-only one-pass arms barely move from the released model (Section~\\ref{sec:laya}), so no NI marks are given for them.}',
+         '$\\dagger$: survives Holm adjustment within the row\'s family; NI: exploratory non-inferiority at a 2-point margin using an unadjusted interval (lower bound above $-2$); these marks are not multiplicity-adjusted. TTT is scored under the vegaml 0.12.3 rule; for Laya ``their method\'\' is the typed-decisions fine-tune, in-domain only on typed-decisions. The Laya head-only one-pass arms barely move from the released model (Section~\\ref{sec:laya}), so no NI marks are given for them.}',
          '\\label{tab:h2h}', '\\setlength{\\tabcolsep}{3pt}', '\\resizebox{\\linewidth}{!}{\\begin{tabular}{ll' + 'r' * len(SUITES) + '}', '\\toprule',
          'model & comparison & ' + ' & '.join(SSHORT[s] for s in SUITES) + ' \\\\']
     rows = [('feedback', 'records', 'ttt', 'records_guard', 'Peekaboo (8 passes) vs. their method'), ('feedback', 'records', 'sup_ts', 'records', 'Peekaboo (8) vs. answer key, same recipe (8)'),
@@ -457,7 +457,7 @@ def tab_anatomy():
                 L.append(f'{mname} & {SNAME[s]} & {t["rows_covered"]} / {t["rows"]} & {t0.get("rows_covered", "--")} & {fg(t.get("peekaboo_vs_ttt_covered"), mark=False)} & {fg(t.get("peekaboo_vs_ttt_uncovered"), mark=False)} & {fg(t.get("adapter_vs_ttt_covered"), mark=False)} \\\\')
     L += ['\\bottomrule', '\\end{tabular}}', '\\end{table}']
     table(L, 'tables_ttt.tex')
-    L = ['\\begin{table}[tbp]\\centering\\small', '\\caption{Benchmark artifacts. Gain over the released model with every task, and without the five tasks whose gold answer an adapter can learn without reading the input (public: truthfulqa\\_mc1, pubmedqa; DecisionBench: contains\\_threat, toxicity\\_severity, finqa-numerical-reasoning).}',
+    L = ['\\begin{table}[tbp]\\centering\\small', '\\caption{Benchmark artifacts. Gain over the released model with every task, and without the five tasks with answer-position, option-structure or class-prior shortcuts (public: truthfulqa\\_mc1, pubmedqa; DecisionBench: contains\\_threat, toxicity\\_severity, finqa-numerical-reasoning).}',
          '\\label{tab:artifacts}', '\\resizebox{\\linewidth}{!}{\\begin{tabular}{llrrrr}', '\\toprule', 'model & method & public, all 43 & public, 41 tasks & DecisionBench, all 43 & DecisionBench, 40 tasks \\\\', '\\midrule']
     for model, mname in MODELS:
         for meth, key, name in (('feedback', 'records', 'Peekaboo (8)'), ('feedback_1pass', 'records', 'Peekaboo (1)'), ('sup_ts', 'records', 'answer key'), ('ttt', 'records_guard', 'TTT (0.12.3)'), ('feedback_enc', 'records', 'Peekaboo, encoder'), ('laya_td', 'records', 'their fine-tune')):
@@ -623,8 +623,39 @@ def tex_numbers():
     return len(L)
 
 
+def tab_seeds():
+    """Report observed run coverage, and reject grouping arms with different seed sets."""
+    groups = []
+    for model, label in MODELS[:2]:
+        groups += [
+            (model, label, 'feedback and labelled, 8 / 1 passes', ('feedback', 'feedback_1pass', 'sup_ts', 'sup_1pass')),
+            (model, label, 'logged and damaged feedback', ('logged_ips', 'logged_argmax', 'feedback_noise20', 'feedback_half', 'feedback_complaints')),
+            (model, label, 'no KL', ('feedback_kl0',)),
+            (model, label, 'shipped adapters off', ('feedback_noship', 'feedback_1pass_noship', 'sup_ts_noship')),
+        ]
+    groups += [
+        ('laya', 'Laya', 'encoder, feedback 8 / 1 and labelled 8', ('feedback_enc', 'feedback_enc_1pass', 'sup_enc')),
+        ('laya', 'Laya', 'head, feedback and labelled 1 pass', ('feedback_1pass', 'sup_1pass')),
+    ]
+    L = [r'\begin{table}[H]\centering\small',
+         r'\caption{Independent training runs available in the current grid, counted from per-seed result files. Grouped methods have identical seed sets. A dash means not run. Early stopping reuses the labelled run; it is not another seed. Released models, TTT and historical head-only eight-pass runs are not included.}',
+         r'\label{tab:seeds}', r'\setlength{\tabcolsep}{4pt}',
+         r'\resizebox{\linewidth}{!}{\begin{tabular}{llrrrrrr}', r'\toprule',
+         r'model & arms & public & JevBench & DecisionB. & typed-dec. & emotion & AG News \\', r'\midrule']
+    for model, label, desc, methods in groups:
+        cells = []
+        for suite in SUITES:
+            seeds = [{os.path.basename(f).rsplit('_s', 1)[1] for f in A.run_files(model, suite, method)} for method in methods]
+            if any(s != seeds[0] for s in seeds[1:]):
+                raise ValueError(f'Cannot group different seed sets: {model}, {suite}, {methods}')
+            cells.append(str(len(seeds[0])) if seeds[0] else '--')
+        L.append(label + ' & ' + desc + ' & ' + ' & '.join(cells) + r' \\')
+    L += [r'\bottomrule', r'\end{tabular}}', r'\end{table}']
+    table(L, 'tables_seeds.tex')
+
+
 if __name__ == '__main__':
     fig_benchmarks(); fig_gains(); fig_laya(); fig_passes(); fig_realistic(); fig_anatomy(); fig_calibration(); fig_reliability(); fig_switch_T(); fig_tasks_db()
-    tab_bench(); tab_main(); tab_h2h(); tab_realistic(); tab_calibration(); tab_anatomy(); tab_noship(); tab_tasks()
+    tab_bench(); tab_main(); tab_h2h(); tab_realistic(); tab_calibration(); tab_anatomy(); tab_noship(); tab_tasks(); tab_seeds()
     n = tex_numbers()
     print('wrote figures, tables and', n, 'macros from', OUT)
