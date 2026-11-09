@@ -21,8 +21,14 @@
 
 \begin{figure}[H]\centering
 \includegraphics[width=\linewidth]{tasks_db.pdf}
-\caption{DecisionBench, gain of eight-pass \pk{} over released Vega on each of the 43 tasks (25 test rows each), sorted by the 0.8B gain. $^*$: tasks with a construction artifact.}
+\caption{DecisionBench task gains, tasks 1--22 of 43, sorted by the Vega 0.8B gain. Horizontal labels identify each task; circles are Vega 0.8B and squares Vega 4B. Endpoints show mean accuracy gains over the released model; lines connect each point to zero and are not confidence intervals. Each task has 25 test rows. The second panel is Figure~\ref{fig:tasks_db_more}; both use the same horizontal scale. $^*$ marks identified benchmark shortcuts.}
 \label{fig:tasks_db}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=\linewidth]{tasks_db_more.pdf}
+\caption{DecisionBench task gains continued, tasks 23--43 of 43. Order, symbols and horizontal scale match Figure~\ref{fig:tasks_db}. $^*$ marks identified benchmark shortcuts.}
+\label{fig:tasks_db_more}
 \end{figure}
 \FloatBarrier
 

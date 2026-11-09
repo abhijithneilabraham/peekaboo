@@ -93,6 +93,12 @@ Laya~\citep{laya} is a ModernBERT-large encoder~\citep{warner2024modernbert} (39
 \section{\pk{}}
 \label{sec:method}
 
+\begin{figure}[tbp]\centering
+\includegraphics[width=\linewidth]{training.pdf}
+\caption{Vega training architecture. A frozen backbone produces cached features. The decision engine retains its original weights while a new adapter and gate learn from sampled-answer correctness. The reference branch disables only the new adapter and supplies the KL anchor. Gold answers simulate the external rater; they are not policy inputs. One pass collects one verdict per training row; eight passes collect fresh verdicts on repeated rows. Temperature fitting and the optional model-level switch use additional held-out feedback.}
+\label{fig:training}
+\end{figure}
+
 \subsection{Setting, and what ``one bit'' means under each protocol}
 A decision model is a policy $\pi_0(a\mid s)$ over the options $a$ of a typed question $s$. In deployment it commits to an answer and later receives $r\in\{0,1\}$. We train an add-on $\pi$ from a pool of (question, answer, verdict) records and score it on held-out test rows. The reward is computed from the benchmark's gold answer, so it is never wrong or missing unless we make it so (Section~\ref{sec:realistic}). Two protocols appear throughout:
 \begin{itemize}
@@ -131,7 +137,7 @@ Table~\ref{tab:bench} and Figure~\ref{fig:bench} describe the six benchmarks: th
 
 \begin{figure}[t]\centering
 \includegraphics[width=\linewidth]{benchmarks.pdf}
-\caption{The six benchmarks' test rows, by question type (left) and by the number of options a question offers (right, as a share of that benchmark's rows).}
+\caption{Benchmark composition. Each row gives the benchmark's test count and percentages by answer format (left) and option count (right). Both panels use a 0--100\% scale. Two-option questions matter because either correctness verdict identifies the label.}
 \label{fig:bench}
 \end{figure}
 

@@ -61,233 +61,398 @@ def f3(v):
 
 
 # ───────────────────────────── figures ─────────────────────────────
-def forest(ax, model, series, title, xlim=None):
-    y = np.arange(len(SUITES))[::-1]
-    off = np.linspace(0.32, -0.32, len(series)) if len(series) > 1 else [0.0]
-    for (meth, key, label, style), dy in zip(series, off):
-        for yi, s in zip(y, SUITES):
-            g = cmp(model, meth, key, s)
-            if not g:
-                continue
-            ax.errorbar(g['gain'], yi + dy, xerr=[[g['gain'] - g['lo']], [g['hi'] - g['gain']]], fmt=MARK[style], ms=4.2, color=C[style],
-                        ecolor=C[style], elinewidth=1.0, capsize=2, label=label if yi == y[0] else None)
-    ax.axvline(0, color='k', lw=0.7); ax.set_yticks(y); ax.set_yticklabels([SNAME[s] for s in SUITES]); ax.set_title(title)
-    ax.set_ylim(-0.6, len(SUITES) - 0.4); ax.grid(axis='x', lw=0.4, alpha=0.5); ax.spines['left'].set_visible(False); ax.tick_params(axis='y', length=0)
-    for yi in y[1:]:
-        ax.axhline(yi + 0.5, color='#dddddd', lw=0.5)
-    if xlim:
-        ax.set_xlim(*xlim)
+# Figure sizes are close to the printed page width so labels remain readable.
+# Missing observations stay distinct from numerical zero throughout these plots.
+from matplotlib.lines import Line2D
+from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
+from matplotlib.colors import TwoSlopeNorm, Normalize, LinearSegmentedColormap
+import textwrap
+
+PALETTE = {'feedback': '#16734A', 'labels': '#3165A8', 'vendor': '#B46816',
+           'prior': '#8154A1', 'base': '#676767', 'raw': '#BF4D36'}
+GAIN_CMAP = LinearSegmentedColormap.from_list('gain', ['#D7986C', '#FFFFFF', '#3D9776'])
+LOWER_CMAP = LinearSegmentedColormap.from_list('error', ['#FFFFFF', '#F2C7AC', '#A84127'])
+plt.rcParams.update({'font.size': 9, 'axes.titlesize': 10, 'axes.labelsize': 9,
+                     'legend.fontsize': 8.5, 'axes.titlepad': 10,
+                     'axes.spines.top': False, 'axes.spines.right': False,
+                     'pdf.fonttype': 42, 'savefig.facecolor': 'white'})
+
+
+def save_figure(fig, name):
+    fig.savefig(os.path.join(FIG, name + '.pdf'), bbox_inches='tight', pad_inches=0.08)
+    plt.close(fig)
+
+
+def signed(value):
+    return f'{value:+.1f}' if abs(value) >= 0.05 else '0.0'
+
+
+def clean_axis(ax, ylabels, zero=True):
+    ax.set_yticks(range(len(ylabels))); ax.set_yticklabels(ylabels)
+    ax.set_ylim(len(ylabels) - 0.5, -0.5)
+    ax.spines['left'].set_visible(False); ax.tick_params(axis='y', length=0, pad=6)
+    ax.grid(axis='x', color='#E3E3E3', lw=0.6); ax.set_axisbelow(True)
+    if zero:
+        ax.axvline(0, color='#555555', lw=0.9)
+
+
+def interval(ax, estimate, y, color, marker='o', filled=True):
+    if estimate is None:
+        return
+    ax.errorbar(estimate['gain'], y,
+                xerr=[[estimate['gain'] - estimate['lo']], [estimate['hi'] - estimate['gain']]],
+                fmt=marker, ms=5, mfc=color if filled else 'white', mec=color,
+                color=color, ecolor=color, lw=1.1, capsize=2, zorder=3)
+
+
+def matrix(ax, values, row_labels, col_labels, norm, cmap, fmt):
+    values = np.array(values, dtype=float)
+    cm = plt.get_cmap(cmap).copy() if isinstance(cmap, str) else cmap.copy()
+    cm.set_bad('#E8E8E8')
+    im = ax.imshow(np.ma.masked_invalid(values), cmap=cm, norm=norm, aspect='auto')
+    for (row, col), value in np.ndenumerate(values):
+        label = fmt(value) if np.isfinite(value) else '—'
+        rgba = cm(norm(value)) if np.isfinite(value) else (0.9, 0.9, 0.9, 1)
+        lum = 0.2126 * rgba[0] + 0.7152 * rgba[1] + 0.0722 * rgba[2]
+        ax.text(col, row, label, va='center', ha='center', fontsize=9,
+                color='white' if lum < .52 else '#202020')
+    ax.set_yticks(range(len(row_labels))); ax.set_yticklabels(row_labels)
+    ax.set_xticks(range(len(col_labels))); ax.set_xticklabels(col_labels, fontsize=8.2)
+    ax.tick_params(length=0, pad=7)
+    ax.set_xticks(np.arange(-.5, values.shape[1], 1), minor=True)
+    ax.set_yticks(np.arange(-.5, values.shape[0], 1), minor=True)
+    ax.grid(which='minor', color='white', lw=2); ax.tick_params(which='minor', length=0)
+    for spine in ax.spines.values(): spine.set_visible(False)
+    return im
+
+
+def fig_training():
+    fig, ax = plt.subplots(figsize=(7.2, 4.7)); ax.set(xlim=(0, 1), ylim=(0, 1)); ax.axis('off')
+    def box(x, y, w, h, title, subtitle, train=False):
+        ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle='round,pad=0.008',
+                     facecolor='#E2F0E8' if train else '#F1F3F5', edgecolor='#65717C', lw=.9))
+        ax.text(x+w/2, y+h*.68, title, ha='center', va='center', fontsize=9.2, weight='bold')
+        ax.text(x+w/2, y+h*.28, subtitle, ha='center', va='center', fontsize=8.1)
+    def arrow(a, b, label=None, offset=(0, 0)):
+        ax.add_patch(FancyArrowPatch(a, b, arrowstyle='-|>', mutation_scale=11,
+                                    color='#475763', lw=1.2))
+        if label:
+            ax.text((a[0]+b[0])/2+offset[0], (a[1]+b[1])/2+offset[1], label,
+                    ha='center', va='center', fontsize=7.6, backgroundcolor='white')
+    ax.text(0, .98, 'Vega training from correctness feedback', fontsize=12, weight='bold', va='top')
+    ax.text(0, .91, 'Gray: fixed computation or data. Green: learned adjustment and its loss.', fontsize=8.5)
+    box(.01, .69, .17, .15, 'Text input', 'State, question\nand options')
+    box(.23, .69, .19, .15, 'Backbone', 'Frozen features\ncan be cached')
+    box(.48, .69, .25, .15, 'Decision engine', 'Frozen weights +\ntrainable adapter / gate', True)
+    box(.80, .69, .18, .15, 'Sample', 'Draw from option\nprobabilities')
+    arrow((.18,.765),(.23,.765)); arrow((.42,.765),(.48,.765)); arrow((.73,.765),(.80,.765))
+    box(.23,.39,.19,.15,'Reference','New adapter off;\nfixed probabilities')
+    box(.48,.39,.25,.15,'Training loss','REINFORCE + KL\nUpdate adapter / gate', True)
+    box(.80,.39,.18,.15,'Verdict','Right = 1\nWrong = 0')
+    arrow((.325,.69),(.325,.54)); arrow((.42,.465),(.48,.465),'KL anchor',(0,.105))
+    arrow((.89,.69),(.89,.54)); arrow((.80,.465),(.73,.465))
+    arrow((.605,.54),(.605,.69),'gradient',(.09,0))
+    ax.text(.89,.32,'Gold answer simulates\nthe external rater',ha='center',va='center',fontsize=8)
+    arrow((.89,.36),(.89,.39))
+    ax.text(.01,.20,'One pass',weight='bold',fontsize=9)
+    ax.text(.21,.20,'One new sampled answer and verdict per training question.',fontsize=8.5)
+    ax.text(.01,.13,'Eight passes',weight='bold',fontsize=9)
+    ax.text(.21,.13,'Repeat each training question with fresh samples and verdicts.',fontsize=8.5)
+    ax.text(.01,.03,'After training: held-out verdicts → temperature fitting → optional model-level switch.',fontsize=8.5)
+    save_figure(fig,'training')
 
 
 def fig_gains():
-    fig, axes = plt.subplots(1, 3, figsize=(11, 3.6), sharey=True)
-    vega = [('ttt', 'records_guard', "their own method, answer key (TTT head, 0.12.3 rule / Laya's typed-decisions fine-tune)", 'theirs'),
-            ('sup_ts', 'records_es', 'answer-key add-on, same recipe, early-stopped', 'sup'),
-            ('feedback', 'records', 'Peekaboo, eight passes', 'pk'), ('feedback_1pass', 'records', 'Peekaboo, one pass (each row rated once)', 'pk1')]
-    forest(axes[0], '0.8b', vega, 'Vega 0.8B')
-    forest(axes[1], '4b', [(m, k, '', st) for m, k, _, st in vega], 'Vega 4B')
-    forest(axes[2], 'laya', [('laya_td', 'records', '', 'theirs'), ('sup_1pass', 'records', 'answer-key add-on, one pass (Laya head)', 'sup_es'), ('feedback_1pass', 'records', '', 'pk1')], 'Laya, head only (one pass)')
-    for ax in axes:
-        ax.set_xlabel('accuracy gain over the released model (points)')
-    h, l = axes[0].get_legend_handles_labels(); h2, l2 = axes[2].get_legend_handles_labels()
-    h += [x for x, lab in zip(h2, l2) if lab]; l += [lab for lab in l2 if lab]
-    fig.legend(h, l, frameon=False, ncol=2, loc='lower center', bbox_to_anchor=(0.5, -0.02))
-    fig.tight_layout(rect=(0, 0.16, 1, 1)); fig.savefig(os.path.join(FIG, 'gains.pdf'), bbox_inches='tight'); plt.close(fig)
-
-
-def fig_laya():
-    fig, ax = plt.subplots(figsize=(7.5, 3.6))
-    series = [('laya_td', 'records', "Laya's typed-decisions fine-tune (in-domain only on typed-decisions)", 'theirs'),
-              ('sup_enc', 'records_es', 'answer-key fine-tune, encoder unfrozen, early-stopped', 'sup'),
-              ('feedback_enc', 'records', 'Peekaboo, encoder unfrozen, eight passes', 'enc'), ('feedback_enc_1pass', 'records', 'Peekaboo, encoder unfrozen, one pass', 'enc1'),
-              ('feedback_1pass', 'records', 'Peekaboo, head only, one pass', 'pk')]
-    forest(ax, 'laya', series, 'Laya, encoder unfrozen')
-    ax.set_xlabel('accuracy gain over released Laya (points)')
-    ax.legend(frameon=False, ncol=1, loc='upper center', bbox_to_anchor=(0.5, -0.18), fontsize=8)
-    fig.tight_layout(); fig.savefig(os.path.join(FIG, 'laya.pdf'), bbox_inches='tight'); plt.close(fig)
+    """One interval per benchmark: directly answer which method performs better."""
+    fig, axes = plt.subplots(2, 2, figsize=(7.1, 5.7), sharex=True, sharey=True)
+    comparisons = [('sup_ts', 'records_es', 'labelled adapter'),
+                   ('ttt', 'records_guard', 'TTT head (0.12.3)')]
+    limits = []
+    for row, (other, key, label) in enumerate(comparisons):
+        for col, (model, name) in enumerate(MODELS[:2]):
+            ax=axes[row,col]; clean_axis(ax,[SNAME[s] for s in SUITES])
+            for y,s in enumerate(SUITES):
+                g=cmp(model,'feedback','records',s,other,key)
+                if g:
+                    limits.extend([g['lo'],g['hi']]); interval(ax,g,y,PALETTE['feedback'])
+                else:
+                    ax.text(0,y,'not evaluated',ha='center',va='center',fontsize=8,color='#666666')
+            ax.set_title(f'{name}\nPeekaboo minus {label}',fontsize=9.5)
+            if col: ax.tick_params(labelleft=False)
+    lo=min(limits)-1; hi=max(limits)+1
+    for ax in axes.flat: ax.set_xlim(lo,hi)
+    for ax in axes[-1]: ax.set_xlabel('Accuracy difference (percentage points)')
+    fig.subplots_adjust(left=.21,right=.98,top=.82,bottom=.12,hspace=.65,wspace=.17)
+    fig.text(.60,.99,'Eight fresh-feedback passes versus labelled methods',ha='center',va='top',weight='bold',fontsize=11)
+    fig.text(.60,.025,'← Comparator better                       Peekaboo better →',ha='center',fontsize=9)
+    save_figure(fig,'gains')
 
 
 def fig_passes():
-    """One pass against eight, feedback and labels, per model and benchmark."""
-    fig, axes = plt.subplots(1, 3, figsize=(11, 3.3), sharey=True)
-    for ax, (model, mname) in zip(axes, MODELS):
-        y = np.arange(len(SUITES))[::-1]
-        for yi, s in zip(y, SUITES):
-            pairs = ((('feedback_enc_1pass', 'feedback_enc', C['pk'], 'Peekaboo: one pass $\\rightarrow$ eight passes'),) if model == 'laya' else
-                     (('feedback_1pass', 'feedback', C['pk'], 'Peekaboo: one pass $\\rightarrow$ eight passes'), ('sup_1pass', 'sup_ts', C['sup'], 'answer key: one pass $\\rightarrow$ eight passes')))
-            for dy, (m1, m8, col, lab) in zip((0.18, -0.18), pairs):
-                a, b = cmp(model, m1, 'records', s), cmp(model, m8, 'records', s)
-                if a and b:
-                    ax.plot([a['gain'], b['gain']], [yi + dy, yi + dy], '-', color=col, lw=1.2)
-                    ax.plot(a['gain'], yi + dy, 'o', ms=4, mfc='white', color=col, label=lab if yi == y[0] else None)
-                    ax.plot(b['gain'], yi + dy, 'o', ms=4, color=col)
-        ax.axvline(0, color='k', lw=0.7); ax.set_yticks(y); ax.set_yticklabels([SNAME[s] for s in SUITES]); ax.set_title(mname + (', encoder unfrozen' if model == 'laya' else ''))
-        ax.grid(axis='x', lw=0.4, alpha=0.5); ax.spines['left'].set_visible(False); ax.tick_params(axis='y', length=0)
-        ax.set_xlabel('gain over the released model (points)')
-    h, l = axes[0].get_legend_handles_labels()
-    fig.legend(h, l, frameon=False, ncol=2, loc='lower center', bbox_to_anchor=(0.5, -0.02))
-    fig.tight_layout(rect=(0, 0.1, 1, 1)); fig.savefig(os.path.join(FIG, 'passes.pdf'), bbox_inches='tight'); plt.close(fig)
+    """Explicit column labels avoid interpreting line endpoints as uncertainty bars."""
+    fig,axes=plt.subplots(1,3,figsize=(7.3,3.5),gridspec_kw={'width_ratios':[4,4,2]})
+    norm=TwoSlopeNorm(vmin=-5,vcenter=0,vmax=35)
+    for ax,(model,name) in zip(axes,MODELS):
+        methods=['feedback_1pass','feedback','sup_1pass','sup_ts'] if model!='laya' else ['feedback_enc_1pass','feedback_enc']
+        values=[[cmp(model,m,'records',s)['gain'] if cmp(model,m,'records',s) else np.nan for m in methods] for s in SUITES]
+        cols=['1 pass\nverdicts','8 passes\nverdicts','1 pass\nlabels','8 passes\nlabels'][:len(methods)]
+        matrix(ax,values,[SNAME[s] for s in SUITES] if model=='0.8b' else ['']*6,cols,norm,GAIN_CMAP,signed)
+        ax.set_title(name+('\nencoder trained' if model=='laya' else ''))
+    fig.subplots_adjust(left=.18,right=.99,bottom=.26,top=.79,wspace=.14)
+    fig.text(.58,.98,'Mean accuracy gain over the released model (percentage points)',ha='center',va='top',weight='bold',fontsize=10)
+    fig.text(.58,.035,'Positive = improved accuracy. Orange = loss. Gray / — = not run.',ha='center',fontsize=8.5)
+    save_figure(fig,'passes')
 
 
 def fig_realistic():
-    arms = [('feedback', 'records', 'eight passes, clean', 'pk'), ('feedback_1pass', 'records', 'one pass, clean', 'pk1'),
-            ('logged_argmax', 'records', 'logged: best answers rated once', 'logged'), ('logged_ips', 'records', 'logged: sampled answers rated once', 'logged'),
-            ('feedback_noise20', 'records', '20% of verdicts flipped', 'kl0'), ('feedback_half', 'records', 'half of the answers rated', 'pooled'),
-            ('feedback_complaints', 'records', 'all wrong answers reported, 20% of right ones', 'prior')]
-    suites = [s for s in ('decisionbench', 'typed', 'emotion') if any(cmp(m, a[0], a[1], s) for m, _ in MODELS for a in arms[2:])]
-    if not suites:
-        return
-    fig, axes = plt.subplots(1, 2, figsize=(10, 3.4), sharey=True)
-    y = np.arange(len(arms))[::-1]
-    for ax, (model, mname) in zip(axes, MODELS[:2]):
-        for j, s in enumerate(suites):
-            dy = (j - (len(suites) - 1) / 2) * -0.22
-            for yi, (meth, key, label, style) in zip(y, arms):
-                g = cmp(model, meth, key, s)
-                if g:
-                    ax.errorbar(g['gain'], yi + dy, xerr=[[g['gain'] - g['lo']], [g['hi'] - g['gain']]], fmt='osD^v<>'[j], ms=4, color=plt.cm.tab10(j),
-                                ecolor=plt.cm.tab10(j), elinewidth=0.9, capsize=1.5, label=SNAME[s] if yi == y[0] else None)
-        ax.axvline(0, color='k', lw=0.7); ax.set_yticks(y); ax.set_yticklabels([a[2] for a in arms]); ax.set_title(mname)
-        ax.grid(axis='x', lw=0.4, alpha=0.5); ax.spines['left'].set_visible(False); ax.tick_params(axis='y', length=0); ax.set_xlabel('gain over the released model (points)')
-    h, l = axes[0].get_legend_handles_labels()
-    fig.legend(h, l, frameon=False, ncol=len(suites), loc='lower center', bbox_to_anchor=(0.5, -0.02))
-    fig.tight_layout(rect=(0, 0.08, 1, 1)); fig.savefig(os.path.join(FIG, 'realistic.pdf'), bbox_inches='tight'); plt.close(fig)
+    arms=[('feedback','Fresh feedback, 8 passes'),('feedback_1pass','Fresh feedback, 1 pass'),
+          ('logged_argmax','Logged best answer'),('logged_ips','Logged sampled answer'),
+          ('feedback_noise20','20% wrong verdicts'),('feedback_half','50% of answers rated'),
+          ('feedback_complaints','All errors + 20% of correct\nanswers rated')]
+    suites=['decisionbench','typed','emotion']
+    fig,axes=plt.subplots(2,3,figsize=(7.4,5.7),sharex=True,sharey=True)
+    limits=[]
+    for row,(model,name) in enumerate(MODELS[:2]):
+        for col,s in enumerate(suites):
+            ax=axes[row,col]; clean_axis(ax,[a[1] for a in arms])
+            for y,(meth,_) in enumerate(arms):
+                g=cmp(model,meth,'records',s)
+                if g is None: continue
+                limits.extend([g['lo'],g['hi']])
+                failed=(model=='4b' and s=='emotion' and meth=='feedback_half')
+                interval(ax,g,y,PALETTE['raw'] if failed else PALETTE['feedback'],
+                         marker='x' if failed else 'o',filled=g['seeds'][1]>1)
+                if failed: ax.annotate('failed run',(g['gain'],y),xytext=(6,0),textcoords='offset points',va='center',fontsize=7.5,color=PALETTE['raw'])
+            ax.set_title(f'{name}\n{SNAME[s]}',fontsize=9.5)
+            if col: ax.tick_params(labelleft=False)
+            ax.tick_params(axis='x',labelsize=8)
+    lo=np.floor(min(limits)/5)*5;hi=np.ceil(max(limits)/5)*5
+    for ax in axes.flat: ax.set_xlim(lo,hi);ax.xaxis.set_major_locator(matplotlib.ticker.MultipleLocator(5))
+    for ax in axes[-1]: ax.set_xlabel('Accuracy gain (pp)',fontsize=9)
+    fig.subplots_adjust(left=.29,right=.98,bottom=.14,top=.80,wspace=.20,hspace=.50)
+    fig.text(.63,.99,'Feedback collection conditions',ha='center',va='top',fontsize=11,weight='bold')
+    fig.text(.63,.94,'Zero = released model; lines = 95% intervals',ha='center',fontsize=8.5)
+    fig.text(.63,.035,'Open circles: one training seed. Filled circles: three seeds.',ha='center',fontsize=8.5)
+    save_figure(fig,'realistic')
 
 
 def fig_anatomy():
-    fig, axes = plt.subplots(1, 2, figsize=(10, 3.4))
-    ranks = ['fix_rate_rank2', 'fix_rate_rank3', 'fix_rate_rank4plus']; x = np.arange(len(ranks)); w = 0.13
-    i = 0
-    for model, mname in MODELS[:2]:
-        for meth, label, col in (('feedback', 'Peekaboo', C['pk']), ('sup_ts', 'answer key', C['sup'])):
-            vals = [np.nanmean([N['fixbreak'].get(f'{model}|{meth}|{s}', {}).get(r) or np.nan for s in SUITES if s != 'jevbench']) for r in ranks]
-            axes[0].bar(x + (i - 1.5) * w, [100 * v for v in vals], w, color=col, alpha=1.0 if model == '0.8b' else 0.55, label=f'{mname}, {label}'); i += 1
-    axes[0].set_xticks(x); axes[0].set_xticklabels(['gold ranked 2nd', 'ranked 3rd', 'ranked 4th or lower']); axes[0].set_ylabel('% of base-wrong rows fixed')
-    axes[0].set_title('which errors get fixed'); axes[0].legend(frameon=False, fontsize=7)
-    y = np.arange(len(SUITES))[::-1]
-    for model, dy, alpha in (('0.8b', 0.2, 1.0), ('4b', -0.2, 0.55)):
-        for yi, s in zip(y, SUITES):
-            p = N['prior'].get(f'{model}|{s}')
-            g = cmp(model, 'feedback', 'records', s); a = cmp(model, 'sup_ts', 'records', s)
-            first = yi == y[0] and model == '0.8b'
-            if p and p['feedback'].get('vs_released'):
-                axes[1].plot(p['feedback']['vs_released']['gain'], yi + dy, '^', color=C['prior'], alpha=alpha, ms=5, label='label prior from verdicts' if first else None)
-                axes[1].plot(p['labels']['vs_released']['gain'], yi + dy, '^', mfc='white', color=C['prior'], alpha=alpha, ms=5, label='label prior from labels' if first else None)
-            if g:
-                axes[1].plot(g['gain'], yi + dy, 'o', color=C['pk'], alpha=alpha, ms=4.5, label='Peekaboo' if first else None)
-            if a:
-                axes[1].plot(a['gain'], yi + dy, 's', color=C['sup'], alpha=alpha, ms=4.5, label='answer-key adapter' if first else None)
-    axes[1].axvline(0, color='k', lw=0.7); axes[1].set_yticks(y); axes[1].set_yticklabels([SNAME[s] for s in SUITES]); axes[1].grid(axis='x', lw=0.4, alpha=0.5)
-    axes[1].spines['left'].set_visible(False); axes[1].tick_params(axis='y', length=0); axes[1].set_xlabel('gain over the released model (points; solid 0.8B, faint 4B)')
-    axes[1].set_title('how much a label prior alone recovers'); axes[1].legend(frameon=False, fontsize=7, loc='lower right')
-    fig.tight_layout(); fig.savefig(os.path.join(FIG, 'anatomy.pdf'), bbox_inches='tight'); plt.close(fig)
+    fig,axes=plt.subplots(2,2,figsize=(7.2,6.1),gridspec_kw={'height_ratios':[1,1.25]})
+    ranks=['fix_rate_rank2','fix_rate_rank3','fix_rate_rank4plus']
+    for col,(model,name) in enumerate(MODELS[:2]):
+        ax=axes[0,col]; x=np.arange(3); w=.34
+        for offset,meth,label,color in [(-.5,'feedback','Feedback',PALETTE['feedback']),(.5,'sup_ts','Labels',PALETTE['labels'])]:
+            vals=[]
+            for rank in ranks:
+                present=[N['fixbreak'].get(f'{model}|{meth}|{s}',{}).get(rank) for s in SUITES if s!='jevbench']
+                vals.append(100*np.mean([v for v in present if v is not None]))
+            bars=ax.bar(x+offset*w,vals,w,color=color,label=label)
+            ax.bar_label(bars,fmt='%.0f%%',fontsize=8,padding=2)
+        ax.set_xticks(x);ax.set_xticklabels(['2nd','3rd','4th or lower'])
+        ax.set_ylim(0,60);ax.set_title(f'{name}: which errors are fixed',fontsize=9.5)
+        ax.set_xlabel('Correct answer’s rank before training',fontsize=8.5)
+        ax.set_ylabel('Initially wrong rows fixed (%)',fontsize=8.5)
+        ax.legend(frameon=False,fontsize=8,loc='upper right');ax.grid(axis='y',color='#EEEEEE');ax.set_axisbelow(True)
+        ax=axes[1,col]; suites=[s for s in SUITES if N['prior'].get(f'{model}|{s}')]
+        clean_axis(ax,[SNAME[s] for s in suites])
+        for y,s in enumerate(suites):
+            prior=N['prior'][f'{model}|{s}']['feedback'].get('vs_released')
+            full=cmp(model,'feedback','records',s)
+            if prior and full:
+                ax.plot([prior['gain'],full['gain']],[y,y],color='#B8B8B8',lw=1.4)
+                ax.plot(prior['gain'],y,'^',color=PALETTE['prior'],ms=6)
+                ax.plot(full['gain'],y,'o',color=PALETTE['feedback'],ms=5)
+        ax.set_xlim(-3,14);ax.set_xlabel('Accuracy gain over released model (pp)',fontsize=8.5)
+        ax.set_title(f'{name}: prior correction versus full adapter',fontsize=9.2)
+    fig.subplots_adjust(left=.17,right=.98,top=.95,bottom=.13,hspace=.65,wspace=.65)
+    handles=[Line2D([],[],marker='^',color=PALETTE['prior'],ls='',label='No-input prior from verdicts'),
+             Line2D([],[],marker='o',color=PALETTE['feedback'],ls='',label='Full Peekaboo adapter')]
+    fig.legend(handles=handles,frameon=False,ncol=2,loc='lower center',bbox_to_anchor=(.59,.015),fontsize=8.3)
+    save_figure(fig,'anatomy')
 
 
 def fig_calibration():
-    fig, axes = plt.subplots(2, 3, figsize=(11, 5.2))
-    bars = [('released', 'records', 'released', C['base']), ('baseT', 'feedback', 'released + verdict-fitted T', '#c0c0c0'),
-            ('feedback', 'records_raw', 'Peekaboo before the fix', C['raw']), ('feedback', 'records', 'Peekaboo', C['pk']), ('sup_ts', 'records', 'answer key + label T', C['sup'])]
-    w = 0.8 / len(bars); x = np.arange(len(SUITES))
-    for col_i, (model, mname) in enumerate(MODELS):
-        for row, what in enumerate(('ece', 'aurc')):
-            ax = axes[row][col_i]
-            for i, (meth, key, label, colr) in enumerate(bars):
-                meth = {'feedback': PK(model), 'sup_ts': SUP(model)}.get(meth, meth)
-                if meth == 'baseT':
-                    y = [(N['base_T'].get(f'{model}|{s}') or {}).get(key, {}).get(what, np.nan) for s in SUITES]
-                else:
-                    y = [np.mean(sc(model, meth, key, s, what)) if sc(model, meth, key, s, what) else np.nan for s in SUITES]
-                ax.bar(x + (i - (len(bars) - 1) / 2) * w, y, w, color=colr, label=label)
-            ax.set_xticks(x); ax.set_xticklabels([SSHORT[s] for s in SUITES], rotation=25, ha='right'); ax.set_title(mname if row == 0 else '')
-            ax.set_ylabel('ECE (lower is better)' if what == 'ece' else 'AURC (lower is better)')
-    h, l = axes[0][0].get_legend_handles_labels()
-    fig.legend(h, l, frameon=False, ncol=5, loc='lower center', bbox_to_anchor=(0.5, -0.01))
-    fig.tight_layout(rect=(0, 0.05, 1, 1)); fig.savefig(os.path.join(FIG, 'calibration.pdf'), bbox_inches='tight'); plt.close(fig)
+    bars=[('released','records','Base'),('baseT','feedback','Base\n+ T'),
+          ('feedback','records_raw','Pk raw'),('feedback','records','Pk\n+ T'),('sup_ts','records','Labels\n+ T')]
+    fig,axes=plt.subplots(3,2,figsize=(7.3,7.0))
+    for col,what in enumerate(('ece','aurc')):
+        data=[]
+        for model,name in MODELS:
+            rows=[]
+            for s in SUITES:
+                vals=[]
+                for meth,key,label in bars:
+                    if meth=='baseT': v=(N['base_T'].get(f'{model}|{s}') or {}).get(key,{}).get(what)
+                    else:
+                        meth={'feedback':PK(model),'sup_ts':SUP(model)}.get(meth,meth)
+                        v=sc(model,meth,key,s,what);v=float(np.mean(v)) if v else None
+                    vals.append(v if v is not None else np.nan)
+                rows.append(vals)
+            data.append(rows)
+        vmax=np.nanmax(np.array(data));norm=Normalize(0,vmax)
+        for row,((model,name),values) in enumerate(zip(MODELS,data)):
+            ax=axes[row,col]
+            matrix(ax,values,[SNAME[s] for s in SUITES] if col==0 else ['']*6,[b[2] for b in bars],norm,LOWER_CMAP,lambda v:f'{v:.3f}')
+            ax.set_title(f'{name} — '+('calibration error (ECE)' if what=='ece' else 'selective risk (AURC)'),fontsize=9.6)
+    fig.subplots_adjust(left=.19,right=.99,bottom=.10,top=.90,hspace=.65,wspace=.13)
+    fig.text(.59,.985,'Confidence quality: lower numbers are better',ha='center',va='top',fontsize=11,weight='bold')
+    fig.text(.59,.025,'Pk = Peekaboo; T = temperature. Gray / — = unavailable. Darker = larger error within each metric.',ha='center',fontsize=8)
+    save_figure(fig,'calibration')
 
 
 def fig_reliability():
-    fig, axes = plt.subplots(2, 3, figsize=(9, 5.6))
-    for row, s in enumerate(('decisionbench', 'typed')):
-        for ax, (model, mname) in zip(axes[row], MODELS):
-            for meth, key, label, col in (('released', 'records', 'released model', C['base']), (PK(model), 'records_raw', 'Peekaboo before the honesty fix', C['raw']), (PK(model), 'records', 'Peekaboo', C['pk'])):
-                R = A.runs(model, s, meth, key)
-                if not R:
-                    continue
-                conf = np.concatenate([[max(r['probs'].values()) if r.get('probs') else 0.0 for r in recs] for recs in R])
-                corr = np.concatenate([A.correct(recs) for recs in R])
-                edges = np.linspace(0, 1, 11); b = np.clip(np.digitize(conf, edges) - 1, 0, 9)
-                pts = [(conf[b == i].mean(), corr[b == i].mean()) for i in range(10) if (b == i).sum() >= 10]
-                ax.plot([p[0] for p in pts], [p[1] for p in pts], 'o-', ms=3, color=col, label=label)
-            ax.plot([0, 1], [0, 1], '--', color='k', lw=0.6); ax.set_xlim(0, 1); ax.set_ylim(0, 1); ax.set_title(f'{mname}, {SNAME[s]}')
-            if row == 1:
-                ax.set_xlabel('stated confidence')
-            if ax is axes[row][0]:
-                ax.set_ylabel('fraction correct')
-    h, l = axes[0][0].get_legend_handles_labels()
-    fig.legend(h, l, frameon=False, ncol=3, loc='lower center', bbox_to_anchor=(0.5, -0.01))
-    fig.tight_layout(rect=(0, 0.05, 1, 1)); fig.savefig(os.path.join(FIG, 'reliability.pdf'), bbox_inches='tight'); plt.close(fig)
+    fig,axes=plt.subplots(2,3,figsize=(7.3,5.5),sharex=True,sharey=True)
+    for row,s in enumerate(('decisionbench','typed')):
+        for col,(model,name) in enumerate(MODELS):
+            ax=axes[row,col]
+            ax.plot([0,1],[0,1],'--',color='#888888',lw=.9)
+            for meth,key,label,color,marker in [('released','records','Released model',PALETTE['base'],'s'),
+                (PK(model),'records_raw','Feedback before T',PALETTE['raw'],'^'),
+                (PK(model),'records','Feedback after T',PALETTE['feedback'],'o')]:
+                runs=A.runs(model,s,meth,key)
+                pairs=[(max(r['probs'].values()),float(r.get('pred')==r['gold'])) for recs in runs for r in recs if r.get('probs')]
+                if not pairs:continue
+                conf,corr=np.array(pairs).T
+                bins=np.clip(np.digitize(conf,np.linspace(0,1,11))-1,0,9)
+                pts=[(conf[bins==i].mean(),corr[bins==i].mean()) for i in range(10) if (bins==i).sum()>=10]
+                ax.plot([p[0] for p in pts],[p[1] for p in pts],marker=marker,ms=4,lw=1.2,color=color,label=label)
+            ax.set(xlim=(0,1.02),ylim=(0,1.02));ax.set_aspect('equal',adjustable='box')
+            ax.set_title(f'{name}\n{SNAME[s]}',fontsize=9.5)
+            ax.set_xticks([0,.5,1]);ax.set_yticks([0,.5,1])
+            ax.xaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(1));ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(1))
+            ax.grid(color='#EEEEEE',lw=.6)
+            if row==1:ax.set_xlabel('Predicted confidence',fontsize=8.5)
+            if col==0:ax.set_ylabel('Observed accuracy',fontsize=8.5)
+    handles,labels=axes[0,0].get_legend_handles_labels()
+    fig.legend(handles,labels,frameon=False,ncol=3,loc='lower center',bbox_to_anchor=(.54,.045),fontsize=8.2)
+    fig.subplots_adjust(left=.10,right=.99,bottom=.18,top=.89,hspace=.48,wspace=.15)
+    fig.text(.55,.99,'Calibration check: points on the diagonal match stated confidence',ha='center',va='top',weight='bold',fontsize=10)
+    fig.text(.55,.015,'Below the dashed diagonal = overconfident. Above = underconfident.',ha='center',fontsize=8.5)
+    save_figure(fig,'reliability')
 
 
 def fig_switch_T():
-    fig, axes = plt.subplots(1, 2, figsize=(9, 2.9))
-    x = np.arange(len(SUITES)); w = 0.26
-    for i, (model, mname) in enumerate(MODELS):
-        Ts = [np.mean([f['T'] for inf in A.infos(model, s, PK(model)) for f in inf.get('folds', []) if f.get('T')] or [np.nan]) for s in SUITES]
-        axes[0].bar(x + (i - 1) * w, Ts, w, label=mname, color=[C['pk'], C['enc'], C['pooled']][i])
-        on = [(N['switch'].get(f'{model}|{PK(model)}|{s}') or {}).get('on', np.nan) for s in SUITES]
-        so = [(N['switch'].get(f'{model}|{PK(model)}|{s}') or {}).get('sampled_on') or np.nan for s in SUITES]
-        axes[1].bar(x + (i - 1) * w, on, w, label=mname, color=[C['pk'], C['enc'], C['pooled']][i])
-        axes[1].plot(x + (i - 1) * w, so, 'k_', ms=9, mew=1.2, label='same switch on sampled answers (v1)' if i == 0 else None)
-    axes[0].axhline(1, color='k', lw=0.6, ls='--'); axes[0].set_ylabel('fitted temperature T'); axes[0].set_title('honesty fix: temperature fitted from verdicts')
-    axes[1].set_ylabel('share of runs keeping the add-on'); axes[1].set_title('switch: best answers compared'); axes[1].set_ylim(0, 1.05)
-    for ax in axes:
-        ax.set_xticks(x); ax.set_xticklabels([SSHORT[s] for s in SUITES], rotation=25, ha='right')
-    h, l = axes[1].get_legend_handles_labels()
-    fig.legend(h, l, frameon=False, ncol=4, loc='lower center', bbox_to_anchor=(0.5, -0.03))
-    fig.tight_layout(rect=(0, 0.1, 1, 1)); fig.savefig(os.path.join(FIG, 'switch_T.pdf'), bbox_inches='tight'); plt.close(fig)
+    fig,axes=plt.subplots(1,2,figsize=(7.3,3.9),gridspec_kw={'width_ratios':[3,6]})
+    temperatures=[]; switches=[]
+    for s in SUITES:
+        ts=[];sw=[]
+        for model,name in MODELS:
+            values=[f['T'] for info in A.infos(model,s,PK(model)) for f in info.get('folds',[]) if f.get('T') is not None]
+            ts.append(np.mean(values) if values else np.nan)
+            info=N['switch'].get(f'{model}|{PK(model)}|{s}') or {}
+            for key in ('on','sampled_on'):
+                value=info.get(key);sw.append(value if value is not None else np.nan)
+        temperatures.append(ts);switches.append(sw)
+    matrix(axes[0],np.log2(temperatures),[SNAME[s] for s in SUITES],['Vega\n0.8B','Vega\n4B','Laya'],
+           TwoSlopeNorm(vmin=-2,vcenter=0,vmax=5),'BrBG',lambda v:f'{2**v:.1f}')
+    matrix(axes[1],switches,['']*6,['Best','Sampled']*3,Normalize(0,1),'Blues',lambda v:f'{100*v:.0f}%')
+    axes[0].set_title('Fitted temperature T',fontsize=10,pad=29)
+    axes[1].set_title('How often the switch retains the adapter',fontsize=10,pad=29)
+    for x,name in zip((.165,.5,.835),('Vega 0.8B','Vega 4B','Laya')):
+        axes[1].text(x,1.025,name,transform=axes[1].transAxes,ha='center',fontsize=8.5)
+    for x in (1.5,3.5):axes[1].axvline(x,color='white',lw=6)
+    fig.subplots_adjust(left=.18,right=.99,bottom=.28,top=.76,wspace=.13)
+    fig.text(.38,.11,'T > 1 softens confidence.\nT < 1 sharpens confidence.',ha='center',fontsize=8.5)
+    fig.text(.77,.11,'Best / Sampled = answer type compared.\n0% = always discard; 100% = always keep.',ha='center',fontsize=8.5)
+    fig.text(.59,.025,'Laya: encoder trained. Gray / — = not evaluated. Switch fractions pool seeds and cross-validation folds.',ha='center',fontsize=8)
+    save_figure(fig,'switch_T')
+
+
+def fig_laya():
+    """Use named training configurations and accuracy to make Laya's improvement explicit."""
+    arms=[('released','records','Released Laya',PALETTE['base']),
+          ('feedback_1pass','records','Head only\n1 feedback pass','#6FAB89'),
+          ('feedback_enc_1pass','records','Encoder + head\n1 feedback pass','#6FAB89'),
+          ('feedback_enc','records','Encoder + head\n8 feedback passes',PALETTE['feedback']),
+          ('sup_enc','records_es','Encoder + head\nLabelled, early-stopped',PALETTE['labels']),
+          ('laya_td','records','Released typed-decisions\ncheckpoint',PALETTE['vendor'])]
+    fig,axes=plt.subplots(1,2,figsize=(7.2,4.5),sharex=True,sharey=True)
+    for col,s in enumerate(('typed','emotion')):
+        ax=axes[col];clean_axis(ax,[a[2] for a in arms],zero=False)
+        for y,(meth,key,label,color) in enumerate(arms):
+            # The released fine-tune is in-domain only on typed-decisions.
+            if meth=='laya_td' and s!='typed':
+                ax.text(4,y,'transfer checkpoint;\nnot a matched comparator',va='center',fontsize=8,color='#666666');continue
+            values=sc('laya',meth,key,s,'accuracy')
+            if not values:
+                ax.text(4,y,'not run',va='center',fontsize=8,color='#666666');continue
+            value=100*np.mean(values)
+            ax.barh(y,value,height=.52,color=color)
+            ax.text(value+1.4,y,f'{value:.1f}%',va='center',fontsize=9)
+        ax.set_xlim(0,103);ax.set_xticks([0,25,50,75,100]);ax.set_xlabel('Test accuracy (%)')
+        ax.set_title(SNAME[s],fontsize=11)
+        if col:ax.tick_params(labelleft=False)
+    fig.subplots_adjust(left=.30,right=.98,bottom=.19,top=.80,wspace=.15)
+    fig.text(.63,.98,'What changes when Laya is adapted?',ha='center',va='top',weight='bold',fontsize=11)
+    fig.text(.63,.035,'Encoder-training results here use one seed per task. Bars show point estimates, not uncertainty.',ha='center',fontsize=8)
+    save_figure(fig,'laya')
 
 
 def fig_tasks_db():
-    d = N['tasks_db']
-    if '0.8b|feedback' not in d:
-        return
-    tasks = sorted(d['0.8b|feedback'], key=lambda t: d['0.8b|feedback'][t]['acc'] - d['0.8b|feedback'][t]['base'])
-    fig, ax = plt.subplots(figsize=(10, 3.4))
-    x = np.arange(len(tasks)); w = 0.4
-    for i, (model, mname, col) in enumerate((('0.8b', 'Vega 0.8B', C['pk']), ('4b', 'Vega 4B', C['enc']))):
-        if f'{model}|feedback' in d:
-            ax.bar(x + (i - 0.5) * w, [100 * (d[f'{model}|feedback'][t]['acc'] - d[f'{model}|feedback'][t]['base']) for t in tasks], w, color=col, label=f'{mname}, Peekaboo')
-    short = [t.split('/')[-1] + (' *' if any(a in t for a in ('contains_threat', 'toxicity_severity', 'finqa')) else '') for t in tasks]
-    ax.set_xticks(x); ax.set_xticklabels(short, rotation=75, ha='right', fontsize=6); ax.axhline(0, color='k', lw=0.6)
-    ax.set_ylabel('gain over released Vega (points)'); ax.legend(frameon=False)
-    fig.tight_layout(); fig.savefig(os.path.join(FIG, 'tasks_db.pdf'), bbox_inches='tight'); plt.close(fig)
+    from collections import Counter
+    d=N['tasks_db'];key='0.8b|feedback'
+    if key not in d:return
+    tasks=sorted(d[key],key=lambda t:d[key][t]['acc']-d[key][t]['base'])
+    leaf_counts=Counter(t.split('/')[-1] for t in tasks)
+    allg=[100*(d[f'{m}|feedback'][t]['acc']-d[f'{m}|feedback'][t]['base']) for m,_ in MODELS[:2] for t in tasks]
+    limits=(np.floor(min(allg)/10)*10-3,np.ceil(max(allg)/10)*10+3)
+    for chunk,(start,end) in enumerate(((0,22),(22,len(tasks)))):
+        selected=tasks[start:end]
+        names=[]
+        for t in selected:
+            name=t.split('/')[-1].replace('-',' ').replace('_',' ')
+            if leaf_counts[t.split('/')[-1]] > 1:
+                parts=t.split('/')
+                qualifier=parts[0] if parts[-1]=='route' else parts[-2]
+                name=qualifier.replace('_',' ')+' / '+name
+            if any(a in t for a in ('contains_threat','toxicity_severity','finqa')):name+=' *'
+            names.append(textwrap.fill(name,30))
+        fig,ax=plt.subplots(figsize=(7.2,6.6));clean_axis(ax,names)
+        for y,t in enumerate(selected):
+            for dy,(m,name),color,marker in zip((-.13,.13),MODELS[:2],(PALETTE['feedback'],PALETTE['labels']),('o','s')):
+                val=100*(d[f'{m}|feedback'][t]['acc']-d[f'{m}|feedback'][t]['base'])
+                ax.plot([0,val],[y+dy,y+dy],color=color,lw=1.4,alpha=.65)
+                ax.plot(val,y+dy,marker,color=color,ms=4)
+        ax.set_xlim(*limits);ax.set_xlabel('Accuracy gain over released Vega (percentage points)')
+        ax.set_title(f'DecisionBench tasks {start+1}–{end} of {len(tasks)}\nSorted by Vega 0.8B gain',fontsize=11)
+        ax.tick_params(axis='y',labelsize=8.2)
+        handles=[Line2D([],[],marker=mk,color=c,ls='',label=label) for (m,label),c,mk in zip(MODELS[:2],(PALETTE['feedback'],PALETTE['labels']),('o','s'))]
+        ax.legend(handles=handles,frameon=False,ncol=2,loc='lower center',bbox_to_anchor=(.5,1.095))
+        fig.subplots_adjust(left=.37,right=.98,bottom=.10,top=.85)
+        save_figure(fig,'tasks_db' if chunk==0 else 'tasks_db_more')
 
 
 def fig_benchmarks():
     import collections
-    fig, axes = plt.subplots(1, 2, figsize=(10, 3.0), gridspec_kw={'width_ratios': [1, 1.3]})
-    y = np.arange(len(SUITES))[::-1]
-    types = ['choice', 'boolean', 'score']; tn = {'choice': 'pick one', 'boolean': 'yes / no', 'score': 'rating scale'}
-    counts = {s: collections.Counter(it['question'].get('type') for it in A.items(s)) for s in SUITES}
-    left = np.zeros(len(SUITES))
-    for t, col in zip(types, ('#4c72b0', '#55a868', '#c44e52')):
-        v = np.array([counts[s].get(t, 0) for s in SUITES])
-        axes[0].barh(y, v, left=left, color=col, label=tn[t], height=0.7); left += v
-    axes[0].set_yticks(y); axes[0].set_yticklabels([SNAME[s] for s in SUITES]); axes[0].set_xlabel('test rows'); axes[0].set_title('test rows by question type')
-    axes[0].legend(frameon=False, ncol=3, loc='upper center', bbox_to_anchor=(0.5, -0.22))
-    bins = [(2, 2, '2'), (3, 3, '3'), (4, 4, '4'), (5, 5, '5'), (6, 8, '6 to 8'), (9, 10 ** 9, '9 or more')]
-    shades = plt.cm.Blues(np.linspace(0.3, 0.95, len(bins)))
-    left = np.zeros(len(SUITES))
-    for (lo, hi, lab), col in zip(bins, shades):
-        v = np.array([np.mean([(lo <= len(it['labels']) <= hi) for it in A.items(s)]) if A.items(s) else 0 for s in SUITES])
-        axes[1].barh(y, v, left=left, color=col, label=lab, height=0.7, edgecolor='white', lw=0.5)
-        for yi, vi, li in zip(y, v, left):
-            if vi >= 0.12:
-                axes[1].text(li + vi / 2, yi, f'{100 * vi:.0f}%', ha='center', va='center', fontsize=7, color='white' if col[2] < 0.8 else 'black')
-        left += v
-    axes[1].set_yticks(y); axes[1].set_yticklabels([]); axes[1].set_xlim(0, 1); axes[1].set_xlabel('share of test rows'); axes[1].set_title('number of options per question')
-    axes[1].tick_params(axis='y', length=0); axes[1].legend(frameon=False, ncol=6, loc='upper center', bbox_to_anchor=(0.5, -0.22), title='options', title_fontsize=8, handlelength=1.2)
-    fig.tight_layout(); fig.savefig(os.path.join(FIG, 'benchmarks.pdf'), bbox_inches='tight'); plt.close(fig)
+    fig,axes=plt.subplots(1,2,figsize=(7.2,3.5),sharey=True)
+    y=np.arange(len(SUITES));counts={s:collections.Counter(it['question'].get('type') for it in A.items(s)) for s in SUITES}
+    labels=[f'{SNAME[s]}\n(n = {len(A.items(s)):,})' for s in SUITES]
+    specifications=[([('choice','Pick one','#5A82AA'),('boolean','Yes / no','#7FB295'),('score','Rating','#D1AD78')],'Question format'),
+                    ([(2,'2 options','#5A82AA'),((3,4),'3–4 options','#7FB295'),((5,1000000),'5+ options','#D1AD78')],'Number of options')]
+    for col,(parts,title) in enumerate(specifications):
+        ax=axes[col];left=np.zeros(len(SUITES))
+        for value,label,color in parts:
+            vals=[]
+            for s in SUITES:
+                its=A.items(s)
+                if col==0:v=counts[s].get(value,0)/len(its)
+                else:
+                    lo,hi=value if isinstance(value,tuple) else (value,value)
+                    v=np.mean([lo<=len(it['labels'])<=hi for it in its])
+                vals.append(100*v)
+            vals=np.array(vals);ax.barh(y,vals,left=left,height=.65,color=color,label=label,edgecolor='white')
+            for yi,v,l in zip(y,vals,left):
+                if v>=13:ax.text(l+v/2,yi,f'{v:.0f}%',ha='center',va='center',fontsize=8.5)
+            left+=vals
+        ax.set(yticks=y,xlim=(0,100),ylim=(5.6,-.6))
+        if col==0: ax.set_yticklabels(labels)
+        if col:ax.tick_params(labelleft=False)
+        ax.set_xticks([0,50,100]);ax.set_xlabel('Share of test questions (%)')
+        ax.spines['left'].set_visible(False);ax.tick_params(axis='y',length=0)
+        ax.set_title(title,fontsize=10)
+        ax.legend(frameon=False,ncol=3,loc='lower center',bbox_to_anchor=(.5,1.12),fontsize=7.8,handlelength=1,columnspacing=.7)
+    fig.subplots_adjust(left=.20,right=.99,bottom=.16,top=.76,wspace=.13)
+    save_figure(fig,'benchmarks')
 
 
 # ───────────────────────────── tables ─────────────────────────────
@@ -655,7 +820,7 @@ def tab_seeds():
 
 
 if __name__ == '__main__':
-    fig_benchmarks(); fig_gains(); fig_laya(); fig_passes(); fig_realistic(); fig_anatomy(); fig_calibration(); fig_reliability(); fig_switch_T(); fig_tasks_db()
+    fig_training(); fig_benchmarks(); fig_gains(); fig_laya(); fig_passes(); fig_realistic(); fig_anatomy(); fig_calibration(); fig_reliability(); fig_switch_T(); fig_tasks_db()
     tab_bench(); tab_main(); tab_h2h(); tab_realistic(); tab_calibration(); tab_anatomy(); tab_noship(); tab_tasks(); tab_seeds()
     n = tex_numbers()
     print('wrote figures, tables and', n, 'macros from', OUT)
